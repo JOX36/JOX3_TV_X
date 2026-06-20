@@ -6,6 +6,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -21,18 +22,26 @@ import com.jox3.tv.util.AppPrefs;
 import com.jox3.tv.util.AppState;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
     private LinearLayout layoutEmpty, rowFavoritesContainer;
     private View scrollContent;
-    private RecyclerView rowFavorites, rowLive, rowMovies, rowSeries;
+    private RecyclerView rowFavorites, rowCategories, rowLive, rowMovies, rowSeries;
     private EditText inputSearch;
     private TextView btnSettings, btnGoSettings;
 
+    private FrameLayout heroBanner;
+    private TextView heroTitle, heroSubtitle, heroBadge;
+    private MediaItem heroItem;
+
     private AppPrefs prefs;
     private MediaCardAdapter favAdapter, liveAdapter, moviesAdapter, seriesAdapter;
+    private CategoryChipAdapter categoryAdapter;
+    private String selectedCategory = "Todos";
+    private String currentSearchQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +53,29 @@ public class HomeActivity extends AppCompatActivity {
         setupRows();
         setupSearch();
         setupButtons();
+        checkCrashLog();
+    }
+
+    private void checkCrashLog() {
+        String crashLog = prefs.getCrashLog();
+        if (crashLog == null || crashLog.isEmpty()) return;
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("⚠️ La app se cerró la última vez")
+                .setMessage(crashLog)
+                .setPositiveButton("Copiar y cerrar", (d, w) -> {
+                    android.content.ClipboardManager clipboard =
+                            (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    android.content.ClipData clip =
+                            android.content.ClipData.newPlainText("crash_log", crashLog);
+                    clipboard.setPrimaryClip(clip);
+                    android.widget.Toast.makeText(this, "Copiado al portapapeles",
+                            android.widget.Toast.LENGTH_SHORT).show();
+                    prefs.clearCrashLog();
+                })
+                .setNegativeButton("Cerrar", (d, w) -> prefs.clearCrashLog())
+                .setCancelable(false)
+                .show();
     }
 
     @Override
@@ -58,6 +90,7 @@ public class HomeActivity extends AppCompatActivity {
         rowFavoritesContainer = findViewById(R.id.row_favorites_container);
 
         rowFavorites = findViewById(R.id.row_favorites);
+        rowCategories = findViewById(R.id.row_categories);
         rowLive = findViewById(R.id.row_live);
         rowMovies = findViewById(R.id.row_movies);
         rowSeries = findViewById(R.id.row_series);
@@ -65,10 +98,16 @@ public class HomeActivity extends AppCompatActivity {
         inputSearch = findViewById(R.id.input_search);
         btnSettings = findViewById(R.id.btn_settings);
         btnGoSettings = findViewById(R.id.btn_go_settings);
+
+        heroBanner = findViewById(R.id.hero_banner);
+        heroTitle = findViewById(R.id.hero_title);
+        heroSubtitle = findViewById(R.id.hero_subtitle);
+        heroBadge = findViewById(R.id.hero_badge);
     }
 
     private void setupRows() {
         rowFavorites.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rowCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowLive.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowSeries.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -77,11 +116,16 @@ public class HomeActivity extends AppCompatActivity {
         liveAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
         moviesAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
         seriesAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
+        categoryAdapter = new CategoryChipAdapter(new ArrayList<>(), category -> {
+            selectedCategory = category;
+            applyFilters();
+        });
 
         rowFavorites.setAdapter(favAdapter);
         rowLive.setAdapter(liveAdapter);
         rowMovies.setAdapter(moviesAdapter);
         rowSeries.setAdapter(seriesAdapter);
+        rowCategories.setAdapter(categoryAdapter);
     }
 
     private void setupSearch() {
@@ -89,7 +133,8 @@ public class HomeActivity extends AppCompatActivity {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void afterTextChanged(Editable s) {
-                filterContent(s.toString().trim());
+                currentSearchQuery = s.toString().trim();
+                applyFilters();
             }
         });
     }
@@ -102,6 +147,10 @@ public class HomeActivity extends AppCompatActivity {
             btnGoSettings.setOnClickListener(v ->
                     startActivity(new Intent(this, SettingsActivity.class)));
         }
+
+        heroBanner.setOnClickListener(v -> {
+            if (heroItem != null) openItem(heroItem, -1);
+        });
     }
 
     private void refreshContent() {
@@ -115,13 +164,43 @@ public class HomeActivity extends AppCompatActivity {
 
         if (!hasData) return;
 
-        liveAdapter.updateData(state.liveChannels);
         moviesAdapter.updateData(state.movies);
         seriesAdapter.updateData(state.series);
 
         List<MediaItem> favorites = collectFavorites(state);
         rowFavoritesContainer.setVisibility(favorites.isEmpty() ? View.GONE : View.VISIBLE);
         favAdapter.updateData(favorites);
+
+        setupHero(state);
+        setupCategories(state);
+        applyFilters();
+    }
+
+    private void setupHero(AppState state) {
+        MediaItem candidate = !state.liveChannels.isEmpty() ? state.liveChannels.get(0)
+                : (!state.movies.isEmpty() ? state.movies.get(0) : null);
+
+        if (candidate == null) {
+            heroBanner.setVisibility(View.GONE);
+            return;
+        }
+
+        heroItem = candidate;
+        heroBanner.setVisibility(View.VISIBLE);
+        heroTitle.setText(candidate.name);
+        heroSubtitle.setText(candidate.category != null ? candidate.category : "");
+        heroBadge.setVisibility(MediaItem.LIVE.equals(candidate.type) ? View.VISIBLE : View.GONE);
+    }
+
+    private void setupCategories(AppState state) {
+        LinkedHashSet<String> categories = new LinkedHashSet<>();
+        categories.add("Todos");
+        for (MediaItem item : state.liveChannels) {
+            categories.add(item.category != null && !item.category.isEmpty()
+                    ? item.category : "General");
+        }
+        categoryAdapter.updateCategories(new ArrayList<>(categories));
+        selectedCategory = "Todos";
     }
 
     private List<MediaItem> collectFavorites(AppState state) {
@@ -135,19 +214,29 @@ public class HomeActivity extends AppCompatActivity {
         return favs;
     }
 
-    private void filterContent(String query) {
+    private void applyFilters() {
         AppState state = AppState.get();
-        if (query.isEmpty()) {
-            liveAdapter.updateData(state.liveChannels);
+        String lowerQuery = currentSearchQuery.toLowerCase();
+
+        List<MediaItem> liveFiltered = new ArrayList<>();
+        for (MediaItem item : state.liveChannels) {
+            boolean matchesCategory = "Todos".equals(selectedCategory)
+                    || selectedCategory.equals(item.category)
+                    || ("General".equals(selectedCategory)
+                        && (item.category == null || item.category.isEmpty()));
+            boolean matchesQuery = lowerQuery.isEmpty()
+                    || (item.name != null && item.name.toLowerCase().contains(lowerQuery));
+            if (matchesCategory && matchesQuery) liveFiltered.add(item);
+        }
+        liveAdapter.updateData(liveFiltered);
+
+        if (lowerQuery.isEmpty()) {
             moviesAdapter.updateData(state.movies);
             seriesAdapter.updateData(state.series);
-            return;
+        } else {
+            moviesAdapter.updateData(filterByName(state.movies, lowerQuery));
+            seriesAdapter.updateData(filterByName(state.series, lowerQuery));
         }
-
-        String lower = query.toLowerCase();
-        liveAdapter.updateData(filterByName(state.liveChannels, lower));
-        moviesAdapter.updateData(filterByName(state.movies, lower));
-        seriesAdapter.updateData(filterByName(state.series, lower));
     }
 
     private List<MediaItem> filterByName(List<MediaItem> source, String lowerQuery) {
