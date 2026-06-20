@@ -8,17 +8,18 @@
 
     <ImageView
         android:id="@+id/hero_poster"
-        android:layout_width="190dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="0.42"
         android:scaleType="centerCrop" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
+        android:layout_weight="0.58"
         android:orientation="vertical"
         android:gravity="center_vertical"
-        android:padding="18dp">
+        android:padding="22dp">
 
         <TextView
             android:id="@+id/hero_badge"
@@ -33,7 +34,7 @@
             android:textColor="@color/text_primary"
             android:textSize="10sp"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="10dp"
             android:visibility="gone" />
 
         <TextView
@@ -41,52 +42,62 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/text_primary"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end" />
 
         <TextView
+            android:id="@+id/hero_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textColor="@color/accent"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+
+        <TextView
             android:id="@+id/hero_synopsis"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="10dp"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:lineSpacingExtra="2dp"
-            android:maxLines="3"
+            android:textSize="13sp"
+            android:lineSpacingExtra="3dp"
+            android:maxLines="4"
             android:ellipsize="end" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="14dp">
+            android:layout_marginTop="16dp">
 
             <TextView
                 android:id="@+id/hero_btn_play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_chip_active"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp"
+                android:paddingTop="11dp"
+                android:paddingBottom="11dp"
                 android:text="▶ Reproducir"
                 android:textColor="@color/text_primary"
                 android:textStyle="bold"
                 android:textSize="13sp"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="10dp" />
 
             <TextView
                 android:id="@+id/hero_btn_fav"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_chip_inactive"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:paddingTop="11dp"
+                android:paddingBottom="11dp"
                 android:text="☆ Favorito"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp" />
