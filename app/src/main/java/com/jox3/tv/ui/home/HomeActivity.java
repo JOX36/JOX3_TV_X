@@ -16,7 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.jox3.tv.R;
+import com.jox3.tv.data.XtreamClient;
 import com.jox3.tv.model.MediaItem;
+import com.jox3.tv.model.PlaylistConfig;
 import com.jox3.tv.ui.player.PlayerActivity;
 import com.jox3.tv.ui.settings.SettingsActivity;
 import com.jox3.tv.util.AppPrefs;
@@ -26,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -38,7 +42,12 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView rowContinue, rowFavorites, rowCategories, rowLive, rowMovies, rowSeries;
     private EditText inputSearch;
     private View btnSettings;
+    private View btnSearchToggle;
+    private View searchBarContainer;
     private View btnGoSettings;
+
+    private final ExecutorService synopsisExecutor = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private ViewPager2 heroPager;
     private LinearLayout heroDots;
@@ -109,6 +118,12 @@ public class HomeActivity extends AppCompatActivity {
         stopHeroAutoplay();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        synopsisExecutor.shutdownNow();
+    }
+
     private void bindViews() {
         layoutEmpty = findViewById(R.id.layout_empty);
         scrollContent = findViewById(R.id.scroll_content);
@@ -124,6 +139,8 @@ public class HomeActivity extends AppCompatActivity {
 
         inputSearch = findViewById(R.id.input_search);
         btnSettings = findViewById(R.id.btn_settings);
+        btnSearchToggle = findViewById(R.id.btn_search_toggle);
+        searchBarContainer = findViewById(R.id.search_bar_container);
         btnGoSettings = findViewById(R.id.btn_go_settings);
 
         heroPager = findViewById(R.id.hero_pager);
@@ -197,6 +214,17 @@ public class HomeActivity extends AppCompatActivity {
             btnGoSettings.setOnClickListener(v ->
                     startActivity(new Intent(this, SettingsActivity.class)));
         }
+
+        btnSearchToggle.setOnClickListener(v -> {
+            boolean isVisible = searchBarContainer.getVisibility() == View.VISIBLE;
+            if (isVisible) {
+                searchBarContainer.setVisibility(View.GONE);
+                inputSearch.setText("");
+            } else {
+                searchBarContainer.setVisibility(View.VISIBLE);
+                inputSearch.requestFocus();
+            }
+        });
     }
 
     private void refreshContent() {
@@ -226,6 +254,9 @@ public class HomeActivity extends AppCompatActivity {
         applyFilters();
     }
 
+    /** Construye hasta 5 recomendaciones para el carrusel del banner: prioriza
+     *  películas y series (contenido más "recomendable"), y si no hay
+     *  suficientes, completa con canales en vivo. */
     private void setupHero(AppState state) {
         List<MediaItem> candidates = new ArrayList<>();
         candidates.addAll(state.movies);
@@ -254,6 +285,42 @@ public class HomeActivity extends AppCompatActivity {
         buildHeroDots();
         updateHeroDots(0);
         startHeroAutoplay();
+        loadHeroSynopsisInBackground();
+    }
+
+    /**
+     * Trae la sinopsis real de cada item del carrusel desde la API de Xtream.
+     * Son solo 5 llamadas como máximo (nunca para todo el catálogo), así que
+     * el costo es bajo. Si la lista activa es M3U (sin esa API), no hace nada
+     * y se queda con el texto de respaldo.
+     */
+    private void loadHeroSynopsisInBackground() {
+        PlaylistConfig config = prefs.getPlaylistConfig();
+        if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) return;
+
+        List<MediaItem> snapshot = new ArrayList<>(heroItems);
+        synopsisExecutor.execute(() -> {
+            XtreamClient client = new XtreamClient(config);
+            for (int i = 0; i < snapshot.size(); i++) {
+                MediaItem item = snapshot.get(i);
+                String synopsis = null;
+                try {
+                    if (MediaItem.VOD.equals(item.type)) {
+                        synopsis = client.getVodSynopsis(item.id);
+                    } else if (MediaItem.SERIES.equals(item.type)) {
+                        synopsis = client.getSeriesSynopsis(item.seriesId != null ? item.seriesId : item.id);
+                    }
+                } catch (Exception ignored) {
+                    // si falla una, seguimos con las demás sin interrumpir
+                }
+
+                if (synopsis != null) {
+                    item.synopsis = synopsis;
+                    int position = i;
+                    mainHandler.post(() -> heroAdapter.notifySynopsisLoaded(position));
+                }
+            }
+        });
     }
 
     private void buildHeroDots() {
