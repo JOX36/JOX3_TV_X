@@ -153,14 +153,6 @@ public class PlayerActivity extends AppCompatActivity {
         }
         if (item == null) { finish(); return; }
 
-        if (item.type.equals(MediaItem.SERIES)) {
-            Intent i = new Intent(this, com.jox3.tv.ui.series.SeriesActivity.class);
-            i.putExtra("item", item);
-            startActivity(i);
-            finish();
-            return;
-        }
-
         pipCloseReceiver = new BroadcastReceiver() {
             @Override public void onReceive(Context ctx, Intent i) { exitPlayer(); }
         };
@@ -409,7 +401,6 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     public void setEpisodeList(List<MediaItem> episodes, int currentIdx) {
-        this.episodeList = null;
         this.currentEpisodeIdx = currentIdx;
         state.episodeQueue = episodes;
         state.episodeIdx = currentIdx;
