@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚙️ Ajustes de la lista"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_secondary"
+            android:orientation="horizontal"
+            android:padding="4dp"
+            android:layout_marginBottom="20dp">
+
+            <Button
+                android:id="@+id/tab_xtream"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/accent"
+                android:text="Xtream Codes"
+                android:textColor="@color/text_primary"
+                android:textAllCaps="false"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/tab_m3u"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/bg_secondary"
+                android:text="Lista M3U"
+                android:textColor="@color/text_secondary"
+                android:textAllCaps="false"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/form_xtream"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/input_name_xtream"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@color/bg_secondary"
+                android:hint="Nombre de la lista (ej. Mi Lista Privada)"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:padding="12dp"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/input_server"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@color/bg_secondary"
+                android:hint="http://servidor.com:8080"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:padding="12dp"
+                android:inputType="textUri" />
+
+            <EditText
+                android:id="@+id/input_user"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@color/bg_secondary"
+                android:hint="Usuario"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:padding="12dp"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/input_pass"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="@color/bg_secondary"
+                android:hint="Contraseña"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:padding="12dp"
+                android:inputType="textPassword" />
+
+            <Button
+                android:id="@+id/btn_save_xtream"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:backgroundTint="@color/accent"
+                android:text="Conectar y guardar"
+                android:textAllCaps="false"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/form_m3u"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/input_name_m3u"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@color/bg_secondary"
+                android:hint="Nombre de la lista (ej. Mi Lista M3U)"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:padding="12dp"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/input_m3u_url"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="@color/bg_secondary"
+                android:hint="http://servidor.com/lista.m3u"
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:padding="12dp"
+                android:inputType="textUri" />
+
+            <Button
+                android:id="@+id/btn_save_m3u"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:backgroundTint="@color/accent"
+                android:text="Cargar lista"
+                android:textAllCaps="false"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progress_loading"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:id="@+id/card_active_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_card"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:layout_marginTop="24dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_active_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tv_active_meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_delete_list"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginTop="10dp"
+                android:layout_gravity="end"
+                android:background="@color/bg_secondary"
+                android:text="Eliminar lista"
+                android:textAllCaps="false"
+                android:textColor="#FF7A6E"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
