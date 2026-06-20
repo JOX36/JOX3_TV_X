@@ -2,16 +2,18 @@ package com.jox3.tv.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.jox3.tv.R;
 import com.jox3.tv.model.MediaItem;
@@ -21,12 +23,15 @@ import com.jox3.tv.util.AppPrefs;
 import com.jox3.tv.util.AppState;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
     private static final int MAX_ITEMS_PER_ROW = 12;
+    private static final int HERO_SLIDE_COUNT = 5;
+    private static final long HERO_AUTOPLAY_MS = 5000;
 
     private LinearLayout layoutEmpty, rowFavoritesContainer, rowContinueContainer;
     private View scrollContent;
@@ -35,9 +40,19 @@ public class HomeActivity extends AppCompatActivity {
     private View btnSettings;
     private View btnGoSettings;
 
-    private FrameLayout heroBanner;
-    private android.widget.TextView heroTitle, heroSubtitle, heroBadge;
-    private MediaItem heroItem;
+    private ViewPager2 heroPager;
+    private LinearLayout heroDots;
+    private HeroSlideAdapter heroAdapter;
+    private final List<MediaItem> heroItems = new ArrayList<>();
+    private final Handler heroHandler = new Handler(Looper.getMainLooper());
+    private final Runnable heroAutoplayRunnable = new Runnable() {
+        @Override public void run() {
+            if (heroItems.isEmpty()) return;
+            int next = (heroPager.getCurrentItem() + 1) % heroItems.size();
+            heroPager.setCurrentItem(next, true);
+            heroHandler.postDelayed(this, HERO_AUTOPLAY_MS);
+        }
+    };
 
     private AppPrefs prefs;
     private MediaCardAdapter continueAdapter, favAdapter, liveAdapter, moviesAdapter, seriesAdapter;
@@ -53,6 +68,7 @@ public class HomeActivity extends AppCompatActivity {
 
         bindViews();
         setupRows();
+        setupHeroPager();
         setupSearch();
         setupButtons();
         checkCrashLog();
@@ -84,6 +100,13 @@ public class HomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshContent();
+        startHeroAutoplay();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopHeroAutoplay();
     }
 
     private void bindViews() {
@@ -103,10 +126,8 @@ public class HomeActivity extends AppCompatActivity {
         btnSettings = findViewById(R.id.btn_settings);
         btnGoSettings = findViewById(R.id.btn_go_settings);
 
-        heroBanner = findViewById(R.id.hero_banner);
-        heroTitle = findViewById(R.id.hero_title);
-        heroSubtitle = findViewById(R.id.hero_subtitle);
-        heroBadge = findViewById(R.id.hero_badge);
+        heroPager = findViewById(R.id.hero_pager);
+        heroDots = findViewById(R.id.hero_dots);
     }
 
     private void setupRows() {
@@ -135,6 +156,28 @@ public class HomeActivity extends AppCompatActivity {
         rowCategories.setAdapter(categoryAdapter);
     }
 
+    private void setupHeroPager() {
+        heroAdapter = new HeroSlideAdapter(heroItems, prefs, new HeroSlideAdapter.OnHeroAction() {
+            @Override public void onPlay(MediaItem item) { openItem(item, -1); }
+            @Override public void onToggleFav(MediaItem item) { prefs.toggleFav(item.favKey()); }
+        });
+        heroPager.setAdapter(heroAdapter);
+        heroPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override public void onPageSelected(int position) {
+                updateHeroDots(position);
+            }
+        });
+    }
+
+    private void startHeroAutoplay() {
+        heroHandler.removeCallbacks(heroAutoplayRunnable);
+        heroHandler.postDelayed(heroAutoplayRunnable, HERO_AUTOPLAY_MS);
+    }
+
+    private void stopHeroAutoplay() {
+        heroHandler.removeCallbacks(heroAutoplayRunnable);
+    }
+
     private void setupSearch() {
         inputSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
@@ -154,10 +197,6 @@ public class HomeActivity extends AppCompatActivity {
             btnGoSettings.setOnClickListener(v ->
                     startActivity(new Intent(this, SettingsActivity.class)));
         }
-
-        heroBanner.setOnClickListener(v -> {
-            if (heroItem != null) openItem(heroItem, -1);
-        });
     }
 
     private void refreshContent() {
@@ -188,21 +227,56 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupHero(AppState state) {
-        MediaItem candidate = !state.movies.isEmpty() ? state.movies.get(0)
-                : !state.series.isEmpty() ? state.series.get(0)
-                : !state.liveChannels.isEmpty() ? state.liveChannels.get(0)
-                : null;
+        List<MediaItem> candidates = new ArrayList<>();
+        candidates.addAll(state.movies);
+        candidates.addAll(state.series);
+        if (candidates.size() < HERO_SLIDE_COUNT) {
+            candidates.addAll(state.liveChannels);
+        }
 
-        if (candidate == null) {
-            heroBanner.setVisibility(View.GONE);
+        if (candidates.isEmpty()) {
+            heroPager.setVisibility(View.GONE);
+            heroDots.setVisibility(View.GONE);
+            stopHeroAutoplay();
             return;
         }
 
-        heroItem = candidate;
-        heroBanner.setVisibility(View.VISIBLE);
-        heroTitle.setText(candidate.name);
-        heroSubtitle.setText(candidate.category != null ? candidate.category : "");
-        heroBadge.setVisibility(MediaItem.LIVE.equals(candidate.type) ? View.VISIBLE : View.GONE);
+        Collections.shuffle(candidates);
+        List<MediaItem> selected = candidates.size() > HERO_SLIDE_COUNT
+                ? candidates.subList(0, HERO_SLIDE_COUNT) : candidates;
+
+        heroItems.clear();
+        heroItems.addAll(selected);
+        heroAdapter.notifyDataSetChanged();
+
+        heroPager.setVisibility(View.VISIBLE);
+        heroPager.setCurrentItem(0, false);
+        buildHeroDots();
+        updateHeroDots(0);
+        startHeroAutoplay();
+    }
+
+    private void buildHeroDots() {
+        heroDots.removeAllViews();
+        heroDots.setVisibility(heroItems.size() > 1 ? View.VISIBLE : View.GONE);
+
+        for (int i = 0; i < heroItems.size(); i++) {
+            View dot = new View(this);
+            int widthPx = (int) (22 * getResources().getDisplayMetrics().density);
+            int heightPx = (int) (3 * getResources().getDisplayMetrics().density);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(widthPx, heightPx);
+            params.setMarginEnd((int) (5 * getResources().getDisplayMetrics().density));
+            dot.setLayoutParams(params);
+            dot.setBackgroundResource(R.drawable.bg_chip_inactive);
+            heroDots.addView(dot);
+        }
+    }
+
+    private void updateHeroDots(int activeIndex) {
+        for (int i = 0; i < heroDots.getChildCount(); i++) {
+            View dot = heroDots.getChildAt(i);
+            dot.setBackgroundResource(i == activeIndex ? R.drawable.bg_chip_active : R.drawable.bg_chip_inactive);
+        }
     }
 
     private void setupCategories(AppState state) {
