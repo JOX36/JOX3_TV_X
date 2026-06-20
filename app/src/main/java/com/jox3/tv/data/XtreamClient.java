@@ -154,6 +154,44 @@ public class XtreamClient {
         return result;
     }
 
+    public String getVodSynopsis(String streamId) {
+        try {
+            String url = baseUrl + "/player_api.php?username=" + user + "&password=" + pass
+                    + "&action=get_vod_info&vod_id=" + streamId;
+            Request req = new Request.Builder().url(url).build();
+            try (Response resp = http.newCall(req).execute()) {
+                if (!resp.isSuccessful() || resp.body() == null) return null;
+                String body = resp.body().string();
+                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                if (!json.has("info")) return null;
+                JsonObject info = json.getAsJsonObject("info");
+                String plot = getStringOrNull(info, "plot");
+                return (plot != null && !plot.trim().isEmpty()) ? plot.trim() : null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public String getSeriesSynopsis(String seriesId) {
+        try {
+            String url = baseUrl + "/player_api.php?username=" + user + "&password=" + pass
+                    + "&action=get_series_info&series_id=" + seriesId;
+            Request req = new Request.Builder().url(url).build();
+            try (Response resp = http.newCall(req).execute()) {
+                if (!resp.isSuccessful() || resp.body() == null) return null;
+                String body = resp.body().string();
+                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                if (!json.has("info")) return null;
+                JsonObject info = json.getAsJsonObject("info");
+                String plot = getStringOrNull(info, "plot");
+                return (plot != null && !plot.trim().isEmpty()) ? plot.trim() : null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public List<MediaItem> getSeriesEpisodes(String seriesId) throws IOException {
         String url = baseUrl + "/player_api.php?username=" + user + "&password=" + pass
                 + "&action=get_series_info&series_id=" + seriesId;
