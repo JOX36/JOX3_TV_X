@@ -7,13 +7,14 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="84dp">
+        android:layout_height="84dp"
+        android:background="@drawable/bg_card_rounded"
+        android:clipToOutline="true">
 
         <ImageView
             android:id="@+id/img_logo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/bg_card"
             android:scaleType="centerInside"
             android:padding="8dp" />
 
@@ -23,7 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="top|start"
             android:layout_margin="6dp"
-            android:background="@color/live_badge"
+            android:background="@drawable/bg_badge_live"
             android:paddingStart="6dp"
             android:paddingEnd="6dp"
             android:paddingTop="2dp"
