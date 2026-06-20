@@ -26,9 +26,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Pantalla "Ver todo" reutilizable para los 3 tipos de contenido (Canales,
+ * Películas, Series). Muestra todo el catálogo de ese tipo, agrupado por
+ * categoría real (Deportes, Noticias, etc.), cada una con su propia fila
+ * horizontal con scroll independiente.
+ */
 public class ContentListActivity extends AppCompatActivity {
 
-    public static final String EXTRA_TYPE = "extra_type";
+    public static final String EXTRA_TYPE = "extra_type"; // "live" | "vod" | "series" | "favorites"
 
     private ImageView btnBack;
     private TextView tvScreenTitle, tvTotalCount;
@@ -72,6 +78,7 @@ public class ContentListActivity extends AppCompatActivity {
         switch (contentType) {
             case MediaItem.VOD: title = "Películas"; break;
             case MediaItem.SERIES: title = "Series"; break;
+            case "favorites": title = "★ Favoritos"; break;
             default: title = "Canales en vivo"; break;
         }
         tvScreenTitle.setText(title);
@@ -89,15 +96,23 @@ public class ContentListActivity extends AppCompatActivity {
 
     private void loadItems() {
         AppState state = AppState.get();
-        switch (contentType) {
-            case MediaItem.VOD: allItems = state.movies; break;
-            case MediaItem.SERIES: allItems = state.series; break;
-            default: allItems = state.liveChannels; break;
+        if ("favorites".equals(contentType)) {
+            allItems = new ArrayList<>();
+            for (MediaItem item : state.liveChannels) if (prefs.isFav(item.favKey())) allItems.add(item);
+            for (MediaItem item : state.movies) if (prefs.isFav(item.favKey())) allItems.add(item);
+            for (MediaItem item : state.series) if (prefs.isFav(item.favKey())) allItems.add(item);
+        } else {
+            switch (contentType) {
+                case MediaItem.VOD: allItems = state.movies; break;
+                case MediaItem.SERIES: allItems = state.series; break;
+                default: allItems = state.liveChannels; break;
+            }
         }
         tvTotalCount.setText(allItems.size() + " en total");
         renderSections("");
     }
 
+    /** Agrupa por categoría real y construye una sección por cada una. */
     private void renderSections(String query) {
         sectionsContainer.removeAllViews();
 
@@ -126,12 +141,22 @@ public class ContentListActivity extends AppCompatActivity {
             TextView title = sectionView.findViewById(R.id.section_title);
             RecyclerView recycler = sectionView.findViewById(R.id.section_recycler);
 
-            title.setText(entry.getKey() + " (" + entry.getValue().size() + ")");
+            title.setText(entry.getKey() + " (" + entry.getValue().size() + ")  ›");
             recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
             recycler.setAdapter(new MediaCardAdapter(entry.getValue(), prefs, this::openItem));
 
+            String categoryName = entry.getKey();
+            title.setOnClickListener(v -> openCategoryGrid(categoryName));
+
             sectionsContainer.addView(sectionView);
         }
+    }
+
+    private void openCategoryGrid(String category) {
+        Intent intent = new Intent(this, CategoryGridActivity.class);
+        intent.putExtra(CategoryGridActivity.EXTRA_TYPE, contentType);
+        intent.putExtra(CategoryGridActivity.EXTRA_CATEGORY, category);
+        startActivity(intent);
     }
 
     private void openItem(MediaItem item, int position) {
