@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,18 +26,21 @@ import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private LinearLayout layoutEmpty, rowFavoritesContainer;
+    private static final int MAX_ITEMS_PER_ROW = 12;
+
+    private LinearLayout layoutEmpty, rowFavoritesContainer, rowContinueContainer;
     private View scrollContent;
-    private RecyclerView rowFavorites, rowCategories, rowLive, rowMovies, rowSeries;
+    private RecyclerView rowContinue, rowFavorites, rowCategories, rowLive, rowMovies, rowSeries;
     private EditText inputSearch;
-    private TextView btnSettings, btnGoSettings;
+    private View btnSettings;
+    private View btnGoSettings;
 
     private FrameLayout heroBanner;
-    private TextView heroTitle, heroSubtitle, heroBadge;
+    private android.widget.TextView heroTitle, heroSubtitle, heroBadge;
     private MediaItem heroItem;
 
     private AppPrefs prefs;
-    private MediaCardAdapter favAdapter, liveAdapter, moviesAdapter, seriesAdapter;
+    private MediaCardAdapter continueAdapter, favAdapter, liveAdapter, moviesAdapter, seriesAdapter;
     private CategoryChipAdapter categoryAdapter;
     private String selectedCategory = "Todos";
     private String currentSearchQuery = "";
@@ -88,7 +90,9 @@ public class HomeActivity extends AppCompatActivity {
         layoutEmpty = findViewById(R.id.layout_empty);
         scrollContent = findViewById(R.id.scroll_content);
         rowFavoritesContainer = findViewById(R.id.row_favorites_container);
+        rowContinueContainer = findViewById(R.id.row_continue_container);
 
+        rowContinue = findViewById(R.id.row_continue);
         rowFavorites = findViewById(R.id.row_favorites);
         rowCategories = findViewById(R.id.row_categories);
         rowLive = findViewById(R.id.row_live);
@@ -106,12 +110,14 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupRows() {
+        rowContinue.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowFavorites.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowLive.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowSeries.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
+        continueAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
         favAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
         liveAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
         moviesAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
@@ -121,6 +127,7 @@ public class HomeActivity extends AppCompatActivity {
             applyFilters();
         });
 
+        rowContinue.setAdapter(continueAdapter);
         rowFavorites.setAdapter(favAdapter);
         rowLive.setAdapter(liveAdapter);
         rowMovies.setAdapter(moviesAdapter);
@@ -164,12 +171,16 @@ public class HomeActivity extends AppCompatActivity {
 
         if (!hasData) return;
 
-        moviesAdapter.updateData(state.movies);
-        seriesAdapter.updateData(state.series);
+        moviesAdapter.updateData(capList(state.movies));
+        seriesAdapter.updateData(capList(state.series));
+
+        List<MediaItem> continueWatching = prefs.getRecentlyWatched();
+        rowContinueContainer.setVisibility(continueWatching.isEmpty() ? View.GONE : View.VISIBLE);
+        continueAdapter.updateData(capList(continueWatching));
 
         List<MediaItem> favorites = collectFavorites(state);
         rowFavoritesContainer.setVisibility(favorites.isEmpty() ? View.GONE : View.VISIBLE);
-        favAdapter.updateData(favorites);
+        favAdapter.updateData(capList(favorites));
 
         setupHero(state);
         setupCategories(state);
@@ -177,8 +188,10 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupHero(AppState state) {
-        MediaItem candidate = !state.liveChannels.isEmpty() ? state.liveChannels.get(0)
-                : (!state.movies.isEmpty() ? state.movies.get(0) : null);
+        MediaItem candidate = !state.movies.isEmpty() ? state.movies.get(0)
+                : !state.series.isEmpty() ? state.series.get(0)
+                : !state.liveChannels.isEmpty() ? state.liveChannels.get(0)
+                : null;
 
         if (candidate == null) {
             heroBanner.setVisibility(View.GONE);
@@ -228,14 +241,14 @@ public class HomeActivity extends AppCompatActivity {
                     || (item.name != null && item.name.toLowerCase().contains(lowerQuery));
             if (matchesCategory && matchesQuery) liveFiltered.add(item);
         }
-        liveAdapter.updateData(liveFiltered);
+        liveAdapter.updateData(capList(liveFiltered));
 
         if (lowerQuery.isEmpty()) {
-            moviesAdapter.updateData(state.movies);
-            seriesAdapter.updateData(state.series);
+            moviesAdapter.updateData(capList(state.movies));
+            seriesAdapter.updateData(capList(state.series));
         } else {
-            moviesAdapter.updateData(filterByName(state.movies, lowerQuery));
-            seriesAdapter.updateData(filterByName(state.series, lowerQuery));
+            moviesAdapter.updateData(capList(filterByName(state.movies, lowerQuery)));
+            seriesAdapter.updateData(capList(filterByName(state.series, lowerQuery)));
         }
     }
 
@@ -247,6 +260,11 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
         return result;
+    }
+
+    private List<MediaItem> capList(List<MediaItem> source) {
+        if (source.size() <= MAX_ITEMS_PER_ROW) return source;
+        return new ArrayList<>(source.subList(0, MAX_ITEMS_PER_ROW));
     }
 
     private void openItem(MediaItem item, int position) {
