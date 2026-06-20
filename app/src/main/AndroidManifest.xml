@@ -45,5 +45,10 @@
             android:exported="false"
             android:screenOrientation="landscape" />
 
+        <activity
+            android:name=".ui.home.CategoryGridActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+
     </application>
 </manifest>
