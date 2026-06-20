@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_primary">#0D0D11</color>
+    <color name="bg_secondary">#16161D</color>
+    <color name="bg_card">#1E1E27</color>
+    <color name="accent">#FF4D2D</color>
+    <color name="accent_dark">#C73A1D</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#9A9AA5</color>
+    <color name="live_badge">#E53935</color>
+    <color name="favorite_yellow">#FFC107</color>
+</resources>
