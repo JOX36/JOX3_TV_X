@@ -78,7 +78,6 @@ public class PlayerActivity extends AppCompatActivity {
     private View lockOverlay;
     private TextView btnUnlock;
 
-    private List<com.jox3.tv.model.EpgProgram> episodeList = null;
     private int currentEpisodeIdx = -1;
     private View nextEpisodePanel;
     private TextView tvNextEpisodeTitle;
