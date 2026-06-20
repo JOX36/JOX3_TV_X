@@ -238,7 +238,7 @@
             android:orientation="horizontal"
             android:gravity="center">
 
-            <!-- Botones especÃ­ficos de EN VIVO -->
+            <!-- Botones especÃ­ficos de EN VIVO (Button, requerido por PlayerActivity) -->
             <LinearLayout
                 android:id="@+id/layout_live_btns"
                 android:layout_width="0dp"
@@ -248,52 +248,52 @@
                 android:gravity="center"
                 android:visibility="gone">
 
-                <TextView
+                <Button
                     android:id="@+id/btn_prev"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â®"
                     android:textColor="@color/text_primary"
                     android:textSize="22sp"
-                    android:padding="10dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="10dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_pip_live"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â§‰"
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
-                    android:padding="10dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="10dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_stop"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â¹"
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
-                    android:padding="10dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="10dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_next"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â­"
                     android:textColor="@color/text_primary"
                     android:textSize="22sp"
-                    android:padding="10dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="10dp" />
             </LinearLayout>
 
-            <!-- Botones especÃ­ficos de VOD -->
+            <!-- Botones especÃ­ficos de VOD (Button, requerido por PlayerActivity) -->
             <LinearLayout
                 android:id="@+id/layout_vod_btns"
                 android:layout_width="0dp"
@@ -303,130 +303,130 @@
                 android:gravity="center"
                 android:visibility="gone">
 
-                <TextView
+                <Button
                     android:id="@+id/btn_prev_ep"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â®"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true"
                     android:visibility="gone" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_rewind"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="âª"
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="8dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_play_pause"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â¸"
                     android:textColor="@color/text_primary"
                     android:textSize="26sp"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="8dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_forward"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â©"
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="8dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_next_ep"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â­"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true"
                     android:visibility="gone" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_audio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="ðŸ”Š"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="8dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_subs"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="ðŸ’¬"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="8dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_speed"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="1x"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="8dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_pip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â§‰"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="8dp" />
 
-                <TextView
+                <Button
                     android:id="@+id/btn_stop_vod"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:background="@android:color/transparent"
                     android:text="â¹"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:padding="8dp" />
             </LinearLayout>
 
-            <TextView
+            <Button
                 android:id="@+id/btn_lock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:background="@android:color/transparent"
                 android:text="ðŸ”“"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
-                android:padding="8dp"
-                android:clickable="true"
-                android:focusable="true" />
+                android:padding="8dp" />
         </LinearLayout>
     </LinearLayout>
 
