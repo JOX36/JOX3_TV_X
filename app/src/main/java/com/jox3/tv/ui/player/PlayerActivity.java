@@ -77,7 +77,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private boolean screenLocked = false;
     private View lockOverlay;
-    private TextView btnUnlock;
+    private View btnUnlock;
 
     private int currentEpisodeIdx = -1;
     private View nextEpisodePanel;
