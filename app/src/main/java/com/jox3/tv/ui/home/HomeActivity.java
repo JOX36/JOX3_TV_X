@@ -233,6 +233,16 @@ public class HomeActivity extends AppCompatActivity {
         btnSeeAllLive.setOnClickListener(v -> openContentList(MediaItem.LIVE));
         btnSeeAllMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
         btnSeeAllSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
+
+        View tabChannels = findViewById(R.id.tab_channels);
+        View tabMovies = findViewById(R.id.tab_movies);
+        View tabSeries = findViewById(R.id.tab_series);
+        View tabFavorites = findViewById(R.id.tab_favorites);
+
+        tabChannels.setOnClickListener(v -> openContentList(MediaItem.LIVE));
+        tabMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
+        tabSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
+        tabFavorites.setOnClickListener(v -> openContentList("favorites"));
     }
 
     private void openContentList(String type) {
