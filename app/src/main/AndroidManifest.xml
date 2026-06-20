@@ -35,5 +35,10 @@
             android:supportsPictureInPicture="true"
             android:resizeableActivity="true" />
 
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+
     </application>
 </manifest>
