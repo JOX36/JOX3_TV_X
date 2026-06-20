@@ -14,6 +14,7 @@ public class AppPrefs {
     private static final String PREFS_NAME = "jox3tv_prefs";
     private static final String KEY_FAVORITES = "favorites";
     private static final String KEY_PLAYLIST_CONFIG = "playlist_config";
+    private static final String KEY_CRASH_LOG = "last_crash_log";
     private static final String PREFIX_POS = "pos_";
     private static final String PREFIX_DUR = "dur_";
 
@@ -71,5 +72,17 @@ public class AppPrefs {
 
     public void clearPlaylistConfig() {
         prefs.edit().remove(KEY_PLAYLIST_CONFIG).apply();
+    }
+
+    public void saveCrashLog(String stackTrace) {
+        prefs.edit().putString(KEY_CRASH_LOG, stackTrace).apply();
+    }
+
+    public String getCrashLog() {
+        return prefs.getString(KEY_CRASH_LOG, null);
+    }
+
+    public void clearCrashLog() {
+        prefs.edit().remove(KEY_CRASH_LOG).apply();
     }
 }
