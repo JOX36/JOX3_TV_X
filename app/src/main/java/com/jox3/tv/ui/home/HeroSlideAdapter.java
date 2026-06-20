@@ -47,10 +47,15 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
 
         holder.title.setText(item.name);
         holder.badge.setVisibility(MediaItem.LIVE.equals(item.type) ? View.VISIBLE : View.GONE);
+        holder.category.setText(item.category != null ? item.category.toUpperCase() : "");
 
-        String synopsis = item.category != null && !item.category.isEmpty()
-                ? item.category : "Disponible en tu lista privada";
-        holder.synopsis.setText(synopsis);
+        if (item.synopsis != null && !item.synopsis.isEmpty()) {
+            holder.synopsis.setText(item.synopsis);
+            holder.synopsis.setVisibility(View.VISIBLE);
+        } else {
+            holder.synopsis.setText("Disponible en tu lista privada.");
+            holder.synopsis.setVisibility(View.VISIBLE);
+        }
 
         if (item.logoUrl != null && !item.logoUrl.isEmpty()) {
             Glide.with(holder.poster.getContext())
@@ -72,6 +77,12 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
         });
     }
 
+    public void notifySynopsisLoaded(int position) {
+        if (position >= 0 && position < items.size()) {
+            notifyItemChanged(position);
+        }
+    }
+
     private void updateFavText(SlideHolder holder, MediaItem item) {
         boolean isFav = prefs != null && prefs.isFav(item.favKey());
         holder.btnFav.setText(isFav ? "★ En favoritos" : "☆ Favorito");
@@ -84,12 +95,13 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
 
     static class SlideHolder extends RecyclerView.ViewHolder {
         ImageView poster;
-        TextView title, synopsis, badge, btnPlay, btnFav;
+        TextView title, category, synopsis, badge, btnPlay, btnFav;
 
         SlideHolder(@NonNull View itemView) {
             super(itemView);
             poster = itemView.findViewById(R.id.hero_poster);
             title = itemView.findViewById(R.id.hero_title);
+            category = itemView.findViewById(R.id.hero_category);
             synopsis = itemView.findViewById(R.id.hero_synopsis);
             badge = itemView.findViewById(R.id.hero_badge);
             btnPlay = itemView.findViewById(R.id.hero_btn_play);
