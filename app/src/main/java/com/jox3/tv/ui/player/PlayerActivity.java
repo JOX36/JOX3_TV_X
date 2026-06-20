@@ -58,7 +58,8 @@ public class PlayerActivity extends AppCompatActivity {
     private PlayerView playerView;
     private LinearLayout topBar, bottomBar;
     private LinearLayout layoutSeek, layoutLiveBtns, layoutVodBtns;
-    private TextView tvName, tvResolution, tvStatus, btnBack, btnFav;
+    private TextView tvName, tvResolution, tvStatus;
+    private ImageView btnBack, btnFav;
 
     private Button btnPrev, btnNext, btnPipLive, btnStop;
 
@@ -386,7 +387,8 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         if (btnLock != null) {
-            btnLock.setText(screenLocked ? "🔒" : "🔓");
+            btnLock.setCompoundDrawablesWithIntrinsicBounds(
+                    0, screenLocked ? R.drawable.ic_lock : R.drawable.ic_lock_open, 0, 0);
         }
 
         if (screenLocked) {
@@ -478,11 +480,17 @@ public class PlayerActivity extends AppCompatActivity {
         if (player == null) return;
         if (player.isPlaying()) {
             player.pause();
-            btnPlayPause.setText("▶");
+            setPlayPauseIcon(false);
         } else {
             player.play();
-            btnPlayPause.setText("⏸");
+            setPlayPauseIcon(true);
         }
+    }
+
+    private void setPlayPauseIcon(boolean playing) {
+        if (btnPlayPause == null) return;
+        btnPlayPause.setCompoundDrawablesWithIntrinsicBounds(
+                0, playing ? R.drawable.ic_pause : R.drawable.ic_play, 0, 0);
     }
 
     private void showAudioTracks() {
@@ -602,7 +610,7 @@ public class PlayerActivity extends AppCompatActivity {
         nextEpisodeShown = false;
         if (nextEpisodePanel != null) nextEpisodePanel.setVisibility(View.GONE);
         setStatus("Cargando...");
-        if (btnPlayPause != null) btnPlayPause.setText("⏸");
+        if (btnPlayPause != null) setPlayPauseIcon(true);
 
         player = new ExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
@@ -668,7 +676,7 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override public void onIsPlayingChanged(boolean isPlaying) {
                 if (btnPlayPause != null)
-                    btnPlayPause.setText(isPlaying ? "⏸" : "▶");
+                    setPlayPauseIcon(isPlaying);
             }
 
             @Override public void onPlayerError(@NonNull PlaybackException e) {
@@ -752,7 +760,10 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void setStatus(String s) { runOnUiThread(() -> tvStatus.setText(s)); }
-    private void updateFavBtn() { btnFav.setText(prefs.isFav(item.favKey()) ? "★" : "☆"); }
+    private void updateFavBtn() {
+        btnFav.setImageResource(prefs.isFav(item.favKey())
+                ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
+    }
 
     private void showGestureIndicator(boolean isVolume, int value, int max, String label) {
         if (gestureIndicator == null) return;
