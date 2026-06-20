@@ -22,4 +22,14 @@
         android:textColor="@color/text_secondary"
         android:textSize="16sp" />
 
+    <Button
+        android:id="@+id/btn_open_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="@color/accent"
+        android:text="⚙️ Ajustes de la lista"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary" />
+
 </LinearLayout>
