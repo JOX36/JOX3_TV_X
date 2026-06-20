@@ -25,18 +25,24 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
     private final List<MediaItem> items;
     private final AppPrefs prefs;
     private final OnItemClick listener;
+    private final int layoutResId;
 
     public MediaCardAdapter(List<MediaItem> items, AppPrefs prefs, OnItemClick listener) {
+        this(items, prefs, listener, R.layout.item_media_card);
+    }
+
+    public MediaCardAdapter(List<MediaItem> items, AppPrefs prefs, OnItemClick listener, int layoutResId) {
         this.items = items;
         this.prefs = prefs;
         this.listener = listener;
+        this.layoutResId = layoutResId;
     }
 
     @NonNull
     @Override
     public CardHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_media_card, parent, false);
+                .inflate(layoutResId, parent, false);
         return new CardHolder(view);
     }
 
