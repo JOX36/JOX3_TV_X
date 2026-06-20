@@ -1,154 +1,344 @@
-package com.jox3.tv.ui.home;
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary"
+    android:orientation="vertical">
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+    <!-- Barra superior -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="40dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp">
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="JOX3 TV"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-import com.jox3.tv.R;
-import com.jox3.tv.model.MediaItem;
-import com.jox3.tv.ui.player.PlayerActivity;
-import com.jox3.tv.util.AppPrefs;
-import com.jox3.tv.util.AppState;
+        <ImageView
+            android:id="@+id/btn_search_toggle"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="14dp"
+            android:background="@drawable/bg_chip_inactive"
+            android:padding="8dp"
+            android:src="@drawable/ic_search"
+            android:clickable="true"
+            android:focusable="true" />
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
 
-public class ContentListActivity extends AppCompatActivity {
+        <ImageView
+            android:id="@+id/btn_settings"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/bg_chip_inactive"
+            android:padding="8dp"
+            android:src="@drawable/ic_settings"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
 
-    public static final String EXTRA_TYPE = "extra_type";
+    <!-- Barra de búsqueda expandible, oculta por defecto -->
+    <LinearLayout
+        android:id="@+id/search_bar_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="14dp"
+        android:visibility="gone">
 
-    private ImageView btnBack;
-    private TextView tvScreenTitle, tvTotalCount;
-    private EditText inputSearch;
-    private LinearLayout layoutEmpty, sectionsContainer;
-    private View scrollContent;
+        <EditText
+            android:id="@+id/input_search"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_chip_inactive"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="10dp"
+            android:hint="Buscar canales, películas o series..."
+            android:textColorHint="@color/text_secondary"
+            android:textColor="@color/text_primary"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textSize="14sp"
+            android:singleLine="true"
+            android:imeOptions="actionSearch" />
+    </LinearLayout>
 
-    private AppPrefs prefs;
-    private String contentType;
-    private List<MediaItem> allItems = new ArrayList<>();
+    <!-- Estado vacío (sin lista cargada) -->
+    <LinearLayout
+        android:id="@+id/layout_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_content_list);
-        prefs = new AppPrefs(this);
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Todavía no tienes una lista cargada"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp" />
 
-        contentType = getIntent().getStringExtra(EXTRA_TYPE);
-        if (contentType == null) contentType = MediaItem.LIVE;
+        <TextView
+            android:id="@+id/btn_go_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_chip_active"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:text="Ir a Ajustes"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-        bindViews();
-        setupHeader();
-        setupSearch();
-        loadItems();
-    }
+    <!-- Contenido principal -->
+    <ScrollView
+        android:id="@+id/scroll_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    private void bindViews() {
-        btnBack = findViewById(R.id.btn_back);
-        tvScreenTitle = findViewById(R.id.tv_screen_title);
-        tvTotalCount = findViewById(R.id.tv_total_count);
-        inputSearch = findViewById(R.id.input_search);
-        layoutEmpty = findViewById(R.id.layout_empty);
-        sectionsContainer = findViewById(R.id.sections_container);
-        scrollContent = findViewById(R.id.scroll_content);
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
 
-        btnBack.setOnClickListener(v -> finish());
-    }
+            <!-- Banner destacado: carrusel de 5 recomendaciones -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="18dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="14dp">
 
-    private void setupHeader() {
-        String title;
-        switch (contentType) {
-            case MediaItem.VOD: title = "Películas"; break;
-            case MediaItem.SERIES: title = "Series"; break;
-            default: title = "Canales en vivo"; break;
-        }
-        tvScreenTitle.setText(title);
-    }
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/hero_pager"
+                    android:layout_width="match_parent"
+                    android:layout_height="215dp" />
 
-    private void setupSearch() {
-        inputSearch.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
-            @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
-            @Override public void afterTextChanged(Editable s) {
-                renderSections(s.toString().trim().toLowerCase());
-            }
-        });
-    }
+                <LinearLayout
+                    android:id="@+id/hero_dots"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal" />
+            </LinearLayout>
 
-    private void loadItems() {
-        AppState state = AppState.get();
-        switch (contentType) {
-            case MediaItem.VOD: allItems = state.movies; break;
-            case MediaItem.SERIES: allItems = state.series; break;
-            default: allItems = state.liveChannels; break;
-        }
-        tvTotalCount.setText(allItems.size() + " en total");
-        renderSections("");
-    }
+            <!-- Continuar viendo -->
+            <LinearLayout
+                android:id="@+id/row_continue_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
 
-    private void renderSections(String query) {
-        sectionsContainer.removeAllViews();
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="18dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="Continuar viendo"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-        List<MediaItem> filtered = new ArrayList<>();
-        for (MediaItem item : allItems) {
-            if (query.isEmpty() || (item.name != null && item.name.toLowerCase().contains(query))) {
-                filtered.add(item);
-            }
-        }
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/row_continue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="18dp"
+                    android:clipToPadding="false"
+                    android:layout_marginBottom="22dp" />
+            </LinearLayout>
 
-        layoutEmpty.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
-        scrollContent.setVisibility(filtered.isEmpty() ? View.GONE : View.VISIBLE);
-        if (filtered.isEmpty()) return;
+            <!-- Favoritos -->
+            <LinearLayout
+                android:id="@+id/row_favorites_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
 
-        Map<String, List<MediaItem>> grouped = new LinkedHashMap<>();
-        for (MediaItem item : filtered) {
-            String category = item.category != null && !item.category.isEmpty()
-                    ? item.category : "General";
-            grouped.computeIfAbsent(category, k -> new ArrayList<>()).add(item);
-        }
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="18dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="★ Favoritos"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-        LayoutInflater inflater = LayoutInflater.from(this);
-        for (Map.Entry<String, List<MediaItem>> entry : grouped.entrySet()) {
-            View sectionView = inflater.inflate(R.layout.section_category, sectionsContainer, false);
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/row_favorites"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="18dp"
+                    android:clipToPadding="false"
+                    android:layout_marginBottom="22dp" />
+            </LinearLayout>
 
-            TextView title = sectionView.findViewById(R.id.section_title);
-            RecyclerView recycler = sectionView.findViewById(R.id.section_recycler);
+            <!-- Categorías de canales en vivo -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:layout_marginBottom="10dp">
 
-            title.setText(entry.getKey() + " (" + entry.getValue().size() + ")");
-            recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-            recycler.setAdapter(new MediaCardAdapter(entry.getValue(), prefs, this::openItem));
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Canales en vivo"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-            sectionsContainer.addView(sectionView);
-        }
-    }
+                <TextView
+                    android:id="@+id/btn_see_all_live"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ver todo ›"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
 
-    private void openItem(MediaItem item, int position) {
-        if (MediaItem.SERIES.equals(item.type) && (item.url == null || item.url.isEmpty())) {
-            android.widget.Toast.makeText(this,
-                    "Selección de episodios próximamente", android.widget.Toast.LENGTH_SHORT).show();
-            return;
-        }
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/row_categories"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:clipToPadding="false"
+                android:layout_marginBottom="12dp" />
 
-        AppState state = AppState.get();
-        if (MediaItem.LIVE.equals(item.type)) {
-            state.channelList = state.liveChannels;
-            state.channelIdx = state.liveChannels.indexOf(item);
-        }
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/row_live"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:clipToPadding="false" />
 
-        Intent intent = new Intent(this, PlayerActivity.class);
-        intent.putExtra("item", item);
-        startActivity(intent);
-    }
-}
+            <!-- Películas -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:layout_marginTop="26dp"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Películas"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btn_see_all_movies"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ver todo ›"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/row_movies"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:clipToPadding="false" />
+
+            <!-- Series -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:layout_marginTop="26dp"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Series"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btn_see_all_series"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ver todo ›"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/row_series"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:clipToPadding="false" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
