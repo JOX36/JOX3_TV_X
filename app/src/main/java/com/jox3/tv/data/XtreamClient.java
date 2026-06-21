@@ -60,6 +60,34 @@ public class XtreamClient {
     }
 
     /**
+     * Devuelve [createdAtEpoch, expDateEpoch] en segundos Unix, o -1 en cada
+     * posición si el panel no provee ese dato. La mayoría de paneles Xtream
+     * sí incluyen "exp_date"; "created_at" es menos común.
+     */
+    public long[] getAccountDates() {
+        long createdAt = -1;
+        long expDate = -1;
+        try {
+            String apiUrl = baseUrl + "/player_api.php?username=" + user + "&password=" + pass;
+            Request req = new Request.Builder().url(apiUrl).build();
+            try (Response resp = http.newCall(req).execute()) {
+                if (!resp.isSuccessful() || resp.body() == null) return new long[]{-1, -1};
+                String body = resp.body().string();
+                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                JsonObject userInfo = json.has("user_info") ? json.getAsJsonObject("user_info") : null;
+                if (userInfo == null) return new long[]{-1, -1};
+
+                String createdStr = getStringOrNull(userInfo, "created_at");
+                String expStr = getStringOrNull(userInfo, "exp_date");
+                if (createdStr != null) createdAt = parseLongSafe(createdStr);
+                if (expStr != null) expDate = parseLongSafe(expStr);
+            }
+        } catch (Exception ignored) {
+        }
+        return new long[]{createdAt, expDate};
+    }
+
+    /**
      * Descarga el mapa categoryId -> categoryName para el tipo de acción dado
      * (get_live_categories, get_vod_categories o get_series_categories).
      * Si falla, devuelve un mapa vacío (los items quedarán con "General").
@@ -290,5 +318,9 @@ public class XtreamClient {
 
     private static int parseIntSafe(String s) {
         try { return Integer.parseInt(s); } catch (Exception e) { return -1; }
+    }
+
+    private static long parseLongSafe(String s) {
+        try { return Long.parseLong(s); } catch (Exception e) { return -1; }
     }
 }
