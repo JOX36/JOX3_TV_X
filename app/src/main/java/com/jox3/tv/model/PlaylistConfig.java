@@ -1,11 +1,14 @@
 package com.jox3.tv.model;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 public class PlaylistConfig implements Serializable {
 
     public static final String TYPE_XTREAM = "xtream";
     public static final String TYPE_M3U = "m3u";
+
+    public String id = UUID.randomUUID().toString();
 
     public String name;
     public String type;
