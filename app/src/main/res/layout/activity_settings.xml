@@ -20,6 +20,7 @@
             android:textStyle="bold"
             android:layout_marginBottom="20dp" />
 
+        <!-- Selector de pestañas -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,6 +52,7 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
+        <!-- Formulario Xtream -->
         <LinearLayout
             android:id="@+id/form_xtream"
             android:layout_width="match_parent"
@@ -116,6 +118,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Formulario M3U -->
         <LinearLayout
             android:id="@+id/form_m3u"
             android:layout_width="match_parent"
@@ -158,6 +161,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Estado / progreso -->
         <ProgressBar
             android:id="@+id/progress_loading"
             style="?android:attr/progressBarStyleSmall"
@@ -176,44 +180,90 @@
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
+        <!-- Info de la lista activa -->
         <LinearLayout
             android:id="@+id/card_active_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/bg_card"
+            android:background="@drawable/bg_card_rounded"
             android:orientation="vertical"
-            android:padding="14dp"
+            android:padding="18dp"
             android:layout_marginTop="24dp"
             android:visibility="gone">
 
-            <TextView
-                android:id="@+id/tv_active_name"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                android:textSize="14sp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/bg_chip_active"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_active_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="15sp" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tv_active_meta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:lineSpacingExtra="3dp" />
 
-            <Button
-                android:id="@+id/btn_delete_list"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginTop="10dp"
-                android:layout_gravity="end"
-                android:background="@color/bg_secondary"
-                android:text="Eliminar lista"
-                android:textAllCaps="false"
-                android:textColor="#FF7A6E"
-                android:textSize="12sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="14dp">
+
+                <Button
+                    android:id="@+id/btn_switch_account"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_chip_active"
+                    android:text="Cambiar de cuenta"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btn_delete_list"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_chip_inactive"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:text="Eliminar"
+                    android:textAllCaps="false"
+                    android:textColor="#FF7A6E"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
+
+        <!-- Pie de versión -->
+        <TextView
+            android:id="@+id/tv_app_version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp" />
 
     </LinearLayout>
 </ScrollView>
