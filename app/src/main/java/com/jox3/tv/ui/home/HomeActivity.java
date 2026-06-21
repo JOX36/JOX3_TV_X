@@ -8,9 +8,14 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -53,6 +58,14 @@ public class HomeActivity extends AppCompatActivity {
     private LinearLayout heroDots;
     private HeroSlideAdapter heroAdapter;
     private final List<MediaItem> heroItems = new ArrayList<>();
+
+    private FrameLayout miniPlayerContainer;
+    private PlayerView miniPlayerView;
+    private ImageView btnMiniExpand, btnMiniMute;
+    private TextView miniChannelName;
+    private ExoPlayer miniPlayer;
+    private MediaItem miniPlayerChannel;
+    private boolean miniPlayerMuted = true;
     private final Handler heroHandler = new Handler(Looper.getMainLooper());
     private final Runnable heroAutoplayRunnable = new Runnable() {
         @Override public void run() {
@@ -110,18 +123,92 @@ public class HomeActivity extends AppCompatActivity {
         super.onResume();
         refreshContent();
         startHeroAutoplay();
+        initMiniPlayer();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         stopHeroAutoplay();
+        releaseMiniPlayer();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         synopsisExecutor.shutdownNow();
+    }
+
+    // ---------------- Mini-reproductor de canal en vivo ----------------
+
+    private void initMiniPlayer() {
+        AppState state = AppState.get();
+        if (state.liveChannels.isEmpty()) {
+            miniPlayerContainer.setVisibility(View.GONE);
+            return;
+        }
+        miniPlayerContainer.setVisibility(View.VISIBLE);
+
+        miniPlayerChannel = pickMiniPlayerChannel(state);
+        if (miniPlayerChannel == null) return;
+
+        miniChannelName.setText(miniPlayerChannel.name);
+
+        if (miniPlayer != null) miniPlayer.release();
+        miniPlayer = new ExoPlayer.Builder(this).build();
+        miniPlayerView.setPlayer(miniPlayer);
+
+        androidx.media3.common.MediaItem mediaItem =
+                androidx.media3.common.MediaItem.fromUri(miniPlayerChannel.url);
+        miniPlayer.setMediaItem(mediaItem);
+        miniPlayer.setVolume(miniPlayerMuted ? 0f : 1f);
+        miniPlayer.prepare();
+        miniPlayer.setPlayWhenReady(true);
+
+        updateMuteIcon();
+    }
+
+    /** Prioriza el último canal en vivo visto; si no hay ninguno, elige uno al azar. */
+    private MediaItem pickMiniPlayerChannel(AppState state) {
+        for (MediaItem recent : prefs.getRecentlyWatched()) {
+            if (MediaItem.LIVE.equals(recent.type)) {
+                for (MediaItem live : state.liveChannels) {
+                    if (live.favKey().equals(recent.favKey())) return live;
+                }
+            }
+        }
+        if (state.liveChannels.isEmpty()) return null;
+        int randomIndex = (int) (Math.random() * state.liveChannels.size());
+        return state.liveChannels.get(randomIndex);
+    }
+
+    private void releaseMiniPlayer() {
+        if (miniPlayer != null) {
+            miniPlayer.release();
+            miniPlayer = null;
+        }
+        miniPlayerView.setPlayer(null);
+    }
+
+    private void toggleMiniPlayerMute() {
+        miniPlayerMuted = !miniPlayerMuted;
+        if (miniPlayer != null) miniPlayer.setVolume(miniPlayerMuted ? 0f : 1f);
+        updateMuteIcon();
+    }
+
+    private void updateMuteIcon() {
+        btnMiniMute.setImageResource(miniPlayerMuted ? R.drawable.ic_mute : R.drawable.ic_audio);
+    }
+
+    private void expandMiniPlayer() {
+        if (miniPlayerChannel == null) return;
+        AppState state = AppState.get();
+        state.channelList = state.liveChannels;
+        state.channelIdx = state.liveChannels.indexOf(miniPlayerChannel);
+
+        Intent intent = new Intent(this, PlayerActivity.class);
+        intent.putExtra("item", miniPlayerChannel);
+        startActivity(intent);
     }
 
     private void bindViews() {
@@ -145,6 +232,12 @@ public class HomeActivity extends AppCompatActivity {
 
         heroPager = findViewById(R.id.hero_pager);
         heroDots = findViewById(R.id.hero_dots);
+
+        miniPlayerContainer = findViewById(R.id.mini_player_container);
+        miniPlayerView = findViewById(R.id.mini_player_view);
+        btnMiniExpand = findViewById(R.id.btn_mini_expand);
+        btnMiniMute = findViewById(R.id.btn_mini_mute);
+        miniChannelName = findViewById(R.id.mini_channel_name);
     }
 
     private void setupRows() {
@@ -243,6 +336,10 @@ public class HomeActivity extends AppCompatActivity {
         btnSeeAllLive.setOnClickListener(v -> openContentList(MediaItem.LIVE));
         btnSeeAllMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
         btnSeeAllSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
+
+        btnMiniExpand.setOnClickListener(v -> expandMiniPlayer());
+        miniPlayerContainer.setOnClickListener(v -> expandMiniPlayer());
+        btnMiniMute.setOnClickListener(v -> toggleMiniPlayerMute());
 
         View tabChannels = findViewById(R.id.tab_channels);
         View tabMovies = findViewById(R.id.tab_movies);
