@@ -978,7 +978,6 @@ public class PlayerActivity extends AppCompatActivity {
     @Override protected void onStop() {
         super.onStop();
         saveProgress();
-        if (isInPip && !isFinishing()) exitPlayer();
     }
 
     @Override protected void onDestroy() {
