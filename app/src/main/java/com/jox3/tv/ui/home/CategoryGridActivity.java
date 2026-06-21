@@ -83,19 +83,19 @@ public class CategoryGridActivity extends AppCompatActivity {
     }
 
     private void openItem(MediaItem item, int position) {
-        if (MediaItem.SERIES.equals(item.type) && (item.url == null || item.url.isEmpty())) {
-            android.widget.Toast.makeText(this,
-                    "Selección de episodios próximamente", android.widget.Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         AppState state = AppState.get();
+
         if (MediaItem.LIVE.equals(item.type)) {
             state.channelList = state.liveChannels;
             state.channelIdx = state.liveChannels.indexOf(item);
+
+            Intent intent = new Intent(this, PlayerActivity.class);
+            intent.putExtra("item", item);
+            startActivity(intent);
+            return;
         }
 
-        Intent intent = new Intent(this, PlayerActivity.class);
+        Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra("item", item);
         startActivity(intent);
     }
