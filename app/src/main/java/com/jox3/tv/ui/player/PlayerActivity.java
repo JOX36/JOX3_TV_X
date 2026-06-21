@@ -14,8 +14,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Rational;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,6 +30,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.media3.common.C;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
@@ -39,6 +43,7 @@ import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.PlayerView;
 
+import com.bumptech.glide.Glide;
 import com.jox3.tv.R;
 import com.jox3.tv.model.MediaItem;
 import com.jox3.tv.util.AppPrefs;
@@ -61,7 +66,11 @@ public class PlayerActivity extends AppCompatActivity {
     private TextView tvName, tvResolution, tvStatus;
     private ImageView btnBack, btnFav;
 
-    private Button btnPrev, btnNext, btnPipLive, btnStop;
+    private Button btnPrev, btnNext, btnPipLive, btnStop, btnChannelList;
+    private LinearLayout channelPanel;
+    private TextView channelPanelTitle;
+    private RecyclerView channelPanelRecycler;
+    private boolean channelPanelOpen = false;
 
     private Button btnPlayPause, btnRewind, btnForward;
     private Button btnAudio, btnSubs, btnPip, btnStopVod;
@@ -237,6 +246,10 @@ public class PlayerActivity extends AppCompatActivity {
 
         btnPrev = findViewById(R.id.btn_prev);
         btnNext = findViewById(R.id.btn_next);
+        btnChannelList = findViewById(R.id.btn_channel_list);
+        channelPanel = findViewById(R.id.channel_panel);
+        channelPanelTitle = findViewById(R.id.channel_panel_title);
+        channelPanelRecycler = findViewById(R.id.channel_panel_recycler);
         btnPipLive = findViewById(R.id.btn_pip_live);
         btnStop = findViewById(R.id.btn_stop);
 
@@ -286,6 +299,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         btnPrev.setOnClickListener(v -> navigateChannel(-1));
         btnNext.setOnClickListener(v -> navigateChannel(1));
+        btnChannelList.setOnClickListener(v -> toggleChannelPanel());
         btnPipLive.setOnClickListener(v -> enterPip());
         btnStop.setOnClickListener(v -> exitPlayer());
 
@@ -736,6 +750,114 @@ public class PlayerActivity extends AppCompatActivity {
             initPlayer();
             playerView.animate().alpha(1f).setDuration(300).start();
         }).start();
+        if (channelPanelOpen) refreshChannelPanelSelection();
+    }
+
+    // ---------------- Panel lateral de parrilla de canales ----------------
+
+    private void toggleChannelPanel() {
+        if (channelPanelOpen) closeChannelPanel();
+        else openChannelPanel();
+    }
+
+    private void openChannelPanel() {
+        if (item == null) return;
+        java.util.List<MediaItem> sameCategory = new java.util.ArrayList<>();
+        for (MediaItem candidate : state.liveChannels) {
+            String candidateCategory = candidate.category != null && !candidate.category.isEmpty()
+                    ? candidate.category : "General";
+            String currentCategory = item.category != null && !item.category.isEmpty()
+                    ? item.category : "General";
+            if (candidateCategory.equals(currentCategory)) sameCategory.add(candidate);
+        }
+
+        channelPanelTitle.setText((item.category != null && !item.category.isEmpty()
+                ? item.category : "General") + " (" + sameCategory.size() + ")");
+
+        channelPanelRecycler.setLayoutManager(new LinearLayoutManager(this));
+        channelPanelRecycler.setAdapter(new ChannelPanelAdapter(sameCategory));
+
+        channelPanel.setVisibility(View.VISIBLE);
+        channelPanelOpen = true;
+    }
+
+    private void closeChannelPanel() {
+        channelPanel.setVisibility(View.GONE);
+        channelPanelOpen = false;
+    }
+
+    private void refreshChannelPanelSelection() {
+        RecyclerView.Adapter<?> adapter = channelPanelRecycler.getAdapter();
+        if (adapter != null) adapter.notifyDataSetChanged();
+    }
+
+    /** Adapter simple para la lista vertical del panel lateral. */
+    private class ChannelPanelAdapter extends RecyclerView.Adapter<ChannelPanelAdapter.RowHolder> {
+        private final java.util.List<MediaItem> channels;
+
+        ChannelPanelAdapter(java.util.List<MediaItem> channels) {
+            this.channels = channels;
+        }
+
+        @NonNull
+        @Override
+        public RowHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_channel_row, parent, false);
+            return new RowHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RowHolder holder, int position) {
+            MediaItem channel = channels.get(position);
+            holder.name.setText(channel.name);
+
+            boolean isSelected = item != null && channel.favKey().equals(item.favKey());
+            holder.selectedBar.setVisibility(isSelected ? View.VISIBLE : View.INVISIBLE);
+
+            if (channel.logoUrl != null && !channel.logoUrl.isEmpty()) {
+                Glide.with(holder.logo.getContext())
+                        .load(channel.logoUrl)
+                        .placeholder(android.R.color.transparent)
+                        .error(android.R.color.transparent)
+                        .into(holder.logo);
+            } else {
+                holder.logo.setImageDrawable(null);
+            }
+
+            holder.itemView.setOnClickListener(v -> {
+                int idx = state.liveChannels.indexOf(channel);
+                if (idx < 0) return;
+                state.channelList = state.liveChannels;
+                state.channelIdx = idx;
+                item = channel;
+                tvName.setText(item.name);
+                tvResolution.setVisibility(View.GONE);
+                updateFavBtn();
+                isInPip = false;
+                initPlayer();
+                refreshChannelPanelSelection();
+                closeChannelPanel();
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return channels.size();
+        }
+
+        class RowHolder extends RecyclerView.ViewHolder {
+            ImageView logo;
+            TextView name;
+            View selectedBar;
+
+            RowHolder(@NonNull View itemView) {
+                super(itemView);
+                logo = itemView.findViewById(R.id.channel_logo);
+                name = itemView.findViewById(R.id.channel_name);
+                selectedBar = itemView.findViewById(R.id.channel_selected_bar);
+            }
+        }
     }
 
     private void toggleBars() { if (barsVisible) hideBars(); else showBars(); }
@@ -758,6 +880,7 @@ public class PlayerActivity extends AppCompatActivity {
         barsVisible = false;
         topBar.setVisibility(View.GONE);
         bottomBar.setVisibility(View.GONE);
+        if (channelPanelOpen) closeChannelPanel();
     }
 
     private void setStatus(String s) { runOnUiThread(() -> tvStatus.setText(s)); }
