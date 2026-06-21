@@ -175,7 +175,17 @@ public class HomeActivity extends AppCompatActivity {
 
     private void setupHeroPager() {
         heroAdapter = new HeroSlideAdapter(heroItems, prefs, new HeroSlideAdapter.OnHeroAction() {
-            @Override public void onPlay(MediaItem item) { openItem(item, -1); }
+            @Override public void onPlay(MediaItem heroItem) {
+                if (MediaItem.SERIES.equals(heroItem.type)) {
+                    openItem(heroItem, -1);
+                } else if (MediaItem.VOD.equals(heroItem.type)) {
+                    Intent intent = new Intent(HomeActivity.this, PlayerActivity.class);
+                    intent.putExtra("item", heroItem);
+                    startActivity(intent);
+                } else {
+                    openItem(heroItem, -1);
+                }
+            }
             @Override public void onToggleFav(MediaItem item) { prefs.toggleFav(item.favKey()); }
         });
         heroPager.setAdapter(heroAdapter);
