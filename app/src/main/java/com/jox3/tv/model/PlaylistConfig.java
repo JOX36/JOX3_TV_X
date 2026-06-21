@@ -17,6 +17,9 @@ public class PlaylistConfig implements Serializable {
     public String m3uUrl;
     public String m3uLocalPath;
 
+    public long createdAtEpoch = -1;
+    public long expDateEpoch = -1;
+
     public boolean isEmpty() {
         if (TYPE_XTREAM.equals(type)) {
             return serverUrl == null || serverUrl.trim().isEmpty()
