@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="12dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <View
+        android:id="@+id/channel_selected_bar"
+        android:layout_width="3dp"
+        android:layout_height="36dp"
+        android:background="@color/accent"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/channel_logo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/bg_chip_inactive"
+        android:padding="6dp"
+        android:scaleType="centerInside" />
+
+    <TextView
+        android:id="@+id/channel_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
+        android:textColor="@color/text_primary"
+        android:textSize="13sp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</LinearLayout>
