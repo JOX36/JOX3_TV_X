@@ -344,6 +344,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         playerView.setOnClickListener(v -> {
             if (screenLocked) return;
+            if (channelPanelOpen) { closeChannelPanel(); return; }
             if (!isTv && !isInPip) toggleBars();
         });
         playerView.setOnTouchListener(this::onTouch);
@@ -880,7 +881,6 @@ public class PlayerActivity extends AppCompatActivity {
         barsVisible = false;
         topBar.setVisibility(View.GONE);
         bottomBar.setVisibility(View.GONE);
-        if (channelPanelOpen) closeChannelPanel();
     }
 
     private void setStatus(String s) { runOnUiThread(() -> tvStatus.setText(s)); }
