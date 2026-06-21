@@ -213,9 +213,24 @@ public class DetailActivity extends AppCompatActivity {
             View row = inflater.inflate(R.layout.item_episode_row, episodesContainer, false);
             TextView number = row.findViewById(R.id.episode_number);
             TextView title = row.findViewById(R.id.episode_title);
+            TextView synopsis = row.findViewById(R.id.episode_synopsis);
+            ImageView thumb = row.findViewById(R.id.episode_thumb);
 
             number.setText(episode.episode >= 0 ? String.valueOf(episode.episode) : "-");
             title.setText(episode.name);
+
+            if (episode.synopsis != null && !episode.synopsis.isEmpty()) {
+                synopsis.setText(episode.synopsis);
+                synopsis.setVisibility(View.VISIBLE);
+            } else {
+                synopsis.setVisibility(View.GONE);
+            }
+
+            if (episode.logoUrl != null && !episode.logoUrl.isEmpty()) {
+                Glide.with(thumb.getContext()).load(episode.logoUrl).centerCrop().into(thumb);
+            } else {
+                thumb.setImageDrawable(null);
+            }
 
             row.setOnClickListener(v -> {
                 AppState.get().episodeQueue = episodes;
