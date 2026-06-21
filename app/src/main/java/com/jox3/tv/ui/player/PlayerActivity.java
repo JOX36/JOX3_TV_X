@@ -998,6 +998,17 @@ public class PlayerActivity extends AppCompatActivity {
     @Override protected void onStop() {
         super.onStop();
         saveProgress();
+
+        // Si la actividad se detiene mientras el SISTEMA todavía la reporta
+        // en modo PiP, significa que el usuario cerró/deslizó la ventanita
+        // (no que simplemente navegamos a otra pantalla con PiP ya cerrado).
+        // En ese caso hay que liberar el reproductor para que no siga
+        // sonando en segundo plano indefinidamente.
+        boolean stillInPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && isInPictureInPictureMode();
+        if (stillInPip && !playerReleased) {
+            exitPlayer();
+        }
     }
 
     @Override protected void onDestroy() {
