@@ -389,7 +389,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (btnLock != null) {
             btnLock.setCompoundDrawablesWithIntrinsicBounds(
-                    0, screenLocked ? R.drawable.ic_lock : R.drawable.ic_lock_open, 0, 0);
+                    0, screenLocked ? R.drawable.ic_lock_accent : R.drawable.ic_lock_open, 0, 0);
         }
 
         if (screenLocked) {
