@@ -18,11 +18,13 @@ public class AppPrefs {
 
     private static final String PREFS_NAME = "jox3tv_prefs";
     private static final String KEY_FAVORITES = "favorites";
-    private static final String KEY_PLAYLIST_CONFIG = "playlist_config";
+    private static final String KEY_ACCOUNTS = "saved_accounts";
+    private static final String KEY_ACTIVE_ACCOUNT_ID = "active_account_id";
     private static final String KEY_CONTINUE_WATCHING = "continue_watching";
     private static final int MAX_CONTINUE_WATCHING = 12;
     private static final String PREFIX_POS = "pos_";
     private static final String PREFIX_DUR = "dur_";
+    private static final String KEY_CRASH_LOG = "last_crash_log";
 
     private final SharedPreferences prefs;
     private final Gson gson = new Gson();
@@ -94,25 +96,63 @@ public class AppPrefs {
         prefs.edit().putString(KEY_CONTINUE_WATCHING, gson.toJson(list)).apply();
     }
 
+    public List<PlaylistConfig> getAccounts() {
+        String json = prefs.getString(KEY_ACCOUNTS, null);
+        if (json == null) return new ArrayList<>();
+        try {
+            Type listType = new TypeToken<ArrayList<PlaylistConfig>>(){}.getType();
+            List<PlaylistConfig> list = gson.fromJson(json, listType);
+            return list != null ? list : new ArrayList<>();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    private void saveAccountsList(List<PlaylistConfig> accounts) {
+        prefs.edit().putString(KEY_ACCOUNTS, gson.toJson(accounts)).apply();
+    }
+
     public void savePlaylistConfig(PlaylistConfig config) {
-        prefs.edit().putString(KEY_PLAYLIST_CONFIG, gson.toJson(config)).apply();
+        if (config.id == null || config.id.isEmpty()) {
+            config.id = java.util.UUID.randomUUID().toString();
+        }
+        List<PlaylistConfig> accounts = getAccounts();
+        accounts.removeIf(existing -> existing.id.equals(config.id));
+        accounts.add(0, config);
+        saveAccountsList(accounts);
+        setActiveAccountId(config.id);
     }
 
     public PlaylistConfig getPlaylistConfig() {
-        String json = prefs.getString(KEY_PLAYLIST_CONFIG, null);
-        if (json == null) return null;
-        try {
-            return gson.fromJson(json, PlaylistConfig.class);
-        } catch (Exception e) {
-            return null;
+        String activeId = getActiveAccountId();
+        if (activeId == null) return null;
+        for (PlaylistConfig account : getAccounts()) {
+            if (account.id.equals(activeId)) return account;
+        }
+        return null;
+    }
+
+    public void setActiveAccountId(String id) {
+        prefs.edit().putString(KEY_ACTIVE_ACCOUNT_ID, id).apply();
+    }
+
+    public String getActiveAccountId() {
+        return prefs.getString(KEY_ACTIVE_ACCOUNT_ID, null);
+    }
+
+    public void removeAccount(String id) {
+        List<PlaylistConfig> accounts = getAccounts();
+        accounts.removeIf(existing -> existing.id.equals(id));
+        saveAccountsList(accounts);
+
+        if (id.equals(getActiveAccountId())) {
+            prefs.edit().remove(KEY_ACTIVE_ACCOUNT_ID).apply();
         }
     }
 
     public void clearPlaylistConfig() {
-        prefs.edit().remove(KEY_PLAYLIST_CONFIG).apply();
+        prefs.edit().remove(KEY_ACTIVE_ACCOUNT_ID).apply();
     }
-
-    private static final String KEY_CRASH_LOG = "last_crash_log";
 
     public void saveCrashLog(String stackTrace) {
         prefs.edit().putString(KEY_CRASH_LOG, stackTrace).apply();
