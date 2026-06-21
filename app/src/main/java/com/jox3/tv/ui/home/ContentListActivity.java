@@ -26,15 +26,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Pantalla "Ver todo" reutilizable para los 3 tipos de contenido (Canales,
- * Películas, Series). Muestra todo el catálogo de ese tipo, agrupado por
- * categoría real (Deportes, Noticias, etc.), cada una con su propia fila
- * horizontal con scroll independiente.
- */
 public class ContentListActivity extends AppCompatActivity {
 
-    public static final String EXTRA_TYPE = "extra_type"; // "live" | "vod" | "series" | "favorites"
+    public static final String EXTRA_TYPE = "extra_type";
 
     private ImageView btnBack;
     private TextView tvScreenTitle, tvTotalCount;
@@ -112,7 +106,6 @@ public class ContentListActivity extends AppCompatActivity {
         renderSections("");
     }
 
-    /** Agrupa por categoría real y construye una sección por cada una. */
     private void renderSections(String query) {
         sectionsContainer.removeAllViews();
 
@@ -160,19 +153,19 @@ public class ContentListActivity extends AppCompatActivity {
     }
 
     private void openItem(MediaItem item, int position) {
-        if (MediaItem.SERIES.equals(item.type) && (item.url == null || item.url.isEmpty())) {
-            android.widget.Toast.makeText(this,
-                    "Selección de episodios próximamente", android.widget.Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         AppState state = AppState.get();
+
         if (MediaItem.LIVE.equals(item.type)) {
             state.channelList = state.liveChannels;
             state.channelIdx = state.liveChannels.indexOf(item);
+
+            Intent intent = new Intent(this, PlayerActivity.class);
+            intent.putExtra("item", item);
+            startActivity(intent);
+            return;
         }
 
-        Intent intent = new Intent(this, PlayerActivity.class);
+        Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra("item", item);
         startActivity(intent);
     }
