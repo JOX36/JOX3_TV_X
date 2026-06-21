@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_primary"
@@ -185,28 +186,108 @@
             android:orientation="vertical"
             android:paddingBottom="24dp">
 
-            <!-- Banner destacado: carrusel de 5 recomendaciones -->
+            <!-- Banner destacado (4/7) + Mini-reproductor de canal en vivo (3/7) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:layout_marginStart="18dp"
                 android:layout_marginEnd="18dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="14dp">
 
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/hero_pager"
-                    android:layout_width="match_parent"
-                    android:layout_height="215dp" />
-
+                <!-- Columna del carrusel (peso 4) -->
                 <LinearLayout
-                    android:id="@+id/hero_dots"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal" />
+                    android:layout_weight="4"
+                    android:layout_marginEnd="10dp"
+                    android:orientation="vertical">
+
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/hero_pager"
+                        android:layout_width="match_parent"
+                        android:layout_height="215dp" />
+
+                    <LinearLayout
+                        android:id="@+id/hero_dots"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal" />
+                </LinearLayout>
+
+                <!-- Mini-reproductor de canal en vivo (peso 3) -->
+                <FrameLayout
+                    android:id="@+id/mini_player_container"
+                    android:layout_width="0dp"
+                    android:layout_height="215dp"
+                    android:layout_weight="3"
+                    android:background="@drawable/bg_card_rounded"
+                    android:clipToOutline="true"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <androidx.media3.ui.PlayerView
+                        android:id="@+id/mini_player_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:surface_type="texture_view"
+                        app:use_controller="false" />
+
+                    <TextView
+                        android:id="@+id/mini_live_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|start"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/bg_badge_live"
+                        android:paddingStart="7dp"
+                        android:paddingEnd="7dp"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp"
+                        android:text="EN VIVO"
+                        android:textColor="@color/text_primary"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/btn_mini_expand"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="8dp"
+                        android:background="#88000000"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_expand" />
+
+                    <ImageView
+                        android:id="@+id/btn_mini_mute"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="8dp"
+                        android:background="#88000000"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_mute" />
+
+                    <TextView
+                        android:id="@+id/mini_channel_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:background="#CC000000"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="8dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+                </FrameLayout>
             </LinearLayout>
 
             <!-- Continuar viendo -->
