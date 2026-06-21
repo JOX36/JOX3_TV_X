@@ -85,7 +85,7 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
 
     private void updateFavText(SlideHolder holder, MediaItem item) {
         boolean isFav = prefs != null && prefs.isFav(item.favKey());
-        holder.btnFav.setText(isFav ? "★ En favoritos" : "☆ Favorito");
+        holder.btnFav.setText(isFav ? "En favoritos" : "Favorito");
     }
 
     @Override
