@@ -207,7 +207,7 @@
                     <androidx.viewpager2.widget.ViewPager2
                         android:id="@+id/hero_pager"
                         android:layout_width="match_parent"
-                        android:layout_height="215dp" />
+                        android:layout_height="310dp" />
 
                     <LinearLayout
                         android:id="@+id/hero_dots"
@@ -222,7 +222,7 @@
                 <FrameLayout
                     android:id="@+id/mini_player_container"
                     android:layout_width="0dp"
-                    android:layout_height="215dp"
+                    android:layout_height="310dp"
                     android:layout_weight="3"
                     android:background="@drawable/bg_card_rounded"
                     android:clipToOutline="true"
