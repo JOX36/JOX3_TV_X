@@ -23,16 +23,27 @@ import com.jox3.tv.util.AppState;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Pantalla "Ver todo" reutilizable para los 3 tipos de contenido (Canales,
+ * Películas, Series). Muestra todo el catálogo de ese tipo, agrupado por
+ * categoría real (Deportes, Noticias, etc.), cada una con su propia fila
+ * horizontal con scroll independiente. Arriba tiene chips de acceso directo
+ * a cada categoría (saltan directo a su grilla completa) y una lupa que
+ * despliega un buscador cuando se necesita.
+ */
 public class ContentListActivity extends AppCompatActivity {
 
-    public static final String EXTRA_TYPE = "extra_type";
+    public static final String EXTRA_TYPE = "extra_type"; // "live" | "vod" | "series" | "favorites"
 
-    private ImageView btnBack;
+    private ImageView btnBack, btnSearchToggle;
     private TextView tvScreenTitle, tvTotalCount;
     private EditText inputSearch;
+    private View searchBarContainer;
+    private RecyclerView categoryShortcuts;
     private LinearLayout layoutEmpty, sectionsContainer;
     private View scrollContent;
 
@@ -57,14 +68,32 @@ public class ContentListActivity extends AppCompatActivity {
 
     private void bindViews() {
         btnBack = findViewById(R.id.btn_back);
+        btnSearchToggle = findViewById(R.id.btn_search_toggle);
         tvScreenTitle = findViewById(R.id.tv_screen_title);
         tvTotalCount = findViewById(R.id.tv_total_count);
         inputSearch = findViewById(R.id.input_search);
+        searchBarContainer = findViewById(R.id.search_bar_container);
+        categoryShortcuts = findViewById(R.id.category_shortcuts);
         layoutEmpty = findViewById(R.id.layout_empty);
         sectionsContainer = findViewById(R.id.sections_container);
         scrollContent = findViewById(R.id.scroll_content);
 
         btnBack.setOnClickListener(v -> finish());
+        btnSearchToggle.setOnClickListener(v -> toggleSearchBar());
+
+        categoryShortcuts.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+    }
+
+    private void toggleSearchBar() {
+        boolean isVisible = searchBarContainer.getVisibility() == View.VISIBLE;
+        if (isVisible) {
+            searchBarContainer.setVisibility(View.GONE);
+            inputSearch.setText("");
+        } else {
+            searchBarContainer.setVisibility(View.VISIBLE);
+            inputSearch.requestFocus();
+        }
     }
 
     private void setupHeader() {
@@ -103,9 +132,24 @@ public class ContentListActivity extends AppCompatActivity {
             }
         }
         tvTotalCount.setText(allItems.size() + " en total");
+        buildCategoryShortcuts();
         renderSections("");
     }
 
+    /** Chips de acceso directo: uno por cada categoría real presente en este catálogo. */
+    private void buildCategoryShortcuts() {
+        LinkedHashSet<String> categories = new LinkedHashSet<>();
+        for (MediaItem item : allItems) {
+            categories.add(item.category != null && !item.category.isEmpty()
+                    ? item.category : "General");
+        }
+
+        List<String> categoryList = new ArrayList<>(categories);
+        categoryShortcuts.setAdapter(new CategoryChipAdapter(categoryList,
+                this::openCategoryGrid));
+    }
+
+    /** Agrupa por categoría real y construye una sección por cada una. */
     private void renderSections(String query) {
         sectionsContainer.removeAllViews();
 
