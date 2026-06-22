@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <gradient
-        android:startColor="#FF4D2D"
-        android:endColor="#FF8A3D"
-        android:angle="0" />
-    <corners android:radius="18dp" />
-</shape>
+<resources>
+    <color name="bg_primary">#070710</color>
+    <color name="bg_secondary">#1C1C2A</color>
+    <color name="bg_card">#262638</color>
+    <color name="accent">#FF5722</color>
+    <color name="accent_dark">#D84315</color>
+    <color name="accent_warm">#FFA726</color>
+    <color name="accent_pink">#FF3D6E</color>
+    <color name="accent_purple">#7C4DFF</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B8B8CC</color>
+    <color name="live_badge">#FF1744</color>
+    <color name="favorite_yellow">#FFD740</color>
+    <color name="success_green">#00E676</color>
+    <color name="warning_orange">#FFAB40</color>
+</resources>
