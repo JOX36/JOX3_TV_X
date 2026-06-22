@@ -3,8 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_primary"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
+    <!-- Barra superior -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -13,7 +15,7 @@
         android:paddingStart="18dp"
         android:paddingEnd="18dp"
         android:paddingTop="18dp"
-        android:paddingBottom="18dp">
+        android:paddingBottom="12dp">
 
         <ImageView
             android:id="@+id/btn_back"
@@ -43,12 +45,46 @@
             android:textSize="13sp" />
     </LinearLayout>
 
+    <!-- Lupa + accesos directos de categoría -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:paddingStart="18dp"
         android:paddingEnd="18dp"
         android:paddingBottom="14dp">
+
+        <ImageView
+            android:id="@+id/btn_search_toggle"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_chip_inactive"
+            android:padding="8dp"
+            android:src="@drawable/ic_search"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/category_shortcuts"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:clipToPadding="false" />
+    </LinearLayout>
+
+    <!-- Buscador expandible, oculto por defecto -->
+    <LinearLayout
+        android:id="@+id/search_bar_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="14dp"
+        android:visibility="gone">
 
         <EditText
             android:id="@+id/input_search"
@@ -67,6 +103,7 @@
             android:imeOptions="actionSearch" />
     </LinearLayout>
 
+    <!-- Estado vacío -->
     <LinearLayout
         android:id="@+id/layout_empty"
         android:layout_width="match_parent"
@@ -84,6 +121,7 @@
             android:textSize="16sp" />
     </LinearLayout>
 
+    <!-- Secciones por categoría -->
     <ScrollView
         android:id="@+id/scroll_content"
         android:layout_width="match_parent"
