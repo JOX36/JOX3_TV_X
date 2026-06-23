@@ -14,6 +14,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Acceso centralizado a SharedPreferences: favoritos, progreso de VOD,
+ * continuar viendo, y las cuentas/listas guardadas (Xtream/M3U).
+ *
+ * IMPORTANTE: savePlaylistConfig()/getPlaylistConfig()/clearPlaylistConfig()
+ * se mantienen con el mismo nombre y comportamiento aparente de "una sola
+ * cuenta" para que el resto de la app (HomeActivity, DetailActivity, etc.)
+ * no necesite ningún cambio: por debajo, ahora operan sobre la cuenta
+ * ACTIVA dentro de una lista de varias cuentas guardadas.
+ */
 public class AppPrefs {
 
     private static final String PREFS_NAME = "jox3tv_prefs";
@@ -34,6 +44,8 @@ public class AppPrefs {
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
+    // ---- Favoritos ----
+
     public boolean isFav(String favKey) {
         return getFavorites().contains(favKey);
     }
@@ -49,6 +61,8 @@ public class AppPrefs {
         return prefs.getStringSet(KEY_FAVORITES, new HashSet<>());
     }
 
+    // ---- Progreso de reproducción (VOD) ----
+
     public void saveProgress(String itemId, long positionMs, long durationMs) {
         prefs.edit()
                 .putLong(PREFIX_POS + itemId, positionMs)
@@ -63,6 +77,8 @@ public class AppPrefs {
     public long getDur(String itemId) {
         return prefs.getLong(PREFIX_DUR + itemId, 0);
     }
+
+    // ---- Continuar viendo ----
 
     public void addRecentlyWatched(MediaItem item) {
         if (item == null) return;
@@ -90,12 +106,22 @@ public class AppPrefs {
         }
     }
 
+    /** Limpia todo el historial de "continuar viendo" — se usa al cambiar de
+     *  cuenta, para que no queden mezclados canales/películas de la cuenta
+     *  anterior (cuyos IDs no existen en la cuenta nueva). */
+    public void clearRecentlyWatched() {
+        prefs.edit().remove(KEY_CONTINUE_WATCHING).apply();
+    }
+
     public void removeFromContinueWatching(String favKey) {
         List<MediaItem> list = getRecentlyWatched();
         list.removeIf(existing -> existing.favKey().equals(favKey));
         prefs.edit().putString(KEY_CONTINUE_WATCHING, gson.toJson(list)).apply();
     }
 
+    // ---- Cuentas guardadas (multi-cuenta) ----
+
+    /** Lista completa de cuentas guardadas, más reciente primero. */
     public List<PlaylistConfig> getAccounts() {
         String json = prefs.getString(KEY_ACCOUNTS, null);
         if (json == null) return new ArrayList<>();
@@ -112,6 +138,7 @@ public class AppPrefs {
         prefs.edit().putString(KEY_ACCOUNTS, gson.toJson(accounts)).apply();
     }
 
+    /** Agrega (o actualiza si ya existe por id) una cuenta y la marca activa. */
     public void savePlaylistConfig(PlaylistConfig config) {
         if (config.id == null || config.id.isEmpty()) {
             config.id = java.util.UUID.randomUUID().toString();
@@ -123,6 +150,7 @@ public class AppPrefs {
         setActiveAccountId(config.id);
     }
 
+    /** Devuelve la cuenta actualmente activa, o null si no hay ninguna. */
     public PlaylistConfig getPlaylistConfig() {
         String activeId = getActiveAccountId();
         if (activeId == null) return null;
@@ -132,6 +160,7 @@ public class AppPrefs {
         return null;
     }
 
+    /** Cambia cuál cuenta está activa, sin borrar ninguna. */
     public void setActiveAccountId(String id) {
         prefs.edit().putString(KEY_ACTIVE_ACCOUNT_ID, id).apply();
     }
@@ -140,6 +169,7 @@ public class AppPrefs {
         return prefs.getString(KEY_ACTIVE_ACCOUNT_ID, null);
     }
 
+    /** Elimina una cuenta guardada específica por su id. */
     public void removeAccount(String id) {
         List<PlaylistConfig> accounts = getAccounts();
         accounts.removeIf(existing -> existing.id.equals(id));
@@ -150,9 +180,12 @@ public class AppPrefs {
         }
     }
 
+    /** Compatibilidad: deja de tener cuenta activa (no borra cuentas guardadas). */
     public void clearPlaylistConfig() {
         prefs.edit().remove(KEY_ACTIVE_ACCOUNT_ID).apply();
     }
+
+    // ---- Captura de errores (debug) ----
 
     public void saveCrashLog(String stackTrace) {
         prefs.edit().putString(KEY_CRASH_LOG, stackTrace).apply();
