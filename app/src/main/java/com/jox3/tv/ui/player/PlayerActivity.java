@@ -48,6 +48,7 @@ import com.jox3.tv.R;
 import com.jox3.tv.data.XtreamClient;
 import com.jox3.tv.model.MediaItem;
 import com.jox3.tv.model.PlaylistConfig;
+import com.jox3.tv.ui.home.CategoryChipAdapter;
 import com.jox3.tv.util.AppPrefs;
 import com.jox3.tv.util.AppState;
 
@@ -72,6 +73,7 @@ public class PlayerActivity extends AppCompatActivity {
     private LinearLayout channelPanel;
     private TextView channelPanelTitle;
     private RecyclerView channelPanelRecycler;
+    private RecyclerView channelPanelCategorySwitcher;
     private boolean channelPanelOpen = false;
 
     private Button btnPlayPause, btnRewind, btnForward;
@@ -256,6 +258,7 @@ public class PlayerActivity extends AppCompatActivity {
         channelPanel = findViewById(R.id.channel_panel);
         channelPanelTitle = findViewById(R.id.channel_panel_title);
         channelPanelRecycler = findViewById(R.id.channel_panel_recycler);
+        channelPanelCategorySwitcher = findViewById(R.id.channel_panel_category_switcher);
         btnPipLive = findViewById(R.id.btn_pip_live);
         btnStop = findViewById(R.id.btn_stop);
 
@@ -651,10 +654,19 @@ public class PlayerActivity extends AppCompatActivity {
                     .setUri(url)
                     .setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8)
                     .build();
-        } else if (url.contains(".mkv") || url.contains(".avi") || url.contains(".ts")) {
+        } else if (url.contains(".mkv")) {
             mi = new androidx.media3.common.MediaItem.Builder()
                     .setUri(url)
                     .setMimeType("video/x-matroska")
+                    .build();
+        } else if (url.contains(".ts")) {
+            // MPEG-TS (formato típico de canales en vivo IPTV) NO es lo
+            // mismo que Matroska. Antes se forzaba x-matroska por error,
+            // lo que rompía la reproducción en varios servidores. Dejamos
+            // que ExoPlayer detecte el contenedor automáticamente.
+            mi = new androidx.media3.common.MediaItem.Builder()
+                    .setUri(url)
+                    .setMimeType(androidx.media3.common.MimeTypes.VIDEO_MP2T)
                     .build();
         } else {
             mi = androidx.media3.common.MediaItem.fromUri(url);
@@ -799,23 +811,43 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void openChannelPanel() {
         if (item == null) return;
+        buildChannelPanelCategorySwitcher();
+
+        String currentCategory = item.category != null && !item.category.isEmpty()
+                ? item.category : "General";
+        showChannelPanelCategory(currentCategory);
+
+        channelPanel.setVisibility(View.VISIBLE);
+        channelPanelOpen = true;
+    }
+
+    /** Construye los chips con todas las categorías de canales disponibles. */
+    private void buildChannelPanelCategorySwitcher() {
+        java.util.LinkedHashSet<String> categories = new java.util.LinkedHashSet<>();
+        for (MediaItem candidate : state.liveChannels) {
+            categories.add(candidate.category != null && !candidate.category.isEmpty()
+                    ? candidate.category : "General");
+        }
+        java.util.List<String> categoryList = new java.util.ArrayList<>(categories);
+
+        channelPanelCategorySwitcher.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        channelPanelCategorySwitcher.setAdapter(
+                new CategoryChipAdapter(categoryList, this::showChannelPanelCategory));
+    }
+
+    /** Cambia el panel a otra categoría de canales, sin cerrar ni salir del reproductor. */
+    private void showChannelPanelCategory(String category) {
         java.util.List<MediaItem> sameCategory = new java.util.ArrayList<>();
         for (MediaItem candidate : state.liveChannels) {
             String candidateCategory = candidate.category != null && !candidate.category.isEmpty()
                     ? candidate.category : "General";
-            String currentCategory = item.category != null && !item.category.isEmpty()
-                    ? item.category : "General";
-            if (candidateCategory.equals(currentCategory)) sameCategory.add(candidate);
+            if (candidateCategory.equals(category)) sameCategory.add(candidate);
         }
 
-        channelPanelTitle.setText((item.category != null && !item.category.isEmpty()
-                ? item.category : "General") + " (" + sameCategory.size() + ")");
-
+        channelPanelTitle.setText(category + " (" + sameCategory.size() + ")");
         channelPanelRecycler.setLayoutManager(new LinearLayoutManager(this));
         channelPanelRecycler.setAdapter(new ChannelPanelAdapter(sameCategory));
-
-        channelPanel.setVisibility(View.VISIBLE);
-        channelPanelOpen = true;
     }
 
     private void closeChannelPanel() {
