@@ -1,7 +1,10 @@
 package com.jox3.tv.ui.home;
 
+import android.app.DownloadManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -41,8 +44,11 @@ public class DetailActivity extends AppCompatActivity {
     private ImageView btnBack, detailPoster;
     private TextView detailBadge, detailTitle, detailCategory, detailSynopsis;
     private LinearLayout detailActions, seriesSection, similarSection, episodesContainer;
-    private TextView btnPlay, btnFav, episodesStatus;
+    private TextView btnPlay, btnFav, btnDownload, episodesStatus;
     private RecyclerView seasonChips, similarRecycler;
+
+    private View detailMetaRow;
+    private TextView detailRating, detailExtraMeta, detailDirector, detailCast;
 
     private AppPrefs prefs;
     private MediaItem item;
@@ -86,9 +92,16 @@ public class DetailActivity extends AppCompatActivity {
         episodesContainer = findViewById(R.id.episodes_container);
         btnPlay = findViewById(R.id.btn_play);
         btnFav = findViewById(R.id.btn_fav);
+        btnDownload = findViewById(R.id.btn_download);
         episodesStatus = findViewById(R.id.episodes_status);
         seasonChips = findViewById(R.id.season_chips);
         similarRecycler = findViewById(R.id.similar_recycler);
+
+        detailMetaRow = findViewById(R.id.detail_meta_row);
+        detailRating = findViewById(R.id.detail_rating);
+        detailExtraMeta = findViewById(R.id.detail_extra_meta);
+        detailDirector = findViewById(R.id.detail_director);
+        detailCast = findViewById(R.id.detail_cast);
 
         btnBack.setOnClickListener(v -> finish());
     }
@@ -122,6 +135,7 @@ public class DetailActivity extends AppCompatActivity {
             prefs.toggleFav(item.favKey());
             updateFavButton();
         });
+        btnDownload.setOnClickListener(v -> downloadItem(item));
 
         loadSimilar();
     }
@@ -215,6 +229,7 @@ public class DetailActivity extends AppCompatActivity {
             TextView title = row.findViewById(R.id.episode_title);
             TextView synopsis = row.findViewById(R.id.episode_synopsis);
             ImageView thumb = row.findViewById(R.id.episode_thumb);
+            ImageView downloadIcon = row.findViewById(R.id.episode_download);
 
             number.setText(episode.episode >= 0 ? String.valueOf(episode.episode) : "-");
             title.setText(episode.name);
@@ -231,6 +246,8 @@ public class DetailActivity extends AppCompatActivity {
             } else {
                 thumb.setImageDrawable(null);
             }
+
+            downloadIcon.setOnClickListener(v -> downloadItem(episode));
 
             row.setOnClickListener(v -> {
                 AppState.get().episodeQueue = episodes;
@@ -253,15 +270,109 @@ public class DetailActivity extends AppCompatActivity {
 
         executor.execute(() -> {
             XtreamClient client = new XtreamClient(config);
-            String synopsis = MediaItem.SERIES.equals(item.type)
-                    ? client.getSeriesSynopsis(item.seriesId != null ? item.seriesId : item.id)
-                    : client.getVodSynopsis(item.id);
+            XtreamClient.ExtraInfo extra = MediaItem.SERIES.equals(item.type)
+                    ? client.getSeriesExtraInfo(item.seriesId != null ? item.seriesId : item.id)
+                    : client.getVodExtraInfo(item.id);
 
-            mainHandler.post(() -> {
-                detailSynopsis.setText(synopsis != null && !synopsis.isEmpty()
-                        ? synopsis : "Sin sinopsis disponible.");
-            });
+            mainHandler.post(() -> bindExtraInfo(extra));
         });
+    }
+
+    private void bindExtraInfo(XtreamClient.ExtraInfo extra) {
+        if (extra == null) {
+            detailSynopsis.setText("Sin sinopsis disponible.");
+            return;
+        }
+
+        detailSynopsis.setText(extra.plot != null && !extra.plot.isEmpty()
+                ? extra.plot : "Sin sinopsis disponible.");
+
+        boolean hasRating = extra.rating != null && !extra.rating.isEmpty()
+                && !extra.rating.equals("0");
+        boolean hasExtraMeta = extra.releaseDate != null || extra.genre != null || extra.country != null;
+
+        if (hasRating || hasExtraMeta) {
+            detailMetaRow.setVisibility(View.VISIBLE);
+            detailRating.setText(hasRating ? ("★ " + extra.rating) : "");
+
+            StringBuilder meta = new StringBuilder();
+            if (extra.releaseDate != null && extra.releaseDate.length() >= 4) {
+                meta.append(extra.releaseDate.substring(0, 4));
+            }
+            if (extra.country != null && !extra.country.isEmpty()) {
+                if (meta.length() > 0) meta.append("  ·  ");
+                meta.append(extra.country);
+            }
+            if (extra.genre != null && !extra.genre.isEmpty()) {
+                if (meta.length() > 0) meta.append("  ·  ");
+                meta.append(extra.genre);
+            }
+            detailExtraMeta.setText(meta.toString());
+        }
+
+        if (extra.director != null && !extra.director.isEmpty()) {
+            detailDirector.setText("Director: " + extra.director);
+            detailDirector.setVisibility(View.VISIBLE);
+        }
+
+        if (extra.cast != null && !extra.cast.isEmpty()) {
+            detailCast.setText("Actores: " + extra.cast);
+            detailCast.setVisibility(View.VISIBLE);
+        }
+    }
+
+    // ---------------- Descarga ----------------
+
+    /**
+     * Descarga el archivo a la carpeta pública de Descargas del teléfono,
+     * dentro de la subcarpeta "JOX3 TV". Usa DownloadManager del sistema,
+     * que se encarga de mostrar una notificación de progreso nativa de
+     * Android y funciona igual sin importar la versión de Android (con o
+     * sin almacenamiento por alcance).
+     */
+    private void downloadItem(MediaItem target) {
+        if (target.url == null || target.url.isEmpty()) {
+            android.widget.Toast.makeText(this, "No hay archivo disponible para descargar",
+                    android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            String safeName = target.name != null
+                    ? target.name.replaceAll("[^a-zA-Z0-9 ._-]", "").trim() : "video";
+            if (safeName.isEmpty()) safeName = "video";
+
+            String extension = ".mp4";
+            int dotIdx = target.url.lastIndexOf('.');
+            if (dotIdx > 0 && dotIdx > target.url.length() - 6) {
+                extension = target.url.substring(dotIdx);
+            }
+
+            String fileName = safeName + "_" + System.currentTimeMillis() + extension;
+
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(target.url));
+            request.setTitle(target.name != null ? target.name : "JOX3 TV");
+            request.setDescription("Descargando desde JOX3 TV...");
+            request.setNotificationVisibility(
+                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalPublicDir(
+                    Environment.DIRECTORY_DOWNLOADS, "JOX3 TV/" + fileName);
+            request.setAllowedOverMetered(true);
+            request.setAllowedOverRoaming(true);
+
+            DownloadManager downloadManager =
+                    (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+            downloadManager.enqueue(request);
+
+            android.widget.Toast.makeText(this,
+                    "Descargando \"" + target.name + "\" a Descargas/JOX3 TV",
+                    android.widget.Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            android.widget.Toast.makeText(this,
+                    "Error al iniciar la descarga: " + e.getMessage(),
+                    android.widget.Toast.LENGTH_LONG).show();
+        }
     }
 
     // ---------------- Navegación ----------------
