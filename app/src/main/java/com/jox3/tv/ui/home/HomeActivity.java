@@ -265,13 +265,29 @@ public class HomeActivity extends AppCompatActivity {
 
     /** Prioriza el último canal en vivo visto; si no hay ninguno, elige uno al azar. */
     private MediaItem pickMiniPlayerChannel(AppState state) {
-        for (MediaItem recent : prefs.getRecentlyWatched()) {
+        List<MediaItem> recentList = prefs.getRecentlyWatched();
+        for (MediaItem recent : recentList) {
             if (MediaItem.LIVE.equals(recent.type)) {
                 for (MediaItem live : state.liveChannels) {
                     if (live.favKey().equals(recent.favKey())) return live;
                 }
             }
         }
+
+        // DIAGNÓSTICO TEMPORAL: si cae aquí es porque no encontró ninguna
+        // coincidencia. Este Toast nos dice exactamente por qué, para
+        // saber si el problema es que "recientes" viene vacío, o que sí
+        // trae datos pero no hace match contra los canales actuales.
+        int liveCountInRecent = 0;
+        for (MediaItem recent : recentList) {
+            if (MediaItem.LIVE.equals(recent.type)) liveCountInRecent++;
+        }
+        android.widget.Toast.makeText(this,
+                "DEBUG mini-player: recientes=" + recentList.size()
+                        + " (en vivo entre ellos=" + liveCountInRecent + ")"
+                        + " · canales totales=" + state.liveChannels.size(),
+                android.widget.Toast.LENGTH_LONG).show();
+
         if (state.liveChannels.isEmpty()) return null;
         int randomIndex = (int) (Math.random() * state.liveChannels.size());
         return state.liveChannels.get(randomIndex);
