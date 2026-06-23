@@ -165,6 +165,7 @@ public class SettingsActivity extends AppCompatActivity {
                         state.liveChannels.clear();
                         state.movies.clear();
                         state.series.clear();
+                        prefs.clearRecentlyWatched();
                     }
                     refreshAccountsList();
                     Toast.makeText(this, "Cuenta eliminada", Toast.LENGTH_SHORT).show();
@@ -209,11 +210,11 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
                 prefs.setActiveAccountId(account.id);
+                prefs.clearRecentlyWatched();
 
                 mainHandler.post(() -> {
-                    setLoading(false, "✅ Ahora usando \"" + account.name + "\".");
-                    refreshAccountsList();
-                    Toast.makeText(this, "Cuenta cambiada", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Cuenta cambiada: " + account.name, Toast.LENGTH_SHORT).show();
+                    finish();
                 });
 
             } catch (Exception e) {
@@ -268,15 +269,13 @@ public class SettingsActivity extends AppCompatActivity {
                 state.series = series;
 
                 prefs.savePlaylistConfig(config);
+                prefs.clearRecentlyWatched();
 
                 mainHandler.post(() -> {
-                    setLoading(false, "✅ Cuenta agregada: " + live.size() + " canales, "
-                            + movies.size() + " películas, " + series.size() + " series.");
-                    clearForm();
-                    addAccountContainer.setVisibility(View.GONE);
-                    btnToggleAddAccount.setText("+  Agregar cuenta nueva");
-                    refreshAccountsList();
-                    Toast.makeText(this, "Cuenta guardada correctamente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Cuenta guardada: " + live.size() + " canales, "
+                            + movies.size() + " películas, " + series.size() + " series",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
                 });
 
             } catch (IOException e) {
@@ -320,14 +319,12 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
                 prefs.savePlaylistConfig(config);
+                prefs.clearRecentlyWatched();
 
                 mainHandler.post(() -> {
-                    setLoading(false, "✅ Cuenta agregada: " + all.size() + " elementos en total.");
-                    clearForm();
-                    addAccountContainer.setVisibility(View.GONE);
-                    btnToggleAddAccount.setText("+  Agregar cuenta nueva");
-                    refreshAccountsList();
-                    Toast.makeText(this, "Cuenta guardada correctamente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Cuenta guardada: " + all.size() + " elementos en total",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
                 });
 
             } catch (IOException e) {
