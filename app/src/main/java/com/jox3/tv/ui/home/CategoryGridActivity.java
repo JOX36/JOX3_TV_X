@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jox3.tv.R;
@@ -16,19 +17,26 @@ import com.jox3.tv.util.AppPrefs;
 import com.jox3.tv.util.AppState;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
+/**
+ * Muestra TODOS los items de una categoría específica en una grilla vertical.
+ * Incluye chips arriba para cambiar de categoría sin salir de la pantalla.
+ */
 public class CategoryGridActivity extends AppCompatActivity {
 
-    public static final String EXTRA_TYPE = "extra_type";
+    public static final String EXTRA_TYPE = "extra_type";       // live | vod | series | favorites
     public static final String EXTRA_CATEGORY = "extra_category";
 
     private static final int GRID_COLUMNS = 3;
 
     private ImageView btnBack;
     private TextView tvTitle, tvTotalCount;
-    private RecyclerView gridRecycler;
+    private RecyclerView gridRecycler, categorySwitcher;
     private AppPrefs prefs;
+    private String contentType;
+    private String currentCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,46 +48,67 @@ public class CategoryGridActivity extends AppCompatActivity {
         tvTitle = findViewById(R.id.tv_category_title);
         tvTotalCount = findViewById(R.id.tv_total_count);
         gridRecycler = findViewById(R.id.grid_recycler);
+        categorySwitcher = findViewById(R.id.category_switcher);
 
         btnBack.setOnClickListener(v -> finish());
 
-        String type = getIntent().getStringExtra(EXTRA_TYPE);
-        String category = getIntent().getStringExtra(EXTRA_CATEGORY);
-        if (type == null) type = MediaItem.LIVE;
-        if (category == null) category = "General";
+        contentType = getIntent().getStringExtra(EXTRA_TYPE);
+        currentCategory = getIntent().getStringExtra(EXTRA_CATEGORY);
+        if (contentType == null) contentType = MediaItem.LIVE;
+        if (currentCategory == null) currentCategory = "General";
 
-        tvTitle.setText(category);
-        loadItems(type, category);
+        categorySwitcher.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        gridRecycler.setLayoutManager(new GridLayoutManager(this, GRID_COLUMNS));
+
+        buildCategorySwitcher();
+        showCategory(currentCategory);
     }
 
-    private void loadItems(String type, String category) {
+    private List<MediaItem> getSourceList() {
         AppState state = AppState.get();
-        List<MediaItem> source;
-        if ("favorites".equals(type)) {
-            source = new ArrayList<>();
-            for (MediaItem item : state.liveChannels) if (prefs.isFav(item.favKey())) source.add(item);
-            for (MediaItem item : state.movies) if (prefs.isFav(item.favKey())) source.add(item);
-            for (MediaItem item : state.series) if (prefs.isFav(item.favKey())) source.add(item);
-        } else {
-            switch (type) {
-                case MediaItem.VOD: source = state.movies; break;
-                case MediaItem.SERIES: source = state.series; break;
-                default: source = state.liveChannels; break;
-            }
+        if ("favorites".equals(contentType)) {
+            List<MediaItem> favs = new ArrayList<>();
+            for (MediaItem item : state.liveChannels) if (prefs.isFav(item.favKey())) favs.add(item);
+            for (MediaItem item : state.movies) if (prefs.isFav(item.favKey())) favs.add(item);
+            for (MediaItem item : state.series) if (prefs.isFav(item.favKey())) favs.add(item);
+            return favs;
+        }
+        switch (contentType) {
+            case MediaItem.VOD: return state.movies;
+            case MediaItem.SERIES: return state.series;
+            default: return state.liveChannels;
+        }
+    }
+
+    /** Construye los chips con todas las categorías disponibles para este tipo. */
+    private void buildCategorySwitcher() {
+        LinkedHashSet<String> categories = new LinkedHashSet<>();
+        for (MediaItem item : getSourceList()) {
+            categories.add(item.category != null && !item.category.isEmpty()
+                    ? item.category : "General");
         }
 
+        List<String> categoryList = new ArrayList<>(categories);
+        categorySwitcher.setAdapter(new CategoryChipAdapter(categoryList, this::showCategory));
+    }
+
+    /** Cambia la grilla a otra categoría, sin salir ni recargar toda la pantalla. */
+    private void showCategory(String category) {
+        currentCategory = category;
+        tvTitle.setText(category);
+
         List<MediaItem> filtered = new ArrayList<>();
-        for (MediaItem item : source) {
+        for (MediaItem item : getSourceList()) {
             String itemCategory = item.category != null && !item.category.isEmpty()
                     ? item.category : "General";
             if (itemCategory.equals(category)) filtered.add(item);
         }
 
         tvTotalCount.setText(filtered.size() + " elementos");
-
-        gridRecycler.setLayoutManager(new GridLayoutManager(this, GRID_COLUMNS));
         gridRecycler.setAdapter(new MediaCardAdapter(filtered, prefs, this::openItem,
                 R.layout.item_media_card_grid));
+        gridRecycler.scrollToPosition(0);
     }
 
     private void openItem(MediaItem item, int position) {
