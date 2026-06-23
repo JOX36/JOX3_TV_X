@@ -56,6 +56,14 @@
             android:ellipsize="end" />
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/episode_download"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginStart="6dp"
+        android:padding="6dp"
+        android:src="@drawable/ic_download" />
+
     <TextView
         android:id="@+id/episode_number"
         android:layout_width="wrap_content"
