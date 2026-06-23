@@ -50,6 +50,29 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/channel_epg_progress_track"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_marginTop="3dp"
+            android:background="#40000000"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <View
+                android:id="@+id/channel_epg_progress_fill"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0"
+                android:background="@color/accent_purple" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="100"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>
