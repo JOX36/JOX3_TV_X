@@ -199,6 +199,69 @@ public class XtreamClient {
      * carrusel destacado, nunca para todo el catálogo.
      * Devuelve null si falla o si la API no trae el campo.
      */
+    /** Metadata enriquecida de una película o serie (rating, año, género, etc.). */
+    public static class ExtraInfo {
+        public String plot;
+        public String rating;
+        public String releaseDate; // formato variable según el panel, ej. "2024-03-15"
+        public String genre;
+        public String director;
+        public String cast;
+        public String country;
+        public String durationMinutes;
+    }
+
+    public ExtraInfo getVodExtraInfo(String streamId) {
+        try {
+            String url = baseUrl + "/player_api.php?username=" + user + "&password=" + pass
+                    + "&action=get_vod_info&vod_id=" + streamId;
+            Request req = new Request.Builder().url(url).build();
+            try (Response resp = http.newCall(req).execute()) {
+                if (!resp.isSuccessful() || resp.body() == null) return null;
+                String body = resp.body().string();
+                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                if (!json.has("info")) return null;
+                JsonObject info = json.getAsJsonObject("info");
+                return parseExtraInfo(info);
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public ExtraInfo getSeriesExtraInfo(String seriesId) {
+        try {
+            String url = baseUrl + "/player_api.php?username=" + user + "&password=" + pass
+                    + "&action=get_series_info&series_id=" + seriesId;
+            Request req = new Request.Builder().url(url).build();
+            try (Response resp = http.newCall(req).execute()) {
+                if (!resp.isSuccessful() || resp.body() == null) return null;
+                String body = resp.body().string();
+                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                if (!json.has("info")) return null;
+                JsonObject info = json.getAsJsonObject("info");
+                return parseExtraInfo(info);
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private ExtraInfo parseExtraInfo(JsonObject info) {
+        ExtraInfo extra = new ExtraInfo();
+        extra.plot = getStringOrNull(info, "plot");
+        extra.rating = getStringOrNull(info, "rating");
+        extra.releaseDate = getStringOrNull(info, "releasedate");
+        if (extra.releaseDate == null) extra.releaseDate = getStringOrNull(info, "release_date");
+        extra.genre = getStringOrNull(info, "genre");
+        extra.director = getStringOrNull(info, "director");
+        extra.cast = getStringOrNull(info, "cast");
+        if (extra.cast == null) extra.cast = getStringOrNull(info, "actors");
+        extra.country = getStringOrNull(info, "country");
+        extra.durationMinutes = getStringOrNull(info, "duration");
+        return extra;
+    }
+
     public String getVodSynopsis(String streamId) {
         try {
             String url = baseUrl + "/player_api.php?username=" + user + "&password=" + pass
