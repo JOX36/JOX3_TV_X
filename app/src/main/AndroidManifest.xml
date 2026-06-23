@@ -19,8 +19,7 @@
         <activity
             android:name=".ui.home.HomeActivity"
             android:exported="true"
-            android:screenOrientation="landscape"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+            android:configChanges="keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -39,22 +38,22 @@
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:exported="false"
-            android:screenOrientation="landscape" />
+            android:configChanges="keyboardHidden" />
 
         <activity
             android:name=".ui.home.ContentListActivity"
             android:exported="false"
-            android:screenOrientation="landscape" />
+            android:configChanges="keyboardHidden" />
 
         <activity
             android:name=".ui.home.CategoryGridActivity"
             android:exported="false"
-            android:screenOrientation="landscape" />
+            android:configChanges="keyboardHidden" />
 
         <activity
             android:name=".ui.home.DetailActivity"
             android:exported="false"
-            android:screenOrientation="landscape" />
+            android:configChanges="keyboardHidden" />
 
     </application>
 </manifest>
