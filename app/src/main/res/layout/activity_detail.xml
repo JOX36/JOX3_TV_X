@@ -88,6 +88,33 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!-- Metadata enriquecida: rating, año, país, género -->
+            <LinearLayout
+                android:id="@+id/detail_meta_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/detail_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/favorite_yellow"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:id="@+id/detail_extra_meta"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/detail_synopsis"
                 android:layout_width="match_parent"
@@ -95,6 +122,24 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 android:lineSpacingExtra="4dp" />
+
+            <TextView
+                android:id="@+id/detail_director"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/detail_cast"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:visibility="gone" />
 
             <!-- Botones (solo películas) -->
             <LinearLayout
@@ -129,6 +174,20 @@
                     android:paddingTop="13dp"
                     android:paddingBottom="13dp"
                     android:text="Favorito"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="10dp" />
+
+                <TextView
+                    android:id="@+id/btn_download"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_chip_inactive"
+                    android:paddingStart="22dp"
+                    android:paddingEnd="22dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp"
+                    android:text="Descargar"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
             </LinearLayout>
