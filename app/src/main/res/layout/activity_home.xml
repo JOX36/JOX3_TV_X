@@ -26,80 +26,91 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <!-- Pestañas centradas: ocupan el espacio flexible del medio -->
-        <LinearLayout
+        <!-- Pestañas: en pantallas angostas se deslizan en vez de romperse -->
+        <HorizontalScrollView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="horizontal"
-            android:gravity="center">
+            android:scrollbars="none">
 
-            <TextView
-                android:id="@+id/tab_home"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="26dp"
-                android:text="Inicio"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:clickable="true"
-                android:focusable="true" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tab_channels"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="26dp"
-                android:text="Canales"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                android:clickable="true"
-                android:focusable="true" />
+                <TextView
+                    android:id="@+id/tab_home"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="26dp"
+                    android:text="Inicio"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:singleLine="true"
+                    android:clickable="true"
+                    android:focusable="true" />
 
-            <TextView
-                android:id="@+id/tab_movies"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="26dp"
-                android:text="Películas"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                android:clickable="true"
-                android:focusable="true" />
+                <TextView
+                    android:id="@+id/tab_channels"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="26dp"
+                    android:text="Canales"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:singleLine="true"
+                    android:clickable="true"
+                    android:focusable="true" />
 
-            <TextView
-                android:id="@+id/tab_series"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="26dp"
-                android:text="Series"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                android:clickable="true"
-                android:focusable="true" />
+                <TextView
+                    android:id="@+id/tab_movies"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="26dp"
+                    android:text="Películas"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:singleLine="true"
+                    android:clickable="true"
+                    android:focusable="true" />
 
-            <TextView
-                android:id="@+id/tab_favorites"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="18dp"
-                android:text="Favoritos"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                android:clickable="true"
-                android:focusable="true" />
+                <TextView
+                    android:id="@+id/tab_series"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="26dp"
+                    android:text="Series"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:singleLine="true"
+                    android:clickable="true"
+                    android:focusable="true" />
 
-            <ImageView
-                android:id="@+id/btn_search_toggle"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/bg_chip_inactive"
-                android:padding="8dp"
-                android:src="@drawable/ic_search"
-                android:clickable="true"
-                android:focusable="true" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tab_favorites"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="18dp"
+                    android:text="Favoritos"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:singleLine="true"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <ImageView
+                    android:id="@+id/btn_search_toggle"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_chip_inactive"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_search"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </HorizontalScrollView>
 
         <ImageView
             android:id="@+id/btn_settings"
