@@ -272,21 +272,38 @@
                         android:padding="6dp"
                         android:src="@drawable/ic_mute" />
 
-                    <TextView
-                        android:id="@+id/mini_channel_name"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="bottom"
                         android:background="#CC000000"
+                        android:orientation="vertical"
                         android:paddingStart="10dp"
                         android:paddingEnd="10dp"
                         android:paddingTop="20dp"
-                        android:paddingBottom="8dp"
-                        android:textColor="@color/text_primary"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
+                        android:paddingBottom="8dp">
+
+                        <TextView
+                            android:id="@+id/mini_channel_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+
+                        <TextView
+                            android:id="@+id/mini_epg_now"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="@color/accent_warm"
+                            android:textSize="10sp"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            android:visibility="gone" />
+                    </LinearLayout>
                 </FrameLayout>
             </LinearLayout>
 
