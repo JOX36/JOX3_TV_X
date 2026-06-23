@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -65,6 +67,8 @@ public class HomeActivity extends AppCompatActivity {
     private PlayerView miniPlayerView;
     private ImageView btnMiniExpand, btnMiniMute;
     private TextView miniChannelName, miniEpgNow;
+    private LinearLayout miniEpgProgressTrack;
+    private View miniEpgProgressFill;
     private ExoPlayer miniPlayer;
     private MediaItem miniPlayerChannel;
     private boolean miniPlayerMuted = true;
@@ -211,6 +215,7 @@ public class HomeActivity extends AppCompatActivity {
     /** Trae "qué está dando ahora" para el canal del mini-reproductor (1 sola llamada). */
     private void loadMiniPlayerEpg(MediaItem channel) {
         miniEpgNow.setVisibility(View.GONE);
+        miniEpgProgressTrack.setVisibility(View.GONE);
         PlaylistConfig config = prefs.getPlaylistConfig();
         if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) return;
 
@@ -224,6 +229,15 @@ public class HomeActivity extends AppCompatActivity {
                 if (miniPlayerChannel == channel) {
                     miniEpgNow.setText("Ahora: " + now.title);
                     miniEpgNow.setVisibility(View.VISIBLE);
+
+                    int percent = now.progressPercent();
+                    if (percent >= 0) {
+                        miniEpgProgressTrack.setVisibility(View.VISIBLE);
+                        LinearLayout.LayoutParams params =
+                                (LinearLayout.LayoutParams) miniEpgProgressFill.getLayoutParams();
+                        params.weight = percent;
+                        miniEpgProgressFill.setLayoutParams(params);
+                    }
                 }
             });
         });
@@ -300,6 +314,8 @@ public class HomeActivity extends AppCompatActivity {
         btnMiniMute = findViewById(R.id.btn_mini_mute);
         miniChannelName = findViewById(R.id.mini_channel_name);
         miniEpgNow = findViewById(R.id.mini_epg_now);
+        miniEpgProgressTrack = findViewById(R.id.mini_epg_progress_track);
+        miniEpgProgressFill = findViewById(R.id.mini_epg_progress_fill);
     }
 
     private void setupRows() {
@@ -420,11 +436,22 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private boolean autoLoadAttempted = false;
+
     private void refreshContent() {
         AppState state = AppState.get();
         boolean hasData = !state.liveChannels.isEmpty()
                 || !state.movies.isEmpty()
                 || !state.series.isEmpty();
+
+        if (!hasData) {
+            PlaylistConfig config = prefs.getPlaylistConfig();
+            if (config != null && !autoLoadAttempted) {
+                autoLoadAttempted = true;
+                autoLoadActiveAccount(config);
+                return;
+            }
+        }
 
         layoutEmpty.setVisibility(hasData ? View.GONE : View.VISIBLE);
         scrollContent.setVisibility(hasData ? View.VISIBLE : View.GONE);
@@ -445,6 +472,58 @@ public class HomeActivity extends AppCompatActivity {
         setupHero(state);
         setupCategories(state);
         applyFilters();
+    }
+
+    /**
+     * Si hay una cuenta guardada como activa pero la memoria está vacía
+     * (la app se cerró y se volvió a abrir), recarga sus datos en
+     * segundo plano automáticamente, sin que el usuario tenga que volver
+     * a Ajustes a "elegirla" de nuevo.
+     */
+    private void autoLoadActiveAccount(PlaylistConfig config) {
+        layoutEmpty.setVisibility(View.GONE);
+        scrollContent.setVisibility(View.GONE);
+        // (se podría mostrar un spinner de carga aquí si se desea más adelante)
+
+        synopsisExecutor.execute(() -> {
+            try {
+                AppState state = AppState.get();
+                if (PlaylistConfig.TYPE_XTREAM.equals(config.type)) {
+                    XtreamClient client = new XtreamClient(config);
+                    state.liveChannels = client.getLiveChannels();
+                    state.movies = client.getMovies();
+                    state.series = client.getSeries();
+                } else if (config.m3uUrl != null) {
+                    URL url = new URL(config.m3uUrl);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(20000);
+                    List<MediaItem> all;
+                    try (java.io.InputStream input = conn.getInputStream()) {
+                        all = com.jox3.tv.data.M3uParser.parse(input);
+                    } finally {
+                        conn.disconnect();
+                    }
+                    state.liveChannels.clear();
+                    state.movies.clear();
+                    state.series.clear();
+                    for (MediaItem mi : all) {
+                        if (MediaItem.VOD.equals(mi.type)) state.movies.add(mi);
+                        else if (MediaItem.SERIES.equals(mi.type)) state.series.add(mi);
+                        else state.liveChannels.add(mi);
+                    }
+                }
+                mainHandler.post(this::refreshContent);
+            } catch (Exception e) {
+                mainHandler.post(() -> {
+                    layoutEmpty.setVisibility(View.VISIBLE);
+                    scrollContent.setVisibility(View.GONE);
+                    android.widget.Toast.makeText(this,
+                            "No se pudo cargar tu cuenta automáticamente: " + e.getMessage(),
+                            android.widget.Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     /** Construye hasta 5 recomendaciones para el carrusel del banner: prioriza
