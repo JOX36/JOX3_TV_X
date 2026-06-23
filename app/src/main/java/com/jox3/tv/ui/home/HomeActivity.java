@@ -14,7 +14,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.datasource.okhttp.OkHttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -141,6 +143,41 @@ public class HomeActivity extends AppCompatActivity {
 
     // ---------------- Mini-reproductor de canal en vivo ----------------
 
+    private androidx.media3.datasource.DataSource.Factory trustAllDataSourceFactory;
+
+    /** Igual que en PlayerActivity: acepta certificados SSL autofirmados,
+     *  comunes en servidores Xtream caseros, para que el mini-reproductor
+     *  no falle en silencio al intentar reproducir. */
+    private androidx.media3.datasource.DataSource.Factory getTrustAllDataSourceFactory() {
+        if (trustAllDataSourceFactory != null) return trustAllDataSourceFactory;
+        try {
+            javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
+                    new javax.net.ssl.X509TrustManager() {
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {}
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {}
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+            javax.net.ssl.SSLContext sslContext = javax.net.ssl.SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
+                    .sslSocketFactory(sslContext.getSocketFactory(),
+                            (javax.net.ssl.X509TrustManager) trustAllCerts[0])
+                    .hostnameVerifier((hostname, session) -> true)
+                    .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+                    .build();
+
+            trustAllDataSourceFactory = new OkHttpDataSource.Factory(client);
+        } catch (Exception e) {
+            trustAllDataSourceFactory = new androidx.media3.datasource.DefaultHttpDataSource.Factory();
+        }
+        return trustAllDataSourceFactory;
+    }
+
     private void initMiniPlayer() {
         AppState state = AppState.get();
         if (state.liveChannels.isEmpty()) {
@@ -155,7 +192,9 @@ public class HomeActivity extends AppCompatActivity {
         miniChannelName.setText(miniPlayerChannel.name);
 
         if (miniPlayer != null) miniPlayer.release();
-        miniPlayer = new ExoPlayer.Builder(this).build();
+        miniPlayer = new ExoPlayer.Builder(this)
+                .setMediaSourceFactory(new DefaultMediaSourceFactory(getTrustAllDataSourceFactory()))
+                .build();
         miniPlayerView.setPlayer(miniPlayer);
 
         androidx.media3.common.MediaItem mediaItem =
