@@ -45,7 +45,9 @@ import androidx.media3.ui.PlayerView;
 
 import com.bumptech.glide.Glide;
 import com.jox3.tv.R;
+import com.jox3.tv.data.XtreamClient;
 import com.jox3.tv.model.MediaItem;
+import com.jox3.tv.model.PlaylistConfig;
 import com.jox3.tv.util.AppPrefs;
 import com.jox3.tv.util.AppState;
 
@@ -96,6 +98,9 @@ public class PlayerActivity extends AppCompatActivity {
 
     private MediaItem item;
     private AppPrefs prefs;
+    private TextView tvEpgNow;
+    private final java.util.concurrent.ExecutorService epgExecutor =
+            java.util.concurrent.Executors.newSingleThreadExecutor();
     private AppState state;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -235,6 +240,7 @@ public class PlayerActivity extends AppCompatActivity {
         topBar = findViewById(R.id.top_bar);
         bottomBar = findViewById(R.id.bottom_bar);
         tvName = findViewById(R.id.tv_name);
+        tvEpgNow = findViewById(R.id.tv_epg_now);
         tvResolution = findViewById(R.id.tv_resolution);
         tvStatus = findViewById(R.id.tv_status);
         btnBack = findViewById(R.id.btn_back);
@@ -628,6 +634,12 @@ public class PlayerActivity extends AppCompatActivity {
         setStatus("Cargando...");
         if (btnPlayPause != null) setPlayPauseIcon(true);
 
+        if (MediaItem.LIVE.equals(item.type)) {
+            loadEpgForCurrentChannel();
+        } else if (tvEpgNow != null) {
+            tvEpgNow.setVisibility(View.GONE);
+        }
+
         player = new ExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
         playerView.setUseController(false);
@@ -754,6 +766,30 @@ public class PlayerActivity extends AppCompatActivity {
         if (channelPanelOpen) refreshChannelPanelSelection();
     }
 
+    /** Trae "qué está dando ahora" para el canal actual y lo muestra bajo el nombre. */
+    private void loadEpgForCurrentChannel() {
+        if (tvEpgNow == null) return;
+        tvEpgNow.setVisibility(View.GONE);
+
+        PlaylistConfig config = prefs.getPlaylistConfig();
+        if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) return;
+
+        MediaItem channelAtRequestTime = item;
+        epgExecutor.execute(() -> {
+            XtreamClient client = new XtreamClient(config);
+            java.util.List<XtreamClient.EpgProgram> programs = client.getShortEpg(channelAtRequestTime.id);
+            if (programs.isEmpty()) return;
+
+            XtreamClient.EpgProgram now = programs.get(0);
+            handler.post(() -> {
+                if (item == channelAtRequestTime) {
+                    tvEpgNow.setText("Ahora: " + now.title);
+                    tvEpgNow.setVisibility(View.VISIBLE);
+                }
+            });
+        });
+    }
+
     // ---------------- Panel lateral de parrilla de canales ----------------
 
     private void toggleChannelPanel() {
@@ -826,6 +862,21 @@ public class PlayerActivity extends AppCompatActivity {
                 holder.logo.setImageDrawable(null);
             }
 
+            holder.epgNow.setVisibility(View.GONE);
+            PlaylistConfig config = prefs.getPlaylistConfig();
+            if (config != null && PlaylistConfig.TYPE_XTREAM.equals(config.type)) {
+                epgExecutor.execute(() -> {
+                    XtreamClient client = new XtreamClient(config);
+                    java.util.List<XtreamClient.EpgProgram> programs = client.getShortEpg(channel.id);
+                    if (programs.isEmpty()) return;
+                    XtreamClient.EpgProgram now = programs.get(0);
+                    handler.post(() -> {
+                        holder.epgNow.setText("Ahora: " + now.title);
+                        holder.epgNow.setVisibility(View.VISIBLE);
+                    });
+                });
+            }
+
             holder.itemView.setOnClickListener(v -> {
                 int idx = state.liveChannels.indexOf(channel);
                 if (idx < 0) return;
@@ -849,13 +900,14 @@ public class PlayerActivity extends AppCompatActivity {
 
         class RowHolder extends RecyclerView.ViewHolder {
             ImageView logo;
-            TextView name;
+            TextView name, epgNow;
             View selectedBar;
 
             RowHolder(@NonNull View itemView) {
                 super(itemView);
                 logo = itemView.findViewById(R.id.channel_logo);
                 name = itemView.findViewById(R.id.channel_name);
+                epgNow = itemView.findViewById(R.id.channel_epg_now);
                 selectedBar = itemView.findViewById(R.id.channel_selected_bar);
             }
         }
@@ -1136,6 +1188,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override protected void onDestroy() {
         super.onDestroy();
+        epgExecutor.shutdownNow();
         if (pipCloseReceiver != null) {
             try { unregisterReceiver(pipCloseReceiver); } catch (Exception ignored) {}
         }
