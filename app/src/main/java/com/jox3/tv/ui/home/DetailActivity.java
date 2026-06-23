@@ -360,6 +360,15 @@ public class DetailActivity extends AppCompatActivity {
             request.setAllowedOverMetered(true);
             request.setAllowedOverRoaming(true);
 
+            // Muchos servidores Xtream rechazan descargas que no se
+            // identifiquen como un reproductor de video válido.
+            request.addRequestHeader("User-Agent",
+                    "Mozilla/5.0 (Linux; Android 13) ExoPlayerLib/1.6.1");
+            PlaylistConfig activeConfig = prefs.getPlaylistConfig();
+            if (activeConfig != null && activeConfig.serverUrl != null) {
+                request.addRequestHeader("Referer", activeConfig.serverUrl);
+            }
+
             DownloadManager downloadManager =
                     (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
             downloadManager.enqueue(request);
