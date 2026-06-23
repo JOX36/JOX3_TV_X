@@ -199,6 +199,74 @@ public class XtreamClient {
      * carrusel destacado, nunca para todo el catálogo.
      * Devuelve null si falla o si la API no trae el campo.
      */
+    /** Programa de EPG (guía de horarios) corto: lo que está dando ahora y lo siguiente. */
+    public static class EpgProgram {
+        public String title;
+        public String start;   // "HH:mm" ya formateado
+        public String end;
+        public boolean isNow;
+    }
+
+    /**
+     * Trae "ahora" y "después" de un canal específico (máximo 2 programas).
+     * Es una llamada liviana por canal (get_short_epg), pensada para usarse
+     * solo en pantallas donde ya se está navegando ese canal puntual (mini-
+     * reproductor, reproductor, panel de canales) — nunca para listas largas
+     * de golpe, sería demasiadas llamadas a la vez.
+     */
+    public List<EpgProgram> getShortEpg(String streamId) {
+        List<EpgProgram> result = new ArrayList<>();
+        try {
+            String url = baseUrl + "/player_api.php?username=" + user + "&password=" + pass
+                    + "&action=get_short_epg&stream_id=" + streamId + "&limit=2";
+            Request req = new Request.Builder().url(url).build();
+            try (Response resp = http.newCall(req).execute()) {
+                if (!resp.isSuccessful() || resp.body() == null) return result;
+                String body = resp.body().string();
+                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                if (!json.has("epg_listings")) return result;
+
+                JsonArray listings = json.getAsJsonArray("epg_listings");
+                for (int i = 0; i < listings.size(); i++) {
+                    JsonObject ep = listings.get(i).getAsJsonObject();
+                    EpgProgram program = new EpgProgram();
+                    program.title = decodeMaybeBase64(getStringOrNull(ep, "title"));
+                    program.start = formatEpgTime(getStringOrNull(ep, "start"));
+                    program.end = formatEpgTime(getStringOrNull(ep, "end"));
+                    program.isNow = i == 0;
+                    if (program.title != null) result.add(program);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return result;
+    }
+
+    /** Muchos paneles Xtream codifican el título/descripción de la EPG en Base64. */
+    private String decodeMaybeBase64(String raw) {
+        if (raw == null) return null;
+        try {
+            byte[] decoded = android.util.Base64.decode(raw, android.util.Base64.DEFAULT);
+            String text = new String(decoded, "UTF-8");
+            // Si decodificó a algo con caracteres de control raros, probablemente
+            // no estaba en base64 realmente; nos quedamos con el texto crudo.
+            return text.matches(".*[\\x00-\\x08].*") ? raw : text;
+        } catch (Exception e) {
+            return raw;
+        }
+    }
+
+    /** La fecha viene como "yyyy-MM-dd HH:mm:ss"; nos quedamos solo con HH:mm. */
+    private String formatEpgTime(String raw) {
+        if (raw == null || raw.length() < 16) return "";
+        try {
+            return raw.substring(11, 16);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+
     /** Metadata enriquecida de una película o serie (rating, año, género, etc.). */
     public static class ExtraInfo {
         public String plot;
