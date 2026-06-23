@@ -62,7 +62,7 @@ public class HomeActivity extends AppCompatActivity {
     private FrameLayout miniPlayerContainer;
     private PlayerView miniPlayerView;
     private ImageView btnMiniExpand, btnMiniMute;
-    private TextView miniChannelName;
+    private TextView miniChannelName, miniEpgNow;
     private ExoPlayer miniPlayer;
     private MediaItem miniPlayerChannel;
     private boolean miniPlayerMuted = true;
@@ -166,6 +166,28 @@ public class HomeActivity extends AppCompatActivity {
         miniPlayer.setPlayWhenReady(true);
 
         updateMuteIcon();
+        loadMiniPlayerEpg(miniPlayerChannel);
+    }
+
+    /** Trae "qué está dando ahora" para el canal del mini-reproductor (1 sola llamada). */
+    private void loadMiniPlayerEpg(MediaItem channel) {
+        miniEpgNow.setVisibility(View.GONE);
+        PlaylistConfig config = prefs.getPlaylistConfig();
+        if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) return;
+
+        synopsisExecutor.execute(() -> {
+            XtreamClient client = new XtreamClient(config);
+            List<XtreamClient.EpgProgram> programs = client.getShortEpg(channel.id);
+            if (programs.isEmpty()) return;
+
+            XtreamClient.EpgProgram now = programs.get(0);
+            mainHandler.post(() -> {
+                if (miniPlayerChannel == channel) {
+                    miniEpgNow.setText("Ahora: " + now.title);
+                    miniEpgNow.setVisibility(View.VISIBLE);
+                }
+            });
+        });
     }
 
     /** Prioriza el último canal en vivo visto; si no hay ninguno, elige uno al azar. */
@@ -238,6 +260,7 @@ public class HomeActivity extends AppCompatActivity {
         btnMiniExpand = findViewById(R.id.btn_mini_expand);
         btnMiniMute = findViewById(R.id.btn_mini_mute);
         miniChannelName = findViewById(R.id.mini_channel_name);
+        miniEpgNow = findViewById(R.id.mini_epg_now);
     }
 
     private void setupRows() {
