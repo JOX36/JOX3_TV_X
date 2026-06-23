@@ -39,7 +39,9 @@ import androidx.media3.common.TrackGroup;
 import androidx.media3.common.TrackSelectionOverride;
 import androidx.media3.common.Tracks;
 import androidx.media3.common.VideoSize;
+import androidx.media3.datasource.okhttp.OkHttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.PlayerView;
 
@@ -629,6 +631,52 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
+    private androidx.media3.datasource.DataSource.Factory trustAllDataSourceFactory;
+
+    /**
+     * Muchos servidores Xtream caseros usan HTTPS con certificados SSL
+     * autofirmados (no verificados por una autoridad real), especialmente
+     * en puertos no estándar como 2096/8443. Android rechaza esos
+     * certificados por seguridad y la reproducción nunca arranca, sin
+     * importar el formato del archivo. Esta fábrica le dice a ExoPlayer
+     * que confíe en cualquier certificado, igual que hacen la mayoría de
+     * reproductores IPTV de terceros (VLC, etc.) para listas privadas.
+     */
+    private androidx.media3.datasource.DataSource.Factory getTrustAllDataSourceFactory() {
+        if (trustAllDataSourceFactory != null) return trustAllDataSourceFactory;
+
+        try {
+            javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
+                    new javax.net.ssl.X509TrustManager() {
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {}
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {}
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+
+            javax.net.ssl.SSLContext sslContext = javax.net.ssl.SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
+                    .sslSocketFactory(sslContext.getSocketFactory(),
+                            (javax.net.ssl.X509TrustManager) trustAllCerts[0])
+                    .hostnameVerifier((hostname, session) -> true)
+                    .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
+                    .build();
+
+            trustAllDataSourceFactory = new OkHttpDataSource.Factory(client);
+        } catch (Exception e) {
+            // Si algo falla construyendo el cliente "trust-all", seguimos
+            // con el comportamiento normal de ExoPlayer (verificación SSL
+            // estándar) en vez de romper la app.
+            trustAllDataSourceFactory = new androidx.media3.datasource.DefaultHttpDataSource.Factory();
+        }
+        return trustAllDataSourceFactory;
+    }
+
     private void initPlayer() {
         if (player != null) { player.release(); player = null; }
         playerReleased = false;
@@ -643,7 +691,9 @@ public class PlayerActivity extends AppCompatActivity {
             tvEpgNow.setVisibility(View.GONE);
         }
 
-        player = new ExoPlayer.Builder(this).build();
+        player = new ExoPlayer.Builder(this)
+                .setMediaSourceFactory(new DefaultMediaSourceFactory(getTrustAllDataSourceFactory()))
+                .build();
         playerView.setPlayer(player);
         playerView.setUseController(false);
 
