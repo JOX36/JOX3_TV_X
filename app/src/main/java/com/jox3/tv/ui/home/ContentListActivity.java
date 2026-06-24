@@ -40,10 +40,10 @@ public class ContentListActivity extends AppCompatActivity {
     public static final String EXTRA_TYPE = "extra_type"; // "live" | "vod" | "series" | "favorites"
 
     private ImageView btnBack, btnSearchToggle;
-    private TextView tvScreenTitle, tvTotalCount;
+    private TextView tvScreenTitle, tvTotalCount, btnCategoryToggle;
     private EditText inputSearch;
     private View searchBarContainer;
-    private RecyclerView categoryShortcuts;
+    private RecyclerView categoryDropdownList;
     private LinearLayout layoutEmpty, sectionsContainer;
     private View scrollContent;
 
@@ -73,16 +73,22 @@ public class ContentListActivity extends AppCompatActivity {
         tvTotalCount = findViewById(R.id.tv_total_count);
         inputSearch = findViewById(R.id.input_search);
         searchBarContainer = findViewById(R.id.search_bar_container);
-        categoryShortcuts = findViewById(R.id.category_shortcuts);
+        btnCategoryToggle = findViewById(R.id.btn_category_toggle);
+        categoryDropdownList = findViewById(R.id.category_dropdown_list);
         layoutEmpty = findViewById(R.id.layout_empty);
         sectionsContainer = findViewById(R.id.sections_container);
         scrollContent = findViewById(R.id.scroll_content);
 
         btnBack.setOnClickListener(v -> finish());
         btnSearchToggle.setOnClickListener(v -> toggleSearchBar());
+        btnCategoryToggle.setOnClickListener(v -> toggleCategoryDropdown());
 
-        categoryShortcuts.setLayoutManager(
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        categoryDropdownList.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    private void toggleCategoryDropdown() {
+        boolean isVisible = categoryDropdownList.getVisibility() == View.VISIBLE;
+        categoryDropdownList.setVisibility(isVisible ? View.GONE : View.VISIBLE);
     }
 
     private void toggleSearchBar() {
@@ -136,7 +142,7 @@ public class ContentListActivity extends AppCompatActivity {
         renderSections("");
     }
 
-    /** Chips de acceso directo: uno por cada categoría real presente en este catálogo. */
+    /** Lista desplegable: una fila por cada categoría real presente en este catálogo. */
     private void buildCategoryShortcuts() {
         LinkedHashSet<String> categories = new LinkedHashSet<>();
         for (MediaItem item : allItems) {
@@ -145,8 +151,10 @@ public class ContentListActivity extends AppCompatActivity {
         }
 
         List<String> categoryList = new ArrayList<>(categories);
-        categoryShortcuts.setAdapter(new CategoryChipAdapter(categoryList,
-                this::openCategoryGrid));
+        categoryDropdownList.setAdapter(new CategoryDropdownAdapter(categoryList, category -> {
+            categoryDropdownList.setVisibility(View.GONE);
+            openCategoryGrid(category);
+        }));
     }
 
     /** Agrupa por categoría real y construye una sección por cada una. */
