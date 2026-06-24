@@ -34,15 +34,33 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/channel_panel_category_switcher"
+        <TextView
+            android:id="@+id/channel_panel_category_toggle"
             android:layout_width="match_parent"
             android:layout_height="36dp"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:clipToPadding="false"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_chip_inactive"
+            android:gravity="center_vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="Categorías  ▾"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
+            android:singleLine="true"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/channel_panel_category_dropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_card_rounded"
+            android:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/channel_panel_recycler"
