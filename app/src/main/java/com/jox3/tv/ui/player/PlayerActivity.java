@@ -50,7 +50,7 @@ import com.jox3.tv.R;
 import com.jox3.tv.data.XtreamClient;
 import com.jox3.tv.model.MediaItem;
 import com.jox3.tv.model.PlaylistConfig;
-import com.jox3.tv.ui.home.CategoryChipAdapter;
+import com.jox3.tv.ui.home.CategoryDropdownAdapter;
 import com.jox3.tv.util.AppPrefs;
 import com.jox3.tv.util.AppState;
 
@@ -75,7 +75,8 @@ public class PlayerActivity extends AppCompatActivity {
     private LinearLayout channelPanel;
     private TextView channelPanelTitle;
     private RecyclerView channelPanelRecycler;
-    private RecyclerView channelPanelCategorySwitcher;
+    private TextView channelPanelCategoryToggle;
+    private RecyclerView channelPanelCategoryDropdown;
     private boolean channelPanelOpen = false;
 
     private Button btnPlayPause, btnRewind, btnForward;
@@ -264,7 +265,9 @@ public class PlayerActivity extends AppCompatActivity {
         channelPanel = findViewById(R.id.channel_panel);
         channelPanelTitle = findViewById(R.id.channel_panel_title);
         channelPanelRecycler = findViewById(R.id.channel_panel_recycler);
-        channelPanelCategorySwitcher = findViewById(R.id.channel_panel_category_switcher);
+        channelPanelCategoryToggle = findViewById(R.id.channel_panel_category_toggle);
+        channelPanelCategoryDropdown = findViewById(R.id.channel_panel_category_dropdown);
+        channelPanelCategoryToggle.setOnClickListener(v -> toggleChannelPanelCategoryDropdown());
         btnPipLive = findViewById(R.id.btn_pip_live);
         btnStop = findViewById(R.id.btn_stop);
 
@@ -885,7 +888,7 @@ public class PlayerActivity extends AppCompatActivity {
         channelPanelOpen = true;
     }
 
-    /** Construye los chips con todas las categorías de canales disponibles. */
+    /** Construye la lista desplegable con todas las categorías de canales disponibles. */
     private void buildChannelPanelCategorySwitcher() {
         java.util.LinkedHashSet<String> categories = new java.util.LinkedHashSet<>();
         for (MediaItem candidate : state.liveChannels) {
@@ -894,10 +897,17 @@ public class PlayerActivity extends AppCompatActivity {
         }
         java.util.List<String> categoryList = new java.util.ArrayList<>(categories);
 
-        channelPanelCategorySwitcher.setLayoutManager(
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        channelPanelCategorySwitcher.setAdapter(
-                new CategoryChipAdapter(categoryList, this::showChannelPanelCategory));
+        channelPanelCategoryDropdown.setLayoutManager(new LinearLayoutManager(this));
+        channelPanelCategoryDropdown.setAdapter(
+                new com.jox3.tv.ui.home.CategoryDropdownAdapter(categoryList, category -> {
+                    channelPanelCategoryDropdown.setVisibility(View.GONE);
+                    showChannelPanelCategory(category);
+                }));
+    }
+
+    private void toggleChannelPanelCategoryDropdown() {
+        boolean isVisible = channelPanelCategoryDropdown.getVisibility() == View.VISIBLE;
+        channelPanelCategoryDropdown.setVisibility(isVisible ? View.GONE : View.VISIBLE);
     }
 
     /** Cambia el panel a otra categoría de canales, sin cerrar ni salir del reproductor. */
@@ -910,6 +920,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         channelPanelTitle.setText(category + " (" + sameCategory.size() + ")");
+        channelPanelCategoryToggle.setText(category + "  ▾");
         channelPanelRecycler.setLayoutManager(new LinearLayoutManager(this));
         channelPanelRecycler.setAdapter(new ChannelPanelAdapter(sameCategory));
     }
