@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="JOX3 TV"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/accent"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -121,6 +121,7 @@
             android:background="@drawable/bg_chip_inactive"
             android:padding="8dp"
             android:src="@drawable/ic_settings"
+            android:tint="@color/accent"
             android:clickable="true"
             android:focusable="true" />
     </LinearLayout>
