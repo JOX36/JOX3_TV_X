@@ -47,15 +47,15 @@
     <!-- Cambiar de categoría sin salir de esta pantalla -->
     <TextView
         android:id="@+id/btn_category_toggle"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="36dp"
         android:layout_marginStart="18dp"
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/bg_chip_inactive"
         android:gravity="center_vertical"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:text="Categorías  ▾"
         android:textColor="@color/text_primary"
         android:textSize="13sp"
