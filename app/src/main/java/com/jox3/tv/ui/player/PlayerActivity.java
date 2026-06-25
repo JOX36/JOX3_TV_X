@@ -71,7 +71,7 @@ public class PlayerActivity extends AppCompatActivity {
     private TextView tvName, tvResolution, tvStatus;
     private ImageView btnBack, btnFav;
 
-    private Button btnPrev, btnNext, btnPipLive, btnStop, btnChannelList;
+    private Button btnPrev, btnNext, btnPipLive, btnStop, btnChannelList, btnRefresh;
     private LinearLayout channelPanel;
     private TextView channelPanelTitle;
     private RecyclerView channelPanelRecycler;
@@ -115,6 +115,7 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean isTv = false;
     private boolean isInPip = false;
     private boolean playerReleased = false;
+    private boolean justCreated = true;
     private boolean seekBarTracking = false;
     private int retryCount = 0;
     private float currentSpeed = 1.0f;
@@ -262,6 +263,7 @@ public class PlayerActivity extends AppCompatActivity {
         btnPrev = findViewById(R.id.btn_prev);
         btnNext = findViewById(R.id.btn_next);
         btnChannelList = findViewById(R.id.btn_channel_list);
+        btnRefresh = findViewById(R.id.btn_refresh);
         channelPanel = findViewById(R.id.channel_panel);
         channelPanelTitle = findViewById(R.id.channel_panel_title);
         channelPanelRecycler = findViewById(R.id.channel_panel_recycler);
@@ -318,6 +320,10 @@ public class PlayerActivity extends AppCompatActivity {
         btnPrev.setOnClickListener(v -> navigateChannel(-1));
         btnNext.setOnClickListener(v -> navigateChannel(1));
         btnChannelList.setOnClickListener(v -> toggleChannelPanel());
+        btnRefresh.setOnClickListener(v -> {
+            Toast.makeText(this, "Reconectando...", Toast.LENGTH_SHORT).show();
+            initPlayer();
+        });
         btnPipLive.setOnClickListener(v -> enterPip());
         btnStop.setOnClickListener(v -> exitPlayer());
 
@@ -363,7 +369,7 @@ public class PlayerActivity extends AppCompatActivity {
         playerView.setOnClickListener(v -> {
             if (screenLocked) return;
             if (channelPanelOpen) { closeChannelPanel(); return; }
-            if (!isTv && !isInPip) toggleBars();
+            if (!isInPip) toggleBars();
         });
         playerView.setOnTouchListener(this::onTouch);
     }
@@ -1049,7 +1055,7 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void hideBars() {
-        if (isTv || screenLocked) return;
+        if (screenLocked) return;
         barsVisible = false;
         topBar.setVisibility(View.GONE);
         bottomBar.setVisibility(View.GONE);
@@ -1252,6 +1258,8 @@ public class PlayerActivity extends AppCompatActivity {
         if (!isTv || e.getAction() != android.view.KeyEvent.ACTION_DOWN)
             return super.dispatchKeyEvent(e);
 
+        if (!barsVisible && !screenLocked) showBars();
+
         switch (e.getKeyCode()) {
             case android.view.KeyEvent.KEYCODE_DPAD_CENTER:
             case android.view.KeyEvent.KEYCODE_ENTER:
@@ -1287,7 +1295,21 @@ public class PlayerActivity extends AppCompatActivity {
         super.onResume();
         setFullscreen();
         hideSystemBars();
-        if (!isInPip && player != null && !playerReleased) player.play();
+        if (justCreated) {
+            justCreated = false;
+            return;
+        }
+        if (!isInPip && !playerReleased) {
+            // Para canales en vivo, reanudar el mismo reproductor pausado
+            // hace que se quede "atrás" en el tiempo (el buffer viejo sigue
+            // ahí aunque hayan pasado varios minutos en segundo plano). Para
+            // TV en vivo, reconectamos de cero para volver al momento real.
+            if (item != null && MediaItem.LIVE.equals(item.type)) {
+                initPlayer();
+            } else if (player != null) {
+                player.play();
+            }
+        }
     }
 
     @Override protected void onStop() {
