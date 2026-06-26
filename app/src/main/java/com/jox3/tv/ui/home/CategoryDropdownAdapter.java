@@ -16,6 +16,7 @@ import java.util.List;
  * Lista vertical de categorías (reemplaza los chips horizontales que se
  * desplazaban de lado). Se usa dentro de un desplegable que se muestra/oculta
  * al tocar un botón "Categorías ▾", en vez de ocupar espacio fijo siempre.
+ * Marca con un color distinto cuál es la categoría actualmente activa.
  */
 public class CategoryDropdownAdapter extends RecyclerView.Adapter<CategoryDropdownAdapter.RowHolder> {
 
@@ -24,10 +25,17 @@ public class CategoryDropdownAdapter extends RecyclerView.Adapter<CategoryDropdo
     }
 
     private final List<String> categories;
+    private final String activeCategory;
     private final OnCategorySelected listener;
 
+    /** Compatibilidad: sin categoría activa marcada. */
     public CategoryDropdownAdapter(List<String> categories, OnCategorySelected listener) {
+        this(categories, null, listener);
+    }
+
+    public CategoryDropdownAdapter(List<String> categories, String activeCategory, OnCategorySelected listener) {
         this.categories = categories;
+        this.activeCategory = activeCategory;
         this.listener = listener;
     }
 
@@ -42,7 +50,14 @@ public class CategoryDropdownAdapter extends RecyclerView.Adapter<CategoryDropdo
     @Override
     public void onBindViewHolder(@NonNull RowHolder holder, int position) {
         String category = categories.get(position);
-        holder.text.setText(category);
+        boolean isActive = category.equals(activeCategory);
+
+        holder.text.setText(isActive ? ("●  " + category) : category);
+        holder.text.setTextColor(holder.text.getResources().getColor(
+                isActive ? R.color.accent : R.color.text_primary));
+        holder.text.setTypeface(null, isActive
+                ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+
         holder.text.setOnClickListener(v -> {
             if (listener != null) listener.onSelected(category);
         });

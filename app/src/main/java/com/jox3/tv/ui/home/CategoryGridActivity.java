@@ -63,7 +63,6 @@ public class CategoryGridActivity extends AppCompatActivity {
         categoryDropdownList.setLayoutManager(new LinearLayoutManager(this));
         gridRecycler.setLayoutManager(new GridLayoutManager(this, GRID_COLUMNS));
 
-        buildCategorySwitcher();
         showCategory(currentCategory);
     }
 
@@ -97,7 +96,7 @@ public class CategoryGridActivity extends AppCompatActivity {
         }
 
         List<String> categoryList = new ArrayList<>(categories);
-        categoryDropdownList.setAdapter(new CategoryDropdownAdapter(categoryList, category -> {
+        categoryDropdownList.setAdapter(new CategoryDropdownAdapter(categoryList, currentCategory, category -> {
             categoryDropdownList.setVisibility(View.GONE);
             showCategory(category);
         }));
@@ -108,6 +107,7 @@ public class CategoryGridActivity extends AppCompatActivity {
         currentCategory = category;
         tvTitle.setText(category);
         btnCategoryToggle.setText(category + "  ▾");
+        buildCategorySwitcher();
 
         List<MediaItem> filtered = new ArrayList<>();
         for (MediaItem item : getSourceList()) {
