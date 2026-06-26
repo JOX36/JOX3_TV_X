@@ -662,7 +662,10 @@ public class HomeActivity extends AppCompatActivity {
                     ? item.category : "General");
         }
         categoryAdapter.updateCategories(new ArrayList<>(categories));
-        selectedCategory = "Todos";
+        // El adapter ya preserva la selección anterior si todavía existe;
+        // solo sincronizamos esta variable con lo que él decidió, en vez
+        // de forzar "Todos" cada vez que se refresca el Home.
+        selectedCategory = categoryAdapter.getSelectedCategory();
     }
 
     private List<MediaItem> collectFavorites(AppState state) {

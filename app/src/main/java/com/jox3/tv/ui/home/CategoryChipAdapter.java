@@ -20,11 +20,12 @@ public class CategoryChipAdapter extends RecyclerView.Adapter<CategoryChipAdapte
 
     private final List<String> categories;
     private final OnCategorySelected listener;
-    private int selectedIndex = 0;
+    private String selectedCategory;
 
     public CategoryChipAdapter(List<String> categories, OnCategorySelected listener) {
         this.categories = categories;
         this.listener = listener;
+        this.selectedCategory = categories.isEmpty() ? null : categories.get(0);
     }
 
     @NonNull
@@ -40,17 +41,20 @@ public class CategoryChipAdapter extends RecyclerView.Adapter<CategoryChipAdapte
         String category = categories.get(position);
         holder.text.setText(category);
 
-        boolean isSelected = position == selectedIndex;
+        boolean isSelected = category.equals(selectedCategory);
         holder.text.setBackgroundResource(
                 isSelected ? R.drawable.bg_chip_active : R.drawable.bg_chip_inactive);
         holder.text.setTextColor(holder.text.getContext().getColor(
                 isSelected ? R.color.text_primary : R.color.text_secondary));
 
         holder.itemView.setOnClickListener(v -> {
-            int previous = selectedIndex;
-            selectedIndex = position;
-            notifyItemChanged(previous);
-            notifyItemChanged(selectedIndex);
+            String previous = selectedCategory;
+            selectedCategory = category;
+
+            int previousIndex = categories.indexOf(previous);
+            if (previousIndex >= 0) notifyItemChanged(previousIndex);
+            notifyItemChanged(position);
+
             if (listener != null) listener.onSelected(category);
         });
     }
@@ -60,11 +64,25 @@ public class CategoryChipAdapter extends RecyclerView.Adapter<CategoryChipAdapte
         return categories.size();
     }
 
+    /**
+     * Actualiza la lista de categorías disponibles SIN perder la selección
+     * actual: si la categoría que estaba marcada todavía existe en la
+     * lista nueva, se mantiene seleccionada. Solo si ya no existe (por
+     * ejemplo, cambiaste de cuenta) vuelve a la primera por defecto.
+     */
     public void updateCategories(List<String> newCategories) {
         categories.clear();
         categories.addAll(newCategories);
-        selectedIndex = 0;
+
+        if (selectedCategory == null || !categories.contains(selectedCategory)) {
+            selectedCategory = categories.isEmpty() ? null : categories.get(0);
+        }
         notifyDataSetChanged();
+    }
+
+    /** Para que HomeActivity pueda mantenerse sincronizado con la selección real. */
+    public String getSelectedCategory() {
+        return selectedCategory;
     }
 
     static class ChipHolder extends RecyclerView.ViewHolder {
