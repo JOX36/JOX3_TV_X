@@ -49,6 +49,7 @@ public class ContentListActivity extends AppCompatActivity {
 
     private AppPrefs prefs;
     private String contentType;
+    private String selectedCategory; // null = "Todos"
     private List<MediaItem> allItems = new ArrayList<>();
 
     @Override
@@ -142,7 +143,8 @@ public class ContentListActivity extends AppCompatActivity {
         renderSections("");
     }
 
-    /** Lista desplegable: una fila por cada categoría real presente en este catálogo. */
+    /** Lista desplegable: "Todos" + una fila por cada categoría real. Filtra
+     *  en esta misma pantalla (no navega a otra), y marca cuál está activa. */
     private void buildCategoryShortcuts() {
         LinkedHashSet<String> categories = new LinkedHashSet<>();
         for (MediaItem item : allItems) {
@@ -150,22 +152,32 @@ public class ContentListActivity extends AppCompatActivity {
                     ? item.category : "General");
         }
 
-        List<String> categoryList = new ArrayList<>(categories);
-        categoryDropdownList.setAdapter(new CategoryDropdownAdapter(categoryList, category -> {
+        List<String> categoryList = new ArrayList<>();
+        categoryList.add("Todos");
+        categoryList.addAll(categories);
+
+        String activeLabel = selectedCategory != null ? selectedCategory : "Todos";
+
+        categoryDropdownList.setAdapter(new CategoryDropdownAdapter(categoryList, activeLabel, category -> {
             categoryDropdownList.setVisibility(View.GONE);
-            openCategoryGrid(category);
+            selectedCategory = "Todos".equals(category) ? null : category;
+            btnCategoryToggle.setText((selectedCategory != null ? selectedCategory : "Categorías") + "  ▾");
+            buildCategoryShortcuts();
+            renderSections(inputSearch.getText() != null ? inputSearch.getText().toString().trim().toLowerCase() : "");
         }));
     }
 
-    /** Agrupa por categoría real y construye una sección por cada una. */
+    /** Agrupa por categoría real (o solo la seleccionada) y construye una sección por cada una. */
     private void renderSections(String query) {
         sectionsContainer.removeAllViews();
 
         List<MediaItem> filtered = new ArrayList<>();
         for (MediaItem item : allItems) {
-            if (query.isEmpty() || (item.name != null && item.name.toLowerCase().contains(query))) {
-                filtered.add(item);
-            }
+            String itemCategory = item.category != null && !item.category.isEmpty()
+                    ? item.category : "General";
+            boolean matchesCategory = selectedCategory == null || selectedCategory.equals(itemCategory);
+            boolean matchesQuery = query.isEmpty() || (item.name != null && item.name.toLowerCase().contains(query));
+            if (matchesCategory && matchesQuery) filtered.add(item);
         }
 
         layoutEmpty.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
