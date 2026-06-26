@@ -2,13 +2,27 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Solo se ve cuando el control remoto/D-pad selecciona este elemento.
          En celular (modo táctil) Android nunca activa state_focused así,
-         por lo que esto es invisible al tocar con el dedo. -->
+         por lo que esto es invisible al tocar con el dedo.
+         Solo contorno neón rojo, sin relleno interior. -->
     <item android:state_focused="true">
-        <shape android:shape="rectangle">
-            <stroke android:width="3dp" android:color="#FF5722" />
-            <corners android:radius="10dp" />
-            <solid android:color="#33FF5722" />
-        </shape>
+        <layer-list>
+            <!-- Capa exterior mas ancha y tenue: efecto de resplandor -->
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke android:width="6dp" android:color="#55FF1744" />
+                    <corners android:radius="10dp" />
+                    <solid android:color="@android:color/transparent" />
+                </shape>
+            </item>
+            <!-- Capa interior nítida: el contorno neón propiamente -->
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke android:width="2.5dp" android:color="#FF1744" />
+                    <corners android:radius="10dp" />
+                    <solid android:color="@android:color/transparent" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
     <item>
         <shape android:shape="rectangle">
