@@ -90,6 +90,9 @@
                 android:textAllCaps="false"
                 android:maxLines="1"
                 android:ellipsize="end"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="@drawable/bg_focus_overlay"
                 android:layout_marginEnd="10dp" />
 
             <TextView
@@ -106,7 +109,10 @@
                 android:textSize="13sp"
                 android:textAllCaps="false"
                 android:maxLines="1"
-                android:ellipsize="end" />
+                android:ellipsize="end"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="@drawable/bg_focus_overlay" />
         </LinearLayout>
     </LinearLayout>
 

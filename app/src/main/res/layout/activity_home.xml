@@ -50,8 +50,10 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:singleLine="true"
+                    android:padding="4dp"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <TextView
                     android:id="@+id/tab_channels"
@@ -62,8 +64,10 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp"
                     android:singleLine="true"
+                    android:padding="4dp"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <TextView
                     android:id="@+id/tab_movies"
@@ -74,8 +78,10 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp"
                     android:singleLine="true"
+                    android:padding="4dp"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <TextView
                     android:id="@+id/tab_series"
@@ -86,8 +92,10 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp"
                     android:singleLine="true"
+                    android:padding="4dp"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <TextView
                     android:id="@+id/tab_favorites"
@@ -98,8 +106,10 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp"
                     android:singleLine="true"
+                    android:padding="4dp"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <ImageView
                     android:id="@+id/btn_search_toggle"
@@ -109,7 +119,8 @@
                     android:padding="8dp"
                     android:src="@drawable/ic_search"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -123,7 +134,8 @@
             android:src="@drawable/ic_settings"
             android:tint="@color/accent"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:foreground="@drawable/bg_focus_overlay" />
     </LinearLayout>
 
     <!-- Barra de búsqueda expandible, oculta por defecto -->
@@ -240,7 +252,7 @@
                     android:background="@drawable/bg_card_rounded"
                     android:clipToOutline="true"
                     android:clickable="true"
-                    android:focusable="true">
+                    android:focusable="false">
 
                     <androidx.media3.ui.PlayerView
                         android:id="@+id/mini_player_view"
@@ -267,23 +279,29 @@
 
                     <ImageView
                         android:id="@+id/btn_mini_expand"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
                         android:layout_gravity="top|end"
                         android:layout_margin="8dp"
                         android:background="#88000000"
                         android:padding="6dp"
-                        android:src="@drawable/ic_expand" />
+                        android:src="@drawable/ic_expand"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="@drawable/bg_focus_overlay" />
 
                     <ImageView
                         android:id="@+id/btn_mini_mute"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:layout_gravity="bottom|end"
                         android:layout_margin="8dp"
                         android:background="#88000000"
                         android:padding="6dp"
-                        android:src="@drawable/ic_mute" />
+                        android:src="@drawable/ic_mute"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="@drawable/bg_focus_overlay" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -363,6 +381,7 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/row_continue"
+                    android:descendantFocusability="afterDescendants"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -392,6 +411,7 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/row_favorites"
+                    android:descendantFocusability="afterDescendants"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -424,16 +444,19 @@
                     android:id="@+id/btn_see_all_live"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:padding="4dp"
                     android:text="Ver todo ›"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/row_categories"
+                    android:descendantFocusability="afterDescendants"
                 android:layout_width="match_parent"
                 android:layout_height="36dp"
                 android:orientation="horizontal"
@@ -444,6 +467,7 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/row_live"
+                    android:descendantFocusability="afterDescendants"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -475,16 +499,19 @@
                     android:id="@+id/btn_see_all_movies"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:padding="4dp"
                     android:text="Ver todo ›"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/row_movies"
+                    android:descendantFocusability="afterDescendants"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -516,16 +543,19 @@
                     android:id="@+id/btn_see_all_series"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:padding="4dp"
                     android:text="Ver todo ›"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_focus_overlay" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/row_series"
+                    android:descendantFocusability="afterDescendants"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
