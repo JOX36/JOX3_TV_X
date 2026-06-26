@@ -59,6 +59,7 @@ public class HomeActivity extends AppCompatActivity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private ViewPager2 heroPager;
+    private ImageView btnHeroPrev, btnHeroNext;
     private LinearLayout heroDots;
     private HeroSlideAdapter heroAdapter;
     private final List<MediaItem> heroItems = new ArrayList<>();
@@ -342,6 +343,8 @@ public class HomeActivity extends AppCompatActivity {
         btnGoSettings = findViewById(R.id.btn_go_settings);
 
         heroPager = findViewById(R.id.hero_pager);
+        btnHeroPrev = findViewById(R.id.btn_hero_prev);
+        btnHeroNext = findViewById(R.id.btn_hero_next);
         heroDots = findViewById(R.id.hero_dots);
 
         miniPlayerContainer = findViewById(R.id.mini_player_container);
@@ -400,6 +403,19 @@ public class HomeActivity extends AppCompatActivity {
             @Override public void onPageSelected(int position) {
                 updateHeroDots(position);
             }
+        });
+
+        btnHeroPrev.setOnClickListener(v -> {
+            int current = heroPager.getCurrentItem();
+            int count = heroAdapter.getItemCount();
+            if (count == 0) return;
+            heroPager.setCurrentItem((current - 1 + count) % count, true);
+        });
+        btnHeroNext.setOnClickListener(v -> {
+            int current = heroPager.getCurrentItem();
+            int count = heroAdapter.getItemCount();
+            if (count == 0) return;
+            heroPager.setCurrentItem((current + 1) % count, true);
         });
     }
 
