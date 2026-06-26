@@ -78,6 +78,7 @@ public class PlayerActivity extends AppCompatActivity {
     private TextView channelPanelCategoryToggle;
     private RecyclerView channelPanelCategoryDropdown;
     private boolean channelPanelOpen = false;
+    private String currentChannelPanelCategory = null;
 
     private Button btnPlayPause, btnRewind, btnForward;
     private Button btnAudio, btnSubs, btnPip, btnStopVod;
@@ -884,7 +885,6 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void openChannelPanel() {
         if (item == null) return;
-        buildChannelPanelCategorySwitcher();
 
         String currentCategory = item.category != null && !item.category.isEmpty()
                 ? item.category : "General";
@@ -905,7 +905,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         channelPanelCategoryDropdown.setLayoutManager(new LinearLayoutManager(this));
         channelPanelCategoryDropdown.setAdapter(
-                new com.jox3.tv.ui.home.CategoryDropdownAdapter(categoryList, category -> {
+                new com.jox3.tv.ui.home.CategoryDropdownAdapter(categoryList, currentChannelPanelCategory, category -> {
                     channelPanelCategoryDropdown.setVisibility(View.GONE);
                     showChannelPanelCategory(category);
                 }));
@@ -927,6 +927,8 @@ public class PlayerActivity extends AppCompatActivity {
 
         channelPanelTitle.setText(category + " (" + sameCategory.size() + ")");
         channelPanelCategoryToggle.setText(category + "  ▾");
+        currentChannelPanelCategory = category;
+        buildChannelPanelCategorySwitcher();
         channelPanelRecycler.setLayoutManager(new LinearLayoutManager(this));
         channelPanelRecycler.setAdapter(new ChannelPanelAdapter(sameCategory));
     }
