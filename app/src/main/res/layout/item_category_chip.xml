@@ -10,4 +10,7 @@
     android:textColor="@color/text_secondary"
     android:textSize="13sp"
     android:textStyle="bold"
-    android:singleLine="true" />
+    android:singleLine="true"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="@drawable/bg_focus_overlay" />
