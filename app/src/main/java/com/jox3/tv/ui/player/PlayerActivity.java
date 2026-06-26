@@ -770,7 +770,7 @@ public class PlayerActivity extends AppCompatActivity {
                 if (s == Player.STATE_READY) {
                     setStatus(item.type.equals(MediaItem.LIVE) ? "EN VIVO" : "");
                     retryCount = 0;
-                    if (!isTv && !barsVisible) showBars();
+                    if (!barsVisible) showBars();
                     if (!item.type.equals(MediaItem.LIVE))
                         handler.post(seekUpdateRunnable);
                 }
@@ -1048,12 +1048,10 @@ public class PlayerActivity extends AppCompatActivity {
         barsVisible = true;
         topBar.setVisibility(View.VISIBLE);
         bottomBar.setVisibility(View.VISIBLE);
-        if (!isTv) {
-            handler.removeCallbacks(this::hideBars);
-            handler.postDelayed(this::hideBars, 4000);
-            if (!item.type.equals(MediaItem.LIVE))
-                handler.post(seekUpdateRunnable);
-        }
+        handler.removeCallbacks(this::hideBars);
+        handler.postDelayed(this::hideBars, 4000);
+        if (item != null && !item.type.equals(MediaItem.LIVE))
+            handler.post(seekUpdateRunnable);
     }
 
     private void hideBars() {
