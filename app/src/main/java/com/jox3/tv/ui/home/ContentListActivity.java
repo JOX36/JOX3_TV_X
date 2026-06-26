@@ -37,6 +37,8 @@ import java.util.Map;
  */
 public class ContentListActivity extends AppCompatActivity {
 
+    private static final int GRID_COLUMNS = 3;
+
     public static final String EXTRA_TYPE = "extra_type"; // "live" | "vod" | "series" | "favorites"
 
     private ImageView btnBack, btnSearchToggle;
@@ -184,6 +186,19 @@ public class ContentListActivity extends AppCompatActivity {
         scrollContent.setVisibility(filtered.isEmpty() ? View.GONE : View.VISIBLE);
         if (filtered.isEmpty()) return;
 
+        if (selectedCategory != null) {
+            // Una sola categoría específica: grilla vertical de varias
+            // columnas (mucho mejor para navegar cientos/miles de items
+            // que una fila horizontal interminable).
+            renderSingleCategoryGrid(filtered);
+            return;
+        }
+
+        renderGroupedHorizontalSections(filtered);
+    }
+
+    /** "Todos": agrupado por categoría, cada una en su propia fila horizontal. */
+    private void renderGroupedHorizontalSections(List<MediaItem> filtered) {
         Map<String, List<MediaItem>> grouped = new LinkedHashMap<>();
         for (MediaItem item : filtered) {
             String category = item.category != null && !item.category.isEmpty()
@@ -207,6 +222,22 @@ public class ContentListActivity extends AppCompatActivity {
 
             sectionsContainer.addView(sectionView);
         }
+    }
+
+    /** Una categoría específica: grilla vertical, navegable hacia abajo. */
+    private void renderSingleCategoryGrid(List<MediaItem> filtered) {
+        RecyclerView grid = new RecyclerView(this);
+        grid.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        grid.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, GRID_COLUMNS));
+        grid.setPadding(dpToPx(14), 0, dpToPx(14), dpToPx(20));
+        grid.setClipToPadding(false);
+        grid.setAdapter(new MediaCardAdapter(filtered, prefs, this::openItem, R.layout.item_media_card_grid));
+        sectionsContainer.addView(grid);
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     private void openCategoryGrid(String category) {
