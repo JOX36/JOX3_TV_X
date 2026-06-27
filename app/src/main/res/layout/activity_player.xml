@@ -15,6 +15,8 @@
     <!-- Panel lateral: parrilla de canales de la categoría actual -->
     <LinearLayout
         android:id="@+id/channel_panel"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:layout_width="290dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
@@ -51,10 +53,12 @@
             android:singleLine="true"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="@drawable/bg_focus_overlay" />
+            android:stateListAnimator="@animator/focus_scale_button" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/channel_panel_category_dropdown"
+        android:clipChildren="false"
+        android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -65,6 +69,8 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/channel_panel_recycler"
+        android:clipChildren="false"
+        android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
@@ -142,7 +148,7 @@
                 android:textAllCaps="false"
                 android:textColor="@color/text_primary"
                 android:textSize="12sp"
-                android:foreground="@drawable/bg_focus_overlay" />
+                android:stateListAnimator="@animator/focus_scale_button" />
 
             <Button
                 android:id="@+id/btn_skip_next"
@@ -154,7 +160,7 @@
                 android:textAllCaps="false"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp"
-                android:foreground="@drawable/bg_focus_overlay" />
+                android:stateListAnimator="@animator/focus_scale_button" />
         </LinearLayout>
     </LinearLayout>
 
@@ -178,7 +184,7 @@
             android:padding="16dp"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="@drawable/bg_focus_overlay"
+            android:stateListAnimator="@animator/focus_scale_button"
             android:visibility="gone">
 
             <ImageView
@@ -199,6 +205,8 @@
     <!-- Barra superior -->
     <LinearLayout
         android:id="@+id/top_bar"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
@@ -216,7 +224,7 @@
             android:src="@drawable/ic_back"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="@drawable/bg_focus_overlay" />
+            android:stateListAnimator="@animator/focus_scale_button" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -294,12 +302,14 @@
             android:src="@drawable/ic_star_outline"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="@drawable/bg_focus_overlay" />
+            android:stateListAnimator="@animator/focus_scale_button" />
     </LinearLayout>
 
     <!-- Barra inferior -->
     <LinearLayout
         android:id="@+id/bottom_bar"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -355,6 +365,8 @@
             <!-- Botones específicos de EN VIVO -->
             <LinearLayout
                 android:id="@+id/layout_live_btns"
+        android:clipChildren="false"
+        android:clipToPadding="false"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -371,7 +383,7 @@
                     android:padding="10dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_skip_previous"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_pip_live"
@@ -382,7 +394,7 @@
                     android:padding="10dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_pip"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_stop"
@@ -393,7 +405,7 @@
                     android:padding="10dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_stop"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_next"
@@ -404,7 +416,7 @@
                     android:padding="10dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_skip_next"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_channel_list"
@@ -415,7 +427,7 @@
                     android:padding="10dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_channel_list"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_refresh"
@@ -426,12 +438,14 @@
                     android:padding="10dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_refresh"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
             </LinearLayout>
 
             <!-- Botones específicos de VOD -->
             <LinearLayout
                 android:id="@+id/layout_vod_btns"
+        android:clipChildren="false"
+        android:clipToPadding="false"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -448,7 +462,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_skip_previous"
-                    android:foreground="@drawable/bg_focus_overlay"
+                    android:stateListAnimator="@animator/focus_scale_button"
                     android:visibility="gone" />
 
                 <Button
@@ -460,7 +474,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_rewind"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <FrameLayout
                     android:layout_width="58dp"
@@ -483,7 +497,7 @@
                         android:background="@android:color/transparent"
                         android:text=""
                         android:drawableTop="@drawable/ic_pause"
-                        android:foreground="@drawable/bg_focus_overlay" />
+                        android:stateListAnimator="@animator/focus_scale_button" />
                 </FrameLayout>
 
                 <Button
@@ -495,7 +509,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_forward"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_next_ep"
@@ -506,7 +520,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_skip_next"
-                    android:foreground="@drawable/bg_focus_overlay"
+                    android:stateListAnimator="@animator/focus_scale_button"
                     android:visibility="gone" />
 
                 <Button
@@ -518,7 +532,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_audio"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_subs"
@@ -529,7 +543,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_subtitles"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_speed"
@@ -543,7 +557,7 @@
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:textAllCaps="false"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_pip"
@@ -554,7 +568,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_pip"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
 
                 <Button
                     android:id="@+id/btn_stop_vod"
@@ -565,7 +579,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_stop"
-                    android:foreground="@drawable/bg_focus_overlay" />
+                    android:stateListAnimator="@animator/focus_scale_button" />
             </LinearLayout>
 
             <Button
@@ -577,7 +591,7 @@
                 android:padding="8dp"
                 android:text=""
                 android:drawableTop="@drawable/ic_lock_open"
-                android:foreground="@drawable/bg_focus_overlay" />
+                android:stateListAnimator="@animator/focus_scale_button" />
         </LinearLayout>
     </LinearLayout>
 
