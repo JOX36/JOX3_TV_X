@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -161,8 +162,16 @@ public class PlayerActivity extends AppCompatActivity {
         prefs = new AppPrefs(this);
         state = AppState.get();
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        // No todos los TV box reportan FEATURE_LEANBACK (eso es más bien
+        // "Android TV oficial"). Muchos boxes genéricos con control remoto
+        // no lo tienen, pero sí carecen de pantalla táctil — eso también
+        // cuenta como "es un TV box, activa navegación D-pad".
         isTv = getPackageManager().hasSystemFeature(
-                android.content.pm.PackageManager.FEATURE_LEANBACK);
+                    android.content.pm.PackageManager.FEATURE_LEANBACK)
+                || getPackageManager().hasSystemFeature(
+                    android.content.pm.PackageManager.FEATURE_TELEVISION)
+                || !getPackageManager().hasSystemFeature(
+                    android.content.pm.PackageManager.FEATURE_TOUCHSCREEN);
 
         item = (MediaItem) getIntent().getSerializableExtra("item");
         if (item == null) {
@@ -892,6 +901,19 @@ public class PlayerActivity extends AppCompatActivity {
 
         channelPanel.setVisibility(View.VISIBLE);
         channelPanelOpen = true;
+
+        // Con control remoto, el foco debe entrar a la lista de canales de
+        // inmediato; si no, el D-pad sigue "atrapado" en el botón de la
+        // barra inferior aunque el panel ya esté tapando la pantalla.
+        if (isTv) {
+            channelPanelRecycler.post(() -> {
+                if (channelPanelRecycler.getChildCount() > 0) {
+                    channelPanelRecycler.getChildAt(0).requestFocus();
+                } else {
+                    channelPanelRecycler.requestFocus();
+                }
+            });
+        }
     }
 
     /** Construye la lista desplegable con todas las categorías de canales disponibles. */
@@ -908,12 +930,33 @@ public class PlayerActivity extends AppCompatActivity {
                 new com.jox3.tv.ui.home.CategoryDropdownAdapter(categoryList, currentChannelPanelCategory, category -> {
                     channelPanelCategoryDropdown.setVisibility(View.GONE);
                     showChannelPanelCategory(category);
+                    if (isTv) {
+                        channelPanelRecycler.post(() -> {
+                            if (channelPanelRecycler.getChildCount() > 0) {
+                                channelPanelRecycler.getChildAt(0).requestFocus();
+                            }
+                        });
+                    }
                 }));
     }
 
     private void toggleChannelPanelCategoryDropdown() {
         boolean isVisible = channelPanelCategoryDropdown.getVisibility() == View.VISIBLE;
         channelPanelCategoryDropdown.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+
+        if (isTv) {
+            if (!isVisible) {
+                // Se acaba de abrir: el foco entra a la primera categoría.
+                channelPanelCategoryDropdown.post(() -> {
+                    if (channelPanelCategoryDropdown.getChildCount() > 0) {
+                        channelPanelCategoryDropdown.getChildAt(0).requestFocus();
+                    }
+                });
+            } else if (channelPanelCategoryToggle != null) {
+                // Se acaba de cerrar: el foco vuelve al botón que lo abrió.
+                channelPanelCategoryToggle.post(channelPanelCategoryToggle::requestFocus);
+            }
+        }
     }
 
     /** Cambia el panel a otra categoría de canales, sin cerrar ni salir del reproductor. */
@@ -936,6 +979,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void closeChannelPanel() {
         channelPanel.setVisibility(View.GONE);
         channelPanelOpen = false;
+        if (isTv && btnChannelList != null) btnChannelList.post(btnChannelList::requestFocus);
     }
 
     private void refreshChannelPanelSelection() {
@@ -1052,6 +1096,34 @@ public class PlayerActivity extends AppCompatActivity {
         handler.postDelayed(this::hideBars, 4000);
         if (item != null && !item.type.equals(MediaItem.LIVE))
             handler.post(seekUpdateRunnable);
+
+        // Con control remoto, los botones recién aparecidos necesitan que
+        // alguno tenga el foco puesto de entrada; si no, las flechas del
+        // D-pad no tienen "desde dónde" moverse y parecen no responder.
+        // Solo lo hacemos si nada dentro de las barras ya tiene foco (para
+        // no robarle el foco a un botón que el usuario ya había
+        // seleccionado, p.ej. al reabrir las barras automáticamente).
+        if (isTv) {
+            View currentFocus = getCurrentFocus();
+            boolean focusInsideBars = currentFocus != null
+                    && (isDescendantOf(currentFocus, topBar) || isDescendantOf(currentFocus, bottomBar));
+            if (!focusInsideBars) {
+                View target = (item != null && MediaItem.LIVE.equals(item.type))
+                        ? btnChannelList : btnPlayPause;
+                if (target != null) target.post(target::requestFocus);
+            }
+        }
+    }
+
+    /** Comprueba si una vista es descendiente de un posible contenedor. */
+    private boolean isDescendantOf(View view, View possibleParent) {
+        if (view == null || possibleParent == null) return false;
+        ViewParent parent = view.getParent();
+        while (parent != null) {
+            if (parent == possibleParent) return true;
+            parent = parent.getParent();
+        }
+        return false;
     }
 
     private void hideBars() {
@@ -1258,10 +1330,21 @@ public class PlayerActivity extends AppCompatActivity {
         if (!isTv || e.getAction() != android.view.KeyEvent.ACTION_DOWN)
             return super.dispatchKeyEvent(e);
 
-        // BACK y STOP siempre cierran, sin importar si los controles están
-        // visibles o no.
+        // BACK y STOP: si hay un panel/desplegable abierto sobre la
+        // pantalla, lo cierran a él primero (igual que el toque en
+        // celular sobre el reproductor). Solo si todo está cerrado, BACK
+        // sale del reproductor.
         if (e.getKeyCode() == android.view.KeyEvent.KEYCODE_BACK
                 || e.getKeyCode() == android.view.KeyEvent.KEYCODE_MEDIA_STOP) {
+            if (channelPanelCategoryDropdown != null
+                    && channelPanelCategoryDropdown.getVisibility() == View.VISIBLE) {
+                toggleChannelPanelCategoryDropdown();
+                return true;
+            }
+            if (channelPanelOpen) {
+                closeChannelPanel();
+                return true;
+            }
             exitPlayer();
             return true;
         }
