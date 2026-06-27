@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Versión más sutil para filas de lista (canales, categorías), donde una
+    fila ocupa todo el ancho y está pegada a las de arriba/abajo. Un escalado
+    grande haría que se monte sobre las filas vecinas, así que aquí el efecto
+    es más leve: leve aumento + sombra, suficiente para notarse sin que la
+    fila se superponga de forma molesta.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <set>
+            <objectAnimator
+                android:propertyName="scaleX"
+                android:valueTo="1.05"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="scaleY"
+                android:valueTo="1.08"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="translationZ"
+                android:valueTo="6"
+                android:valueType="floatType"
+                android:duration="120" />
+        </set>
+    </item>
+    <item>
+        <set>
+            <objectAnimator
+                android:propertyName="scaleX"
+                android:valueTo="1.0"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="scaleY"
+                android:valueTo="1.0"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="translationZ"
+                android:valueTo="0"
+                android:valueType="floatType"
+                android:duration="120" />
+        </set>
+    </item>
+</selector>
