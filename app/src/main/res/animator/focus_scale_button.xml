@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Reemplaza el contorno de color por un efecto de "lupa": el botón
+    aumenta de tamaño cuando el control remoto lo selecciona (state_focused),
+    y vuelve a su tamaño normal al perder el foco. En modo táctil Android
+    nunca activa state_focused al tocar, así que esto es invisible en celular.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <set>
+            <objectAnimator
+                android:propertyName="scaleX"
+                android:valueTo="1.22"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="scaleY"
+                android:valueTo="1.22"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="translationZ"
+                android:valueTo="8"
+                android:valueType="floatType"
+                android:duration="120" />
+        </set>
+    </item>
+    <item>
+        <set>
+            <objectAnimator
+                android:propertyName="scaleX"
+                android:valueTo="1.0"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="scaleY"
+                android:valueTo="1.0"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="translationZ"
+                android:valueTo="0"
+                android:valueType="floatType"
+                android:duration="120" />
+        </set>
+    </item>
+</selector>
