@@ -10,17 +10,17 @@
         <set>
             <objectAnimator
                 android:propertyName="scaleX"
-                android:valueTo="1.22"
+                android:valueTo="1.33"
                 android:valueType="floatType"
                 android:duration="120" />
             <objectAnimator
                 android:propertyName="scaleY"
-                android:valueTo="1.22"
+                android:valueTo="1.33"
                 android:valueType="floatType"
                 android:duration="120" />
             <objectAnimator
                 android:propertyName="translationZ"
-                android:valueTo="8"
+                android:valueTo="12"
                 android:valueType="floatType"
                 android:duration="120" />
         </set>
