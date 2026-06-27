@@ -1258,30 +1258,49 @@ public class PlayerActivity extends AppCompatActivity {
         if (!isTv || e.getAction() != android.view.KeyEvent.ACTION_DOWN)
             return super.dispatchKeyEvent(e);
 
-        if (!barsVisible && !screenLocked) showBars();
+        // BACK y STOP siempre cierran, sin importar si los controles están
+        // visibles o no.
+        if (e.getKeyCode() == android.view.KeyEvent.KEYCODE_BACK
+                || e.getKeyCode() == android.view.KeyEvent.KEYCODE_MEDIA_STOP) {
+            exitPlayer();
+            return true;
+        }
 
+        // Teclas físicas de medios: siempre funcionan, no compiten con la
+        // navegación de foco (no son flechas/Enter).
         switch (e.getKeyCode()) {
-            case android.view.KeyEvent.KEYCODE_DPAD_CENTER:
-            case android.view.KeyEvent.KEYCODE_ENTER:
             case android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                 togglePlayPause(); return true;
-            case android.view.KeyEvent.KEYCODE_DPAD_LEFT:
             case android.view.KeyEvent.KEYCODE_MEDIA_REWIND:
-                if (player != null && !item.type.equals(MediaItem.LIVE))
-                    player.seekTo(Math.max(0, player.getCurrentPosition() - 10000));
-                else navigateChannel(-1); return true;
-            case android.view.KeyEvent.KEYCODE_DPAD_RIGHT:
+                if (player != null) player.seekTo(Math.max(0, player.getCurrentPosition() - 10000));
+                return true;
             case android.view.KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-                if (player != null && !item.type.equals(MediaItem.LIVE))
-                    player.seekTo(Math.min(player.getDuration(), player.getCurrentPosition() + 10000));
-                else navigateChannel(1); return true;
-            case android.view.KeyEvent.KEYCODE_DPAD_UP: navigateChannel(-1); return true;
-            case android.view.KeyEvent.KEYCODE_DPAD_DOWN: navigateChannel(1); return true;
-            case android.view.KeyEvent.KEYCODE_BACK:
-            case android.view.KeyEvent.KEYCODE_MEDIA_STOP:
-                exitPlayer(); return true;
+                if (player != null) player.seekTo(Math.min(player.getDuration(), player.getCurrentPosition() + 10000));
+                return true;
         }
-        return super.dispatchKeyEvent(e);
+
+        // Con los controles VISIBLES: dejamos que el sistema maneje la
+        // navegación normal entre botones (foco). No interceptamos nada,
+        // para no robarle el Enter/flechas al botón que esté seleccionado.
+        if (barsVisible) {
+            if (!screenLocked) {
+                handler.removeCallbacks(this::hideBars);
+                handler.postDelayed(this::hideBars, 4000);
+            }
+            return super.dispatchKeyEvent(e);
+        }
+
+        // Con los controles OCULTOS: la primera tecla solo los muestra
+        // (igual que el primer toque en celular), excepto Enter/Centro que
+        // además alterna play/pausa como atajo rápido de conveniencia
+        // (igual que YouTube/Netflix en Android TV).
+        if (!screenLocked) showBars();
+
+        if (e.getKeyCode() == android.view.KeyEvent.KEYCODE_DPAD_CENTER
+                || e.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER) {
+            togglePlayPause();
+        }
+        return true;
     }
 
     @Override protected void onPause() {
