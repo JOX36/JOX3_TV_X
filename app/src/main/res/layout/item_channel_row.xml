@@ -6,7 +6,8 @@
     android:gravity="center_vertical"
     android:padding="12dp"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:foreground="@drawable/bg_focus_overlay">
 
     <View
         android:id="@+id/channel_selected_bar"

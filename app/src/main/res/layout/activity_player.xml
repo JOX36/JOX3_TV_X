@@ -50,7 +50,8 @@
             android:textSize="13sp"
             android:singleLine="true"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:foreground="@drawable/bg_focus_overlay" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/channel_panel_category_dropdown"
@@ -140,7 +141,8 @@
                 android:text="Reproducir"
                 android:textAllCaps="false"
                 android:textColor="@color/text_primary"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:foreground="@drawable/bg_focus_overlay" />
 
             <Button
                 android:id="@+id/btn_skip_next"
@@ -151,7 +153,8 @@
                 android:text="Omitir"
                 android:textAllCaps="false"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:foreground="@drawable/bg_focus_overlay" />
         </LinearLayout>
     </LinearLayout>
 
@@ -173,6 +176,9 @@
             android:orientation="horizontal"
             android:gravity="center"
             android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="@drawable/bg_focus_overlay"
             android:visibility="gone">
 
             <ImageView
@@ -209,7 +215,8 @@
             android:padding="2dp"
             android:src="@drawable/ic_back"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:foreground="@drawable/bg_focus_overlay" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -286,7 +293,8 @@
             android:layout_height="26dp"
             android:src="@drawable/ic_star_outline"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:foreground="@drawable/bg_focus_overlay" />
     </LinearLayout>
 
     <!-- Barra inferior -->
@@ -362,7 +370,8 @@
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_skip_previous" />
+                    android:drawableTop="@drawable/ic_skip_previous"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_pip_live"
@@ -372,7 +381,8 @@
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_pip" />
+                    android:drawableTop="@drawable/ic_pip"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_stop"
@@ -382,7 +392,8 @@
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_stop" />
+                    android:drawableTop="@drawable/ic_stop"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_next"
@@ -392,7 +403,8 @@
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_skip_next" />
+                    android:drawableTop="@drawable/ic_skip_next"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_channel_list"
@@ -402,7 +414,8 @@
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_channel_list" />
+                    android:drawableTop="@drawable/ic_channel_list"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_refresh"
@@ -412,7 +425,8 @@
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_refresh" />
+                    android:drawableTop="@drawable/ic_refresh"
+                    android:foreground="@drawable/bg_focus_overlay" />
             </LinearLayout>
 
             <!-- Botones específicos de VOD -->
@@ -434,6 +448,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_skip_previous"
+                    android:foreground="@drawable/bg_focus_overlay"
                     android:visibility="gone" />
 
                 <Button
@@ -444,7 +459,8 @@
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_rewind" />
+                    android:drawableTop="@drawable/ic_rewind"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <FrameLayout
                     android:layout_width="58dp"
@@ -466,7 +482,8 @@
                         android:padding="14dp"
                         android:background="@android:color/transparent"
                         android:text=""
-                        android:drawableTop="@drawable/ic_pause" />
+                        android:drawableTop="@drawable/ic_pause"
+                        android:foreground="@drawable/bg_focus_overlay" />
                 </FrameLayout>
 
                 <Button
@@ -477,7 +494,8 @@
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_forward" />
+                    android:drawableTop="@drawable/ic_forward"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_next_ep"
@@ -488,6 +506,7 @@
                     android:padding="8dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_skip_next"
+                    android:foreground="@drawable/bg_focus_overlay"
                     android:visibility="gone" />
 
                 <Button
@@ -498,7 +517,8 @@
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_audio" />
+                    android:drawableTop="@drawable/ic_audio"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_subs"
@@ -508,7 +528,8 @@
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_subtitles" />
+                    android:drawableTop="@drawable/ic_subtitles"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_speed"
@@ -521,7 +542,8 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:textAllCaps="false" />
+                    android:textAllCaps="false"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_pip"
@@ -531,7 +553,8 @@
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_pip" />
+                    android:drawableTop="@drawable/ic_pip"
+                    android:foreground="@drawable/bg_focus_overlay" />
 
                 <Button
                     android:id="@+id/btn_stop_vod"
@@ -541,7 +564,8 @@
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
-                    android:drawableTop="@drawable/ic_stop" />
+                    android:drawableTop="@drawable/ic_stop"
+                    android:foreground="@drawable/bg_focus_overlay" />
             </LinearLayout>
 
             <Button
@@ -552,7 +576,8 @@
                 android:minWidth="0dp"
                 android:padding="8dp"
                 android:text=""
-                android:drawableTop="@drawable/ic_lock_open" />
+                android:drawableTop="@drawable/ic_lock_open"
+                android:foreground="@drawable/bg_focus_overlay" />
         </LinearLayout>
     </LinearLayout>
 

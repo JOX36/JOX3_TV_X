@@ -7,4 +7,5 @@
     android:textSize="14sp"
     android:clickable="true"
     android:focusable="true"
-    android:background="?android:attr/selectableItemBackground" />
+    android:background="?android:attr/selectableItemBackground"
+    android:foreground="@drawable/bg_focus_overlay" />
