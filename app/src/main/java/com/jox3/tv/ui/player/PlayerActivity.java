@@ -1381,16 +1381,16 @@ public class PlayerActivity extends AppCompatActivity {
             return super.dispatchKeyEvent(e);
         }
 
-        // Con los controles OCULTOS: la primera tecla solo los muestra
-        // (igual que el primer toque en celular), excepto Enter/Centro que
-        // además alterna play/pausa como atajo rápido de conveniencia
-        // (igual que YouTube/Netflix en Android TV).
+        // Con los controles OCULTOS: CUALQUIER tecla (flechas, Centro/Enter,
+        // lo que sea) solo los muestra, igual que el primer toque en
+        // celular. Ya NO alterna play/pausa aquí: antes lo hacía como
+        // "atajo rápido", pero eso causaba que aparecer el panel pausara
+        // el video sin que el usuario lo pidiera. Ahora Centro/Enter solo
+        // actúa sobre play/pausa cuando los controles YA están visibles y
+        // el foco está realmente sobre el botón de play/pausa (lo maneja
+        // el bloque "if (barsVisible)" de arriba, vía clic normal del
+        // botón enfocado).
         if (!screenLocked) showBars();
-
-        if (e.getKeyCode() == android.view.KeyEvent.KEYCODE_DPAD_CENTER
-                || e.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER) {
-            togglePlayPause();
-        }
         return true;
     }
 
