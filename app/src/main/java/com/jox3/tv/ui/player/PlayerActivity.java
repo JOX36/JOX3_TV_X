@@ -1092,8 +1092,8 @@ public class PlayerActivity extends AppCompatActivity {
         barsVisible = true;
         topBar.setVisibility(View.VISIBLE);
         bottomBar.setVisibility(View.VISIBLE);
-        handler.removeCallbacks(this::hideBars);
-        handler.postDelayed(this::hideBars, 4000);
+        handler.removeCallbacks(hideBarsRunnable);
+        handler.postDelayed(hideBarsRunnable, 4000);
         if (item != null && !item.type.equals(MediaItem.LIVE))
             handler.post(seekUpdateRunnable);
 
@@ -1158,6 +1158,14 @@ public class PlayerActivity extends AppCompatActivity {
     private final Runnable hideGestureRunnable = () -> {
         if (gestureIndicator != null) gestureIndicator.setVisibility(View.GONE);
     };
+
+    // OJO: este Runnable debe ser un único campo fijo, NUNCA "this::hideBars"
+    // repetido en cada llamada. Una referencia de método (method reference)
+    // crea un objeto NUEVO cada vez que se evalúa, así que
+    // handler.removeCallbacks(this::hideBars) nunca cancelaba el temporizador
+    // anterior — por eso las barras/el panel se ocultaban antes de tiempo
+    // (a veces casi de inmediato) en vez de esperar los 4 segundos completos.
+    private final Runnable hideBarsRunnable = this::hideBars;
 
     private void enterPip() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -1367,8 +1375,8 @@ public class PlayerActivity extends AppCompatActivity {
         // para no robarle el Enter/flechas al botón que esté seleccionado.
         if (barsVisible) {
             if (!screenLocked) {
-                handler.removeCallbacks(this::hideBars);
-                handler.postDelayed(this::hideBars, 4000);
+                handler.removeCallbacks(hideBarsRunnable);
+                handler.postDelayed(hideBarsRunnable, 4000);
             }
             return super.dispatchKeyEvent(e);
         }
