@@ -16,6 +16,7 @@
         android:textStyle="bold"
         android:clickable="true"
         android:focusable="true"
+        android:stateListAnimator="@animator/focus_scale_row"
         android:padding="4dp" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -25,6 +26,7 @@
         android:orientation="horizontal"
         android:paddingStart="18dp"
         android:paddingEnd="18dp"
+        android:clipChildren="false"
         android:clipToPadding="false" />
 
 </LinearLayout>

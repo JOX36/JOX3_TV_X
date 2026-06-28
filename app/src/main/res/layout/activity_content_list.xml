@@ -25,7 +25,8 @@
             android:padding="8dp"
             android:src="@drawable/ic_back"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_button" />
 
         <TextView
             android:id="@+id/tv_screen_title"
@@ -69,7 +70,8 @@
             android:textSize="13sp"
             android:singleLine="true"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_button" />
 
         <ImageView
             android:id="@+id/btn_search_toggle"
@@ -79,7 +81,8 @@
             android:padding="8dp"
             android:src="@drawable/ic_search"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_button" />
     </LinearLayout>
 
     <!-- Lista vertical de categorías, oculta por defecto -->
@@ -92,6 +95,8 @@
         android:layout_marginBottom="14dp"
         android:background="@drawable/bg_card_rounded"
         android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:visibility="gone" />
 
     <!-- Buscador expandible, oculto por defecto -->
@@ -152,6 +157,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:paddingBottom="24dp" />
     </ScrollView>
 

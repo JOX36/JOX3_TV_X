@@ -24,7 +24,8 @@
             android:padding="8dp"
             android:src="@drawable/ic_back"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_button" />
 
         <TextView
             android:id="@+id/tv_category_title"
@@ -61,7 +62,8 @@
         android:textSize="13sp"
         android:singleLine="true"
         android:clickable="true"
-        android:focusable="true" />
+        android:focusable="true"
+        android:stateListAnimator="@animator/focus_scale_button" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/category_dropdown_list"
@@ -71,6 +73,8 @@
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="14dp"
         android:background="@drawable/bg_card_rounded"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -81,6 +85,7 @@
         android:paddingStart="14dp"
         android:paddingEnd="14dp"
         android:paddingBottom="20dp"
+        android:clipChildren="false"
         android:clipToPadding="false" />
 
 </LinearLayout>
