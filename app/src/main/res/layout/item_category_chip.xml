@@ -13,4 +13,4 @@
     android:singleLine="true"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="@drawable/bg_focus_overlay" />
+    android:stateListAnimator="@animator/focus_scale_button" />

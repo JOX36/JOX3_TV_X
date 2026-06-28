@@ -237,41 +237,29 @@
                             android:id="@+id/hero_pager"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent" />
-
-                        <ImageView
-                            android:id="@+id/btn_hero_prev"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_gravity="center_vertical|start"
-                            android:layout_margin="8dp"
-                            android:background="#88000000"
-                            android:padding="8dp"
-                            android:src="@drawable/ic_arrow_prev"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="@drawable/bg_focus_overlay" />
-
-                        <ImageView
-                            android:id="@+id/btn_hero_next"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_gravity="center_vertical|end"
-                            android:layout_margin="8dp"
-                            android:background="#88000000"
-                            android:padding="8dp"
-                            android:src="@drawable/ic_arrow_next"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="@drawable/bg_focus_overlay" />
                     </FrameLayout>
 
+                    <!-- Indicador de posición del banner. Con control remoto,
+                         este mismo indicador recibe el foco y las flechas
+                         izquierda/derecha cambian la card del banner (ver
+                         HomeActivity.setupHeroPager). Se agregó padding
+                         vertical para que el área de foco sea más fácil de
+                         alcanzar con el D-pad, aunque las barras visibles
+                         sigan siendo finas. -->
                     <LinearLayout
                         android:id="@+id/hero_dots"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="10dp"
-                        android:orientation="horizontal" />
+                        android:orientation="horizontal"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp"
+                        android:clickable="false"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/focus_scale_row" />
                 </LinearLayout>
 
                 <!-- Mini-reproductor de canal en vivo (peso 3) -->
@@ -493,6 +481,7 @@
                 android:orientation="horizontal"
                 android:paddingStart="18dp"
                 android:paddingEnd="18dp"
+                android:clipChildren="false"
                 android:clipToPadding="false"
                 android:layout_marginBottom="12dp" />
 
