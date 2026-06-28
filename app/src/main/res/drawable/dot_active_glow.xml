@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Punto ACTIVO del indicador del banner: el halo (capa de abajo, sin
+    inset) ocupa todo el contenedor de 7dp con un morado translúcido; la
+    pill real (capa de arriba, con inset de 2dp) lleva el degradado de
+    marca, igual que el resto de la app. El resultado es un punto que se
+    ve "resplandeciendo" sin depender de sombras de Android (que no
+    soportan color en versiones viejas).
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#5C7C4DFF" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+    <item
+        android:top="2dp"
+        android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#00E5FF"
+                android:centerColor="#2979FF"
+                android:endColor="#7C4DFF"
+                android:angle="0" />
+            <corners android:radius="2dp" />
+        </shape>
+    </item>
+</layer-list>
