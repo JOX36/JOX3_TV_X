@@ -59,7 +59,6 @@ public class HomeActivity extends AppCompatActivity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private ViewPager2 heroPager;
-    private ImageView btnHeroPrev, btnHeroNext;
     private LinearLayout heroDots;
     private HeroSlideAdapter heroAdapter;
     private final List<MediaItem> heroItems = new ArrayList<>();
@@ -343,8 +342,6 @@ public class HomeActivity extends AppCompatActivity {
         btnGoSettings = findViewById(R.id.btn_go_settings);
 
         heroPager = findViewById(R.id.hero_pager);
-        btnHeroPrev = findViewById(R.id.btn_hero_prev);
-        btnHeroNext = findViewById(R.id.btn_hero_next);
         heroDots = findViewById(R.id.hero_dots);
 
         miniPlayerContainer = findViewById(R.id.mini_player_container);
@@ -405,17 +402,25 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        btnHeroPrev.setOnClickListener(v -> {
-            int current = heroPager.getCurrentItem();
+        // Las flechas ◀▶ que superponíamos sobre el banner se quitaron: a
+        // JOX3 le tapaban parte de la imagen y ya no hacían falta. Ahora el
+        // propio indicador de posición (los puntos/rayitas debajo del
+        // banner) es el que recibe el foco del control remoto, y las
+        // flechas izquierda/derecha del D-pad cambian de card directamente
+        // desde ahí — sin necesitar un botón visible aparte.
+        heroDots.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() != android.view.KeyEvent.ACTION_DOWN) return false;
             int count = heroAdapter.getItemCount();
-            if (count == 0) return;
-            heroPager.setCurrentItem((current - 1 + count) % count, true);
-        });
-        btnHeroNext.setOnClickListener(v -> {
+            if (count == 0) return false;
             int current = heroPager.getCurrentItem();
-            int count = heroAdapter.getItemCount();
-            if (count == 0) return;
-            heroPager.setCurrentItem((current + 1) % count, true);
+            if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT) {
+                heroPager.setCurrentItem((current - 1 + count) % count, true);
+                return true;
+            } else if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_RIGHT) {
+                heroPager.setCurrentItem((current + 1) % count, true);
+                return true;
+            }
+            return false;
         });
     }
 

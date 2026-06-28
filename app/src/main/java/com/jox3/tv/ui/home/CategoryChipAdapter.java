@@ -41,6 +41,13 @@ public class CategoryChipAdapter extends RecyclerView.Adapter<CategoryChipAdapte
         String category = categories.get(position);
         holder.text.setText(category);
 
+        // El pivote de la animación de zoom se fija en el borde izquierdo
+        // del chip (en vez del centro, que es el valor por defecto). Así
+        // el chip crece solo hacia la derecha al recibir foco, y nunca se
+        // corta a la izquierda aunque sea el primero de la fila ("Todos"),
+        // que queda pegado al borde de la pantalla.
+        holder.text.setPivotX(0f);
+
         boolean isSelected = category.equals(selectedCategory);
         holder.text.setBackgroundResource(
                 isSelected ? R.drawable.bg_chip_active : R.drawable.bg_chip_inactive);

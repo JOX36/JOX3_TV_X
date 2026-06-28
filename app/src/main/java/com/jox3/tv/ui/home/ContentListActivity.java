@@ -77,6 +77,12 @@ public class ContentListActivity extends AppCompatActivity {
         inputSearch = findViewById(R.id.input_search);
         searchBarContainer = findViewById(R.id.search_bar_container);
         btnCategoryToggle = findViewById(R.id.btn_category_toggle);
+        // El zoom de foco crece desde el centro por defecto; como este
+        // botón está pegado al borde izquierdo de la pantalla, eso hacía
+        // que el texto de la izquierda se "perdiera" fuera del área
+        // visible al recibir foco. Fijamos el pivote en su propio borde
+        // izquierdo para que ahora crezca solo hacia la derecha.
+        btnCategoryToggle.setPivotX(0f);
         categoryDropdownList = findViewById(R.id.category_dropdown_list);
         layoutEmpty = findViewById(R.id.layout_empty);
         sectionsContainer = findViewById(R.id.sections_container);

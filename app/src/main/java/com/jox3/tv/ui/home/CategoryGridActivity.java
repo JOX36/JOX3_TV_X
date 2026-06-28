@@ -50,6 +50,9 @@ public class CategoryGridActivity extends AppCompatActivity {
         tvTotalCount = findViewById(R.id.tv_total_count);
         gridRecycler = findViewById(R.id.grid_recycler);
         btnCategoryToggle = findViewById(R.id.btn_category_toggle);
+        // Mismo motivo que en ContentListActivity: el botón está pegado al
+        // borde izquierdo, así que el zoom crece solo hacia la derecha.
+        btnCategoryToggle.setPivotX(0f);
         categoryDropdownList = findViewById(R.id.category_dropdown_list);
 
         btnBack.setOnClickListener(v -> finish());
