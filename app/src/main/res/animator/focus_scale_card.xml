@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tarjetas de contenido (item_media_card / item_media_card_grid): logo +
+    nombre + categoria. Son mas grandes que un boton o una fila, asi que un
+    crecimiento de 1.44 (como los botones) las haria chocar demasiado con
+    las tarjetas vecinas en una fila horizontal o en la grilla. Este valor
+    es el punto intermedio pensado para tarjetas, ya con el mismo espiritu
+    de "200% mas notorio" que el resto de los elementos de esta tanda.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <set>
+            <objectAnimator
+                android:propertyName="scaleX"
+                android:valueTo="1.18"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="scaleY"
+                android:valueTo="1.18"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="translationZ"
+                android:valueTo="12"
+                android:valueType="floatType"
+                android:duration="120" />
+        </set>
+    </item>
+    <item>
+        <set>
+            <objectAnimator
+                android:propertyName="scaleX"
+                android:valueTo="1.0"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="scaleY"
+                android:valueTo="1.0"
+                android:valueType="floatType"
+                android:duration="120" />
+            <objectAnimator
+                android:propertyName="translationZ"
+                android:valueTo="0"
+                android:valueType="floatType"
+                android:duration="120" />
+        </set>
+    </item>
+</selector>
