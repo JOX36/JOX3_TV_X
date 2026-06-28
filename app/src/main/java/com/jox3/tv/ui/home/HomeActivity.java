@@ -84,7 +84,7 @@ public class HomeActivity extends AppCompatActivity {
     private String currentSearchQuery = "";
 
     // ---- Panel lateral (drawer) ----
-    private View drawerScrim, drawerPanel, btnOpenDrawer;
+    private View drawerScrim, drawerPanel, btnOpenDrawer, btnSettings;
     private View drawerItemHome, drawerItemLive, drawerItemMovies, drawerItemSeries,
             drawerItemFavorites, drawerItemHistory, drawerItemSearch, drawerItemSettings;
     private int drawerWidthPx;
@@ -356,6 +356,7 @@ public class HomeActivity extends AppCompatActivity {
         miniEpgProgressFill = findViewById(R.id.mini_epg_progress_fill);
 
         btnOpenDrawer = findViewById(R.id.btn_open_drawer);
+        btnSettings = findViewById(R.id.btn_settings);
         drawerScrim = findViewById(R.id.drawer_scrim);
         drawerPanel = findViewById(R.id.drawer_panel);
         drawerItemHome = findViewById(R.id.drawer_item_home);
@@ -503,6 +504,7 @@ public class HomeActivity extends AppCompatActivity {
 
         // ---- Panel lateral (drawer) ----
         btnOpenDrawer.setOnClickListener(v -> openDrawer());
+        btnSettings.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
         drawerScrim.setOnClickListener(v -> closeDrawer());
 
         drawerItemHome.setOnClickListener(v -> closeDrawer());

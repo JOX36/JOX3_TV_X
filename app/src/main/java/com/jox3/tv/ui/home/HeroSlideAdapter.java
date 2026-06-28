@@ -60,7 +60,7 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
     public void onBindViewHolder(@NonNull SlideHolder holder, int position) {
         MediaItem item = items.get(position);
 
-        if (holder.title != null) holder.title.setText(item.name);
+        if (holder.title != null) holder.title.setText(cleanDuplicateYear(item.name));
         if (holder.badge != null) {
             holder.badge.setVisibility(MediaItem.LIVE.equals(item.type) ? View.VISIBLE : View.GONE);
         }
@@ -105,6 +105,18 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
                 updateFavText(holder, item);
             });
         }
+    }
+
+    /**
+     * Algunas listas traen el nombre con el año repetido dos veces, ej.
+     * "HUNTER (1986) (1986)" — viene así desde el origen de la lista, no
+     * es algo que la app agregue. Esto lo limpia solo para mostrar, sin
+     * tocar el nombre real guardado en el ítem (así Favoritos/Historial
+     * siguen funcionando igual por nombre exacto).
+     */
+    private static String cleanDuplicateYear(String name) {
+        if (name == null) return name;
+        return name.replaceAll("(\\(\\d{4}\\))\\s*\\1", "$1");
     }
 
     /** Permite refrescar solo la sinopsis de un item ya visible, sin recargar todo. */
