@@ -33,7 +33,6 @@ import com.jox3.tv.util.AppState;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -48,10 +47,8 @@ public class HomeActivity extends AppCompatActivity {
 
     private LinearLayout layoutEmpty, rowFavoritesContainer, rowContinueContainer;
     private View scrollContent;
-    private RecyclerView rowContinue, rowFavorites, rowCategories, rowLive, rowMovies, rowSeries;
+    private RecyclerView rowContinue, rowFavorites;
     private EditText inputSearch;
-    private View btnSettings;
-    private View btnSearchToggle;
     private View searchBarContainer;
     private View btnGoSettings;
 
@@ -83,10 +80,21 @@ public class HomeActivity extends AppCompatActivity {
     };
 
     private AppPrefs prefs;
-    private MediaCardAdapter continueAdapter, favAdapter, liveAdapter, moviesAdapter, seriesAdapter;
-    private CategoryChipAdapter categoryAdapter;
-    private String selectedCategory = "Todos";
+    private MediaCardAdapter continueAdapter, favAdapter;
     private String currentSearchQuery = "";
+
+    // ---- Panel lateral (drawer) ----
+    private View drawerScrim, drawerPanel, btnOpenDrawer;
+    private View drawerItemHome, drawerItemLive, drawerItemMovies, drawerItemSeries,
+            drawerItemFavorites, drawerItemHistory, drawerItemSearch, drawerItemSettings;
+    private int drawerWidthPx;
+
+    // ---- Card grande "Última reproducción" ----
+    private View continueHeroContainer, continueHeroCard;
+    private ImageView continueHeroThumb;
+    private TextView continueHeroTitle, continueHeroSub;
+    private View continueHeroProgressFill;
+    private View quicknavLive, quicknavMovies, quicknavSeries;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -330,14 +338,8 @@ public class HomeActivity extends AppCompatActivity {
 
         rowContinue = findViewById(R.id.row_continue);
         rowFavorites = findViewById(R.id.row_favorites);
-        rowCategories = findViewById(R.id.row_categories);
-        rowLive = findViewById(R.id.row_live);
-        rowMovies = findViewById(R.id.row_movies);
-        rowSeries = findViewById(R.id.row_series);
 
         inputSearch = findViewById(R.id.input_search);
-        btnSettings = findViewById(R.id.btn_settings);
-        btnSearchToggle = findViewById(R.id.btn_search_toggle);
         searchBarContainer = findViewById(R.id.search_bar_container);
         btnGoSettings = findViewById(R.id.btn_go_settings);
 
@@ -352,35 +354,56 @@ public class HomeActivity extends AppCompatActivity {
         miniEpgNow = findViewById(R.id.mini_epg_now);
         miniEpgProgressTrack = findViewById(R.id.mini_epg_progress_track);
         miniEpgProgressFill = findViewById(R.id.mini_epg_progress_fill);
+
+        btnOpenDrawer = findViewById(R.id.btn_open_drawer);
+        drawerScrim = findViewById(R.id.drawer_scrim);
+        drawerPanel = findViewById(R.id.drawer_panel);
+        drawerItemHome = findViewById(R.id.drawer_item_home);
+        drawerItemLive = findViewById(R.id.drawer_item_live);
+        drawerItemMovies = findViewById(R.id.drawer_item_movies);
+        drawerItemSeries = findViewById(R.id.drawer_item_series);
+        drawerItemFavorites = findViewById(R.id.drawer_item_favorites);
+        drawerItemHistory = findViewById(R.id.drawer_item_history);
+        drawerItemSearch = findViewById(R.id.drawer_item_search);
+        drawerItemSettings = findViewById(R.id.drawer_item_settings);
+
+        continueHeroContainer = findViewById(R.id.continue_hero_container);
+        continueHeroCard = findViewById(R.id.continue_hero_card);
+        continueHeroThumb = findViewById(R.id.continue_hero_thumb);
+        continueHeroTitle = findViewById(R.id.continue_hero_title);
+        continueHeroSub = findViewById(R.id.continue_hero_sub);
+        continueHeroProgressFill = findViewById(R.id.continue_hero_progress_fill);
+
+        quicknavLive = findViewById(R.id.quicknav_live);
+        quicknavMovies = findViewById(R.id.quicknav_movies);
+        quicknavSeries = findViewById(R.id.quicknav_series);
+
+        // 280dp en píxeles, para animar el panel exactamente su propio
+        // ancho al abrir/cerrar (mismo valor que layout_width en el XML).
+        drawerWidthPx = (int) (280 * getResources().getDisplayMetrics().density);
     }
 
     private void setupRows() {
         rowContinue.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowFavorites.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rowCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rowLive.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rowMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rowSeries.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         continueAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
         favAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
-        liveAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
-        moviesAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
-        seriesAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
-        categoryAdapter = new CategoryChipAdapter(new ArrayList<>(), category -> {
-            selectedCategory = category;
-            applyFilters();
-        });
 
         rowContinue.setAdapter(continueAdapter);
         rowFavorites.setAdapter(favAdapter);
-        rowLive.setAdapter(liveAdapter);
-        rowMovies.setAdapter(moviesAdapter);
-        rowSeries.setAdapter(seriesAdapter);
-        rowCategories.setAdapter(categoryAdapter);
     }
 
     private void setupHeroPager() {
+        // En vertical (celular) se usa la card simple: solo imagen + título,
+        // tocar abre la pantalla de detalle. En horizontal (TV box) se usa
+        // la card rica con sinopsis y botones Reproducir/Favorito directo
+        // en el banner, ya que ahí se navega con control remoto y no hay
+        // "toque" — conviene tener todo a la vista de una vez.
+        boolean isPortrait = getResources().getConfiguration().orientation
+                == android.content.res.Configuration.ORIENTATION_PORTRAIT;
+        int heroLayoutResId = isPortrait ? R.layout.item_hero_slide : R.layout.item_hero_slide_tv;
+
         heroAdapter = new HeroSlideAdapter(heroItems, prefs, new HeroSlideAdapter.OnHeroAction() {
             @Override public void onPlay(MediaItem heroItem) {
                 if (MediaItem.SERIES.equals(heroItem.type)) {
@@ -394,7 +417,11 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
             @Override public void onToggleFav(MediaItem item) { prefs.toggleFav(item.favKey()); }
-        });
+
+            @Override public void onOpenDetail(MediaItem item) {
+                openItem(item, -1);
+            }
+        }, heroLayoutResId);
         heroPager.setAdapter(heroAdapter);
         heroPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override public void onPageSelected(int position) {
@@ -445,46 +472,100 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
-        btnSettings.setOnClickListener(v ->
-                startActivity(new Intent(this, SettingsActivity.class)));
-
         if (btnGoSettings != null) {
             btnGoSettings.setOnClickListener(v ->
                     startActivity(new Intent(this, SettingsActivity.class)));
         }
 
-        btnSearchToggle.setOnClickListener(v -> {
-            boolean isVisible = searchBarContainer.getVisibility() == View.VISIBLE;
-            if (isVisible) {
-                searchBarContainer.setVisibility(View.GONE);
-                inputSearch.setText("");
-            } else {
-                searchBarContainer.setVisibility(View.VISIBLE);
-                inputSearch.requestFocus();
-            }
-        });
+        View btnSeeAllContinue = findViewById(R.id.btn_see_all_continue);
+        View btnSeeAllFavorites = findViewById(R.id.btn_see_all_favorites);
 
-        View btnSeeAllLive = findViewById(R.id.btn_see_all_live);
-        View btnSeeAllMovies = findViewById(R.id.btn_see_all_movies);
-        View btnSeeAllSeries = findViewById(R.id.btn_see_all_series);
-
-        btnSeeAllLive.setOnClickListener(v -> openContentList(MediaItem.LIVE));
-        btnSeeAllMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
-        btnSeeAllSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
+        // Todavía no existe una pantalla de "ver todo lo visto" ni un
+        // historial completo aparte; por ahora estos dos son un aviso
+        // simple. Cuando se decida cómo debe verse esa pantalla, se
+        // conecta aquí.
+        btnSeeAllContinue.setOnClickListener(v ->
+                android.widget.Toast.makeText(this, "Próximamente", android.widget.Toast.LENGTH_SHORT).show());
+        btnSeeAllFavorites.setOnClickListener(v -> openContentList("favorites"));
 
         btnMiniExpand.setOnClickListener(v -> expandMiniPlayer());
         miniPlayerContainer.setOnClickListener(v -> expandMiniPlayer());
         btnMiniMute.setOnClickListener(v -> toggleMiniPlayerMute());
 
-        View tabChannels = findViewById(R.id.tab_channels);
-        View tabMovies = findViewById(R.id.tab_movies);
-        View tabSeries = findViewById(R.id.tab_series);
-        View tabFavorites = findViewById(R.id.tab_favorites);
+        continueHeroCard.setOnClickListener(v -> {
+            List<MediaItem> recent = prefs.getRecentlyWatched();
+            if (!recent.isEmpty()) openItem(recent.get(0), 0);
+        });
 
-        tabChannels.setOnClickListener(v -> openContentList(MediaItem.LIVE));
-        tabMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
-        tabSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
-        tabFavorites.setOnClickListener(v -> openContentList("favorites"));
+        quicknavLive.setOnClickListener(v -> openContentList(MediaItem.LIVE));
+        quicknavMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
+        quicknavSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
+
+        // ---- Panel lateral (drawer) ----
+        btnOpenDrawer.setOnClickListener(v -> openDrawer());
+        drawerScrim.setOnClickListener(v -> closeDrawer());
+
+        drawerItemHome.setOnClickListener(v -> closeDrawer());
+        drawerItemLive.setOnClickListener(v -> { closeDrawer(); openContentList(MediaItem.LIVE); });
+        drawerItemMovies.setOnClickListener(v -> { closeDrawer(); openContentList(MediaItem.VOD); });
+        drawerItemSeries.setOnClickListener(v -> { closeDrawer(); openContentList(MediaItem.SERIES); });
+        drawerItemFavorites.setOnClickListener(v -> { closeDrawer(); openContentList("favorites"); });
+        // "Historial" todavía no tiene pantalla propia (JOX3 dijo que lo
+        // iba a pensar más). Por ahora solo avisa; está listo para
+        // conectarse en cuanto se decida qué debe mostrar.
+        drawerItemHistory.setOnClickListener(v -> {
+            closeDrawer();
+            android.widget.Toast.makeText(this, "Próximamente", android.widget.Toast.LENGTH_SHORT).show();
+        });
+        drawerItemSearch.setOnClickListener(v -> {
+            closeDrawer();
+            searchBarContainer.setVisibility(View.VISIBLE);
+            inputSearch.requestFocus();
+        });
+        drawerItemSettings.setOnClickListener(v -> {
+            closeDrawer();
+            startActivity(new Intent(this, SettingsActivity.class));
+        });
+    }
+
+    /** Abre el panel lateral animando su posición y mostrando el scrim oscuro. */
+    private void openDrawer() {
+        drawerScrim.setVisibility(View.VISIBLE);
+        drawerScrim.setAlpha(0f);
+        drawerScrim.animate().alpha(1f).setDuration(220).start();
+
+        drawerPanel.setVisibility(View.VISIBLE);
+        drawerPanel.animate()
+                .translationX(0f)
+                .setDuration(220)
+                .start();
+    }
+
+    /** Cierra el panel lateral devolviéndolo fuera de pantalla. */
+    private void closeDrawer() {
+        drawerScrim.animate().alpha(0f).setDuration(200)
+                .withEndAction(() -> drawerScrim.setVisibility(View.GONE))
+                .start();
+        drawerPanel.animate()
+                .translationX(-drawerWidthPx)
+                .setDuration(200)
+                .withEndAction(() -> drawerPanel.setVisibility(View.GONE))
+                .start();
+    }
+
+    /** Permite que el botón "atrás" cierre el panel o la búsqueda en vez de salir de la app. */
+    @Override
+    public void onBackPressed() {
+        if (drawerPanel.getVisibility() == View.VISIBLE) {
+            closeDrawer();
+            return;
+        }
+        if (searchBarContainer.getVisibility() == View.VISIBLE) {
+            searchBarContainer.setVisibility(View.GONE);
+            inputSearch.setText("");
+            return;
+        }
+        super.onBackPressed();
     }
 
     private void openContentList(String type) {
@@ -515,20 +596,51 @@ public class HomeActivity extends AppCompatActivity {
 
         if (!hasData) return;
 
-        moviesAdapter.updateData(capList(state.movies));
-        seriesAdapter.updateData(capList(state.series));
-
         List<MediaItem> continueWatching = prefs.getRecentlyWatched();
         rowContinueContainer.setVisibility(continueWatching.isEmpty() ? View.GONE : View.VISIBLE);
         continueAdapter.updateData(capList(continueWatching));
+        bindContinueHero(continueWatching);
 
         List<MediaItem> favorites = collectFavorites(state);
         rowFavoritesContainer.setVisibility(favorites.isEmpty() ? View.GONE : View.VISIBLE);
         favAdapter.updateData(capList(favorites));
 
         setupHero(state);
-        setupCategories(state);
         applyFilters();
+    }
+
+    /**
+     * Llena la card grande de "Última reproducción" con el ítem visto más
+     * recientemente (el primero de la misma lista que alimenta "Vistos
+     * Reciente"). Si no hay nada visto todavía, oculta la card completa.
+     */
+    private void bindContinueHero(List<MediaItem> continueWatching) {
+        if (continueWatching.isEmpty()) {
+            continueHeroContainer.setVisibility(View.GONE);
+            return;
+        }
+        continueHeroContainer.setVisibility(View.VISIBLE);
+        MediaItem item = continueWatching.get(0);
+
+        continueHeroTitle.setText(item.name);
+        continueHeroSub.setText(item.category != null ? item.category.toUpperCase() : "");
+
+        if (item.logoUrl != null && !item.logoUrl.isEmpty()) {
+            com.bumptech.glide.Glide.with(continueHeroThumb.getContext())
+                    .load(item.logoUrl)
+                    .centerCrop()
+                    .into(continueHeroThumb);
+        } else {
+            continueHeroThumb.setImageDrawable(null);
+        }
+
+        long pos = prefs.getPos(item.id);
+        long dur = prefs.getDur(item.id);
+        int percent = dur > 0 ? (int) Math.min(100, Math.max(0, (pos * 100) / dur)) : 0;
+        LinearLayout.LayoutParams fillParams =
+                (LinearLayout.LayoutParams) continueHeroProgressFill.getLayoutParams();
+        fillParams.weight = percent;
+        continueHeroProgressFill.setLayoutParams(fillParams);
     }
 
     /**
@@ -675,20 +787,6 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private void setupCategories(AppState state) {
-        LinkedHashSet<String> categories = new LinkedHashSet<>();
-        categories.add("Todos");
-        for (MediaItem item : state.liveChannels) {
-            categories.add(item.category != null && !item.category.isEmpty()
-                    ? item.category : "General");
-        }
-        categoryAdapter.updateCategories(new ArrayList<>(categories));
-        // El adapter ya preserva la selección anterior si todavía existe;
-        // solo sincronizamos esta variable con lo que él decidió, en vez
-        // de forzar "Todos" cada vez que se refresca el Home.
-        selectedCategory = categoryAdapter.getSelectedCategory();
-    }
-
     private List<MediaItem> collectFavorites(AppState state) {
         List<MediaItem> favs = new ArrayList<>();
         for (MediaItem item : state.liveChannels)
@@ -700,28 +798,22 @@ public class HomeActivity extends AppCompatActivity {
         return favs;
     }
 
+    /**
+     * La búsqueda en el Home ahora es simple: como ya no hay filas de TV en
+     * vivo/Películas/Series aquí (se movieron a sus propias pantallas, que
+     * ya tienen su propia búsqueda), esta solo filtra por nombre dentro de
+     * "Vistos Reciente" y "Favoritos".
+     */
     private void applyFilters() {
         AppState state = AppState.get();
         String lowerQuery = currentSearchQuery.toLowerCase();
 
-        List<MediaItem> liveFiltered = new ArrayList<>();
-        for (MediaItem item : state.liveChannels) {
-            boolean matchesCategory = "Todos".equals(selectedCategory)
-                    || selectedCategory.equals(item.category)
-                    || ("General".equals(selectedCategory)
-                        && (item.category == null || item.category.isEmpty()));
-            boolean matchesQuery = lowerQuery.isEmpty()
-                    || (item.name != null && item.name.toLowerCase().contains(lowerQuery));
-            if (matchesCategory && matchesQuery) liveFiltered.add(item);
-        }
-        liveAdapter.updateData(capList(liveFiltered));
-
         if (lowerQuery.isEmpty()) {
-            moviesAdapter.updateData(capList(state.movies));
-            seriesAdapter.updateData(capList(state.series));
+            continueAdapter.updateData(capList(prefs.getRecentlyWatched()));
+            favAdapter.updateData(capList(collectFavorites(state)));
         } else {
-            moviesAdapter.updateData(capList(filterByName(state.movies, lowerQuery)));
-            seriesAdapter.updateData(capList(filterByName(state.series, lowerQuery)));
+            continueAdapter.updateData(capList(filterByName(prefs.getRecentlyWatched(), lowerQuery)));
+            favAdapter.updateData(capList(filterByName(collectFavorites(state), lowerQuery)));
         }
     }
 
