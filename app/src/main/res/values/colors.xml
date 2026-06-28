@@ -1,18 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Fondos: sin cambios, ya eran oscuros neutros y combinan bien con
+         cualquier color de marca. -->
     <color name="bg_primary">#070710</color>
     <color name="bg_secondary">#1C1C2A</color>
     <color name="bg_card">#262638</color>
-    <color name="accent">#FF5722</color>
-    <color name="accent_dark">#D84315</color>
-    <color name="accent_warm">#FFA726</color>
-    <color name="accent_pink">#FF3D6E</color>
+
+    <!-- ===== Marca: antes naranja/rojo, ahora cian -> morado ===== -->
+    <!-- accent: el color "plano" principal (textos, iconos, tints,
+         progressbar, pestaña activa). Antes era naranja FF5722. -->
+    <color name="accent">#00C2FF</color>
+    <!-- accent_dark: variante mas oscura del acento, pensada para estados
+         "presionado" o sombras de elementos de marca. No estaba en uso
+         todavia en ningun layout, queda lista para cuando se necesite. -->
+    <color name="accent_dark">#5E2BD8</color>
+    <!-- accent_warm: se usaba para resaltar texto secundario de marca
+         (ej. la etiqueta de calidad "P-5 MEGAS"). Antes era naranja
+         calido (FFA726); ahora un magenta/violeta para quedar dentro de
+         la misma familia cian-morado sin confundirse con el accent
+         principal. -->
+    <color name="accent_warm">#C45AFF</color>
+    <!-- accent_pink: no estaba en uso en ningun layout todavia. Se deja
+         como un magenta vivo de la misma familia, disponible para
+         resaltados puntuales futuros (ej. hover, badges nuevos). -->
+    <color name="accent_pink">#FF4FD8</color>
+    <!-- accent_purple: ya era un morado (#7C4DFF) desde antes, asi que
+         no necesito cambiarlo: ya combina perfecto con la paleta nueva. -->
     <color name="accent_purple">#7C4DFF</color>
+
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#B8B8CC</color>
+
+    <!-- Estos son indicadores de ESTADO, no de marca, así que se quedan
+         igual aunque cambiemos los colores de marca: -->
     <color name="live_badge">#FF1744</color>
     <color name="favorite_yellow">#FFD740</color>
     <color name="success_green">#00E676</color>
     <color name="warning_orange">#FFAB40</color>
+    <!-- progress_cyan ya era cian, así que combina perfecto sin tocarlo. -->
     <color name="progress_cyan">#18FFFF</color>
 </resources>
