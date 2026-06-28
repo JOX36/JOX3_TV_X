@@ -1,119 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    Versión MÓVIL del banner: solo la imagen a pantalla completa, sin
+    sinopsis ni botones encima (eso ahora vive en la pantalla de detalle,
+    que se abre al tocar esta card completa). La versión "TV box" con
+    sinopsis y botones inline sigue existiendo aparte en
+    item_hero_slide_tv.xml, para cuando se navega con control remoto.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
     android:background="@drawable/bg_card_rounded"
-    android:clipToOutline="true">
+    android:clipToOutline="true"
+    android:clickable="true"
+    android:focusable="true"
+    android:stateListAnimator="@animator/focus_scale_card">
 
     <ImageView
         android:id="@+id/hero_poster"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.42"
         android:scaleType="centerCrop" />
 
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="0.58"
-        android:orientation="vertical"
-        android:gravity="center_vertical"
-        android:padding="22dp">
+    <!-- Degradado oscuro abajo para que el título siempre se lea, sin
+         importar qué tan clara sea la imagen de fondo. -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_gradient_fade_bottom" />
 
-        <TextView
-            android:id="@+id/hero_badge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_badge_live"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            android:text="EN VIVO"
-            android:textColor="@color/text_primary"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="10dp"
-            android:visibility="gone" />
+    <TextView
+        android:id="@+id/hero_badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_margin="12dp"
+        android:background="@drawable/bg_badge_live"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:text="EN VIVO"
+        android:textColor="@color/text_primary"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/hero_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end" />
+    <TextView
+        android:id="@+id/hero_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:padding="16dp"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:shadowColor="#CC000000"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="4" />
 
-        <TextView
-            android:id="@+id/hero_category"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:textColor="@color/accent"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.05" />
-
-        <TextView
-            android:id="@+id/hero_synopsis"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp"
-            android:lineSpacingExtra="3dp"
-            android:maxLines="4"
-            android:ellipsize="end" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="16dp">
-
-            <TextView
-                android:id="@+id/hero_btn_play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_chip_active"
-                android:paddingStart="22dp"
-                android:paddingEnd="22dp"
-                android:paddingTop="11dp"
-                android:paddingBottom="11dp"
-                android:text="Reproducir"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:textAllCaps="false"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="@drawable/bg_focus_overlay"
-                android:layout_marginEnd="10dp" />
-
-            <TextView
-                android:id="@+id/hero_btn_fav"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_chip_inactive"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
-                android:paddingTop="11dp"
-                android:paddingBottom="11dp"
-                android:text="Favorito"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
-                android:textAllCaps="false"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="@drawable/bg_focus_overlay" />
-        </LinearLayout>
-    </LinearLayout>
-
-</LinearLayout>
+</FrameLayout>
