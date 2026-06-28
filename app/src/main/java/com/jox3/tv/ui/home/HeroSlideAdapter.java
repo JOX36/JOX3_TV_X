@@ -1,5 +1,7 @@
 package com.jox3.tv.ui.home;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,7 +67,9 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
             holder.badge.setVisibility(MediaItem.LIVE.equals(item.type) ? View.VISIBLE : View.GONE);
         }
         if (holder.category != null) {
-            holder.category.setText(item.category != null ? item.category.toUpperCase() : "");
+            boolean hasCategory = item.category != null && !item.category.trim().isEmpty();
+            holder.category.setText(hasCategory ? item.category.toUpperCase() : "");
+            holder.category.setVisibility(hasCategory ? View.VISIBLE : View.GONE);
         }
 
         if (holder.synopsis != null) {
@@ -85,6 +89,8 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
         } else {
             holder.poster.setImageDrawable(null);
         }
+
+        startKenBurns(holder);
 
         // Card móvil: toda la card es el botón, abre la pantalla de detalle.
         holder.itemView.setOnClickListener(v -> {
@@ -119,6 +125,46 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
         return name.replaceAll("(\\(\\d{4}\\))\\s*\\1", "$1");
     }
 
+    /**
+     * Efecto "Ken Burns": zoom lento y continuo sobre la imagen del banner
+     * mientras está visible, igual al que usan Netflix/Apple TV en sus
+     * portadas. Se cancela en onViewRecycled() para no dejar animaciones
+     * corriendo en vistas que ya no se ven (y para no acumular varias
+     * sobre la misma vista reciclada).
+     */
+    private void startKenBurns(SlideHolder holder) {
+        if (holder.kenBurnsAnimator != null) holder.kenBurnsAnimator.cancel();
+
+        holder.poster.setScaleX(1f);
+        holder.poster.setScaleY(1f);
+
+        ObjectAnimator animX = ObjectAnimator.ofFloat(holder.poster, "scaleX", 1f, 1.15f);
+        ObjectAnimator animY = ObjectAnimator.ofFloat(holder.poster, "scaleY", 1f, 1.15f);
+        animX.setDuration(9000);
+        animY.setDuration(9000);
+        animX.setRepeatMode(ValueAnimator.REVERSE);
+        animY.setRepeatMode(ValueAnimator.REVERSE);
+        animX.setRepeatCount(ValueAnimator.INFINITE);
+        animY.setRepeatCount(ValueAnimator.INFINITE);
+        animX.start();
+        animY.start();
+        // Guardamos solo uno de los dos para poder cancelarlos juntos
+        // (cancelar animX no cancela animY, así que guardamos ambos en
+        // un AnimatorSet liviano).
+        android.animation.AnimatorSet set = new android.animation.AnimatorSet();
+        set.playTogether(animX, animY);
+        holder.kenBurnsAnimator = set;
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull SlideHolder holder) {
+        super.onViewRecycled(holder);
+        if (holder.kenBurnsAnimator != null) {
+            holder.kenBurnsAnimator.cancel();
+            holder.kenBurnsAnimator = null;
+        }
+    }
+
     /** Permite refrescar solo la sinopsis de un item ya visible, sin recargar todo. */
     public void notifySynopsisLoaded(int position) {
         if (position >= 0 && position < items.size()) {
@@ -140,6 +186,7 @@ public class HeroSlideAdapter extends RecyclerView.Adapter<HeroSlideAdapter.Slid
     static class SlideHolder extends RecyclerView.ViewHolder {
         ImageView poster;
         TextView title, category, synopsis, badge, btnPlay, btnFav;
+        android.animation.Animator kenBurnsAnimator;
 
         SlideHolder(@NonNull View itemView) {
             super(itemView);

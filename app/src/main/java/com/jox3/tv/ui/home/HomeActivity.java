@@ -812,14 +812,21 @@ public class HomeActivity extends AppCompatActivity {
         heroDots.removeAllViews();
         heroDots.setVisibility(heroItems.size() > 1 ? View.VISIBLE : View.GONE);
 
+        float density = getResources().getDisplayMetrics().density;
+        // El contenedor de cada punto es un poco más alto que el "punto"
+        // visible (7dp vs 3dp): ese espacio de más es justamente donde
+        // aparece el halo de resplandor cuando el punto está activo, sin
+        // tener que cambiarle el tamaño al View cada vez (así se evitan
+        // saltos al cambiar de página).
+        int widthPx = (int) (22 * density);
+        int heightPx = (int) (7 * density);
+
         for (int i = 0; i < heroItems.size(); i++) {
             View dot = new View(this);
-            int widthPx = (int) (22 * getResources().getDisplayMetrics().density);
-            int heightPx = (int) (3 * getResources().getDisplayMetrics().density);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(widthPx, heightPx);
-            params.setMarginEnd((int) (5 * getResources().getDisplayMetrics().density));
+            params.setMarginEnd((int) (5 * density));
             dot.setLayoutParams(params);
-            dot.setBackgroundResource(R.drawable.bg_chip_inactive);
+            dot.setBackgroundResource(R.drawable.dot_inactive);
             heroDots.addView(dot);
         }
     }
@@ -827,7 +834,7 @@ public class HomeActivity extends AppCompatActivity {
     private void updateHeroDots(int activeIndex) {
         for (int i = 0; i < heroDots.getChildCount(); i++) {
             View dot = heroDots.getChildAt(i);
-            dot.setBackgroundResource(i == activeIndex ? R.drawable.bg_chip_active : R.drawable.bg_chip_inactive);
+            dot.setBackgroundResource(i == activeIndex ? R.drawable.dot_active_glow : R.drawable.dot_inactive);
         }
     }
 
