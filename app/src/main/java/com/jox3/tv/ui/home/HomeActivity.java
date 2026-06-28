@@ -98,7 +98,7 @@ public class HomeActivity extends AppCompatActivity {
     private ImageView continueHeroThumb;
     private TextView continueHeroTitle, continueHeroSub;
     private View continueHeroProgressFill;
-    private View quicknavLive, quicknavMovies, quicknavSeries;
+    private View chipFavorites, chipLive, chipMovies, chipSeries;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -380,9 +380,10 @@ public class HomeActivity extends AppCompatActivity {
         continueHeroSub = findViewById(R.id.continue_hero_sub);
         continueHeroProgressFill = findViewById(R.id.continue_hero_progress_fill);
 
-        quicknavLive = findViewById(R.id.quicknav_live);
-        quicknavMovies = findViewById(R.id.quicknav_movies);
-        quicknavSeries = findViewById(R.id.quicknav_series);
+        chipFavorites = findViewById(R.id.chip_favorites);
+        chipLive = findViewById(R.id.chip_live);
+        chipMovies = findViewById(R.id.chip_movies);
+        chipSeries = findViewById(R.id.chip_series);
 
         // 280dp en píxeles, para animar el panel exactamente su propio
         // ancho al abrir/cerrar (mismo valor que layout_width en el XML).
@@ -503,9 +504,10 @@ public class HomeActivity extends AppCompatActivity {
             if (!recent.isEmpty()) openItem(recent.get(0), 0);
         });
 
-        quicknavLive.setOnClickListener(v -> openContentList(MediaItem.LIVE));
-        quicknavMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
-        quicknavSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
+        chipFavorites.setOnClickListener(v -> openContentList("favorites"));
+        chipLive.setOnClickListener(v -> openContentList(MediaItem.LIVE));
+        chipMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
+        chipSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
 
         // ---- Panel lateral (drawer) ----
         btnOpenDrawer.setOnClickListener(v -> openDrawer());
@@ -729,37 +731,60 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    /** Construye hasta 5 recomendaciones para el carrusel del banner: prioriza
-     *  películas y series (contenido más "recomendable"), y si no hay
-     *  suficientes, completa con canales en vivo. */
+    /** Construye hasta 5 recomendaciones para el carrusel del banner,
+     *  mezclando películas, series Y canales en vivo (JOX3 pidió que el
+     *  banner también recomiende series y canales, no solo películas). */
     private void setupHero(AppState state) {
         // Solo entran al banner los ítems que sí tienen miniatura/poster.
         // Sin esto, algunos elementos (sobre todo recomendaciones sin
         // imagen propia del proveedor) aparecían en el carrusel con la
         // card completamente vacía/gris.
-        List<MediaItem> candidates = new ArrayList<>();
-        for (MediaItem item : state.movies) {
-            if (item.logoUrl != null && !item.logoUrl.isEmpty()) candidates.add(item);
-        }
-        for (MediaItem item : state.series) {
-            if (item.logoUrl != null && !item.logoUrl.isEmpty()) candidates.add(item);
-        }
-        if (candidates.size() < HERO_SLIDE_COUNT) {
-            for (MediaItem item : state.liveChannels) {
-                if (item.logoUrl != null && !item.logoUrl.isEmpty()) candidates.add(item);
+        List<MediaItem> moviePool = new ArrayList<>();
+        List<MediaItem> seriesPool = new ArrayList<>();
+        List<MediaItem> livePool = new ArrayList<>();
+        for (MediaItem item : state.movies)
+            if (item.logoUrl != null && !item.logoUrl.isEmpty()) moviePool.add(item);
+        for (MediaItem item : state.series)
+            if (item.logoUrl != null && !item.logoUrl.isEmpty()) seriesPool.add(item);
+        for (MediaItem item : state.liveChannels)
+            if (item.logoUrl != null && !item.logoUrl.isEmpty()) livePool.add(item);
+
+        Collections.shuffle(moviePool);
+        Collections.shuffle(seriesPool);
+        Collections.shuffle(livePool);
+
+        // Reparto pareja entre los 3 tipos (más o menos un tercio cada
+        // uno); si algún tipo no tiene suficiente, los otros rellenan el
+        // espacio que sobra para siempre completar HERO_SLIDE_COUNT.
+        List<MediaItem> selected = new ArrayList<>();
+        int perType = (HERO_SLIDE_COUNT + 2) / 3;
+        selected.addAll(moviePool.subList(0, Math.min(perType, moviePool.size())));
+        selected.addAll(seriesPool.subList(0, Math.min(perType, seriesPool.size())));
+        selected.addAll(livePool.subList(0, Math.min(perType, livePool.size())));
+
+        if (selected.size() < HERO_SLIDE_COUNT) {
+            List<MediaItem> leftovers = new ArrayList<>();
+            leftovers.addAll(moviePool.subList(Math.min(perType, moviePool.size()), moviePool.size()));
+            leftovers.addAll(seriesPool.subList(Math.min(perType, seriesPool.size()), seriesPool.size()));
+            leftovers.addAll(livePool.subList(Math.min(perType, livePool.size()), livePool.size()));
+            Collections.shuffle(leftovers);
+            for (MediaItem item : leftovers) {
+                if (selected.size() >= HERO_SLIDE_COUNT) break;
+                selected.add(item);
             }
         }
 
-        if (candidates.isEmpty()) {
+        if (selected.isEmpty()) {
             heroPager.setVisibility(View.GONE);
             heroDots.setVisibility(View.GONE);
             stopHeroAutoplay();
             return;
         }
 
-        Collections.shuffle(candidates);
-        List<MediaItem> selected = candidates.size() > HERO_SLIDE_COUNT
-                ? candidates.subList(0, HERO_SLIDE_COUNT) : candidates;
+        Collections.shuffle(selected);
+        if (selected.size() > HERO_SLIDE_COUNT) {
+            selected = selected.subList(0, HERO_SLIDE_COUNT);
+        }
 
         heroItems.clear();
         heroItems.addAll(selected);
