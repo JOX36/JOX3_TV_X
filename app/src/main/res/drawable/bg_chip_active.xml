@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Antes: gradiente naranja -> rosa -> rojo (FF5722 -> FF3D6E -> FF1744).
+    Ahora: gradiente cian -> azul -> morado, igual al de la captura de
+    referencia (logo "JOX3 TV" y botón "Reproducir"). Este drawable se
+    reutiliza en TODA la app para cualquier elemento "activo/principal":
+    botones de Ajustes, punto de cuenta activa, pestaña seleccionada, etc.
+    Cambiar este único archivo actualiza el look en todos esos lugares
+    a la vez.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <gradient
-        android:startColor="#FF5722"
-        android:centerColor="#FF3D6E"
-        android:endColor="#FF1744"
+        android:startColor="#00E5FF"
+        android:centerColor="#2979FF"
+        android:endColor="#7C4DFF"
         android:angle="45" />
     <corners android:radius="18dp" />
 </shape>
