@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    transformPivotX="0dp": el punto desde donde crece el zoom de foco se
+    fija en el borde IZQUIERDO de la fila (en vez del centro, que es el
+    default). Esta fila ocupa todo el ancho del panel y queda pegada al
+    borde de la pantalla, así que si el zoom creciera desde el centro
+    (mitad a la izquierda, mitad a la derecha), las primeras letras del
+    texto se salían del área visible y se veían cortadas
+    ("CIENCIA FICCION" se veía como "ENCIA FICCION"). Con el pivote a la
+    izquierda, ahora crece solo hacia la derecha y el texto queda completo.
+-->
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -8,4 +18,5 @@
     android:clickable="true"
     android:focusable="true"
     android:background="?android:attr/selectableItemBackground"
+    android:transformPivotX="0dp"
     android:stateListAnimator="@animator/focus_scale_row" />
