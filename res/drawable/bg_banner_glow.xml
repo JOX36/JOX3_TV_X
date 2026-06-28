@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android no tiene un "blur" real disponible en todas las versiones sin
+    librerías extra, así que esto aproxima el efecto de iluminación de
+    fondo con un degradado radial que se desvanece hacia afuera (un truco
+    visual muy usado para simular glow sin blur de verdad). Va DETRÁS del
+    banner, ligeramente más grande, para que se note sobresaliendo apenas
+    por los bordes.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <gradient
+        android:type="radial"
+        android:gradientRadius="260dp"
+        android:startColor="#5C7C4DFF"
+        android:centerColor="#2A2979FF"
+        android:endColor="#00000000" />
+</shape>
