@@ -701,11 +701,21 @@ public class HomeActivity extends AppCompatActivity {
      *  películas y series (contenido más "recomendable"), y si no hay
      *  suficientes, completa con canales en vivo. */
     private void setupHero(AppState state) {
+        // Solo entran al banner los ítems que sí tienen miniatura/poster.
+        // Sin esto, algunos elementos (sobre todo recomendaciones sin
+        // imagen propia del proveedor) aparecían en el carrusel con la
+        // card completamente vacía/gris.
         List<MediaItem> candidates = new ArrayList<>();
-        candidates.addAll(state.movies);
-        candidates.addAll(state.series);
+        for (MediaItem item : state.movies) {
+            if (item.logoUrl != null && !item.logoUrl.isEmpty()) candidates.add(item);
+        }
+        for (MediaItem item : state.series) {
+            if (item.logoUrl != null && !item.logoUrl.isEmpty()) candidates.add(item);
+        }
         if (candidates.size() < HERO_SLIDE_COUNT) {
-            candidates.addAll(state.liveChannels);
+            for (MediaItem item : state.liveChannels) {
+                if (item.logoUrl != null && !item.logoUrl.isEmpty()) candidates.add(item);
+            }
         }
 
         if (candidates.isEmpty()) {
