@@ -49,6 +49,23 @@
             android:textSize="16sp"
             android:visibility="gone" />
 
+        <TextView
+            android:id="@+id/tv_quality_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="8dp"
+            android:background="#AA000000"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="HD"
+            android:textColor="@color/text_primary"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <!-- Barra de progreso (continuar viendo) -->
         <LinearLayout
             android:id="@+id/progress_track"

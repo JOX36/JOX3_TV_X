@@ -188,6 +188,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:layout_marginStart="18dp"
                     android:layout_marginEnd="18dp"
                     android:layout_marginTop="4dp"
@@ -203,11 +205,28 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="4"
                         android:layout_marginEnd="10dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         android:orientation="vertical">
 
+                        <!-- "glow_wrap" agrega el resplandor de fondo detrás
+                             del banner: el View de glow va PRIMERO (en
+                             Android, el primer hijo de un FrameLayout queda
+                             atrás de los siguientes), centrado y más grande
+                             que el propio banner para que sobresalga un
+                             poco por los bordes. -->
                         <FrameLayout
                             android:layout_width="match_parent"
-                            android:layout_height="260dp">
+                            android:layout_height="260dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
+
+                            <View
+                                android:id="@+id/banner_glow"
+                                android:layout_width="160dp"
+                                android:layout_height="160dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_banner_glow" />
 
                             <androidx.viewpager2.widget.ViewPager2
                                 android:id="@+id/hero_pager"
@@ -353,6 +372,100 @@
                         </LinearLayout>
                     </FrameLayout>
                 </LinearLayout>
+
+                <!-- Chips de navegación rápida: reemplazan los 3 botones
+                     grandes que había antes. Llevan directo a cada sección
+                     (ya no hay filas de TV en vivo/Películas/Series en el
+                     Home). El primero ("Favoritos") usa el degradado de
+                     marca como acento; los demás usan el mismo contorno de
+                     color que ya se ve en otras partes de la app. -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none"
+                    android:clipToPadding="false"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="8dp"
+                    android:layout_marginBottom="20dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/chip_favorites"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="10dp"
+                            android:background="@drawable/bg_chip_active"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingTop="9dp"
+                            android:paddingBottom="9dp"
+                            android:text="🔥  Favoritos"
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:stateListAnimator="@animator/focus_scale_button" />
+
+                        <TextView
+                            android:id="@+id/chip_live"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="10dp"
+                            android:background="@drawable/bg_pill_outline_accent"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingTop="9dp"
+                            android:paddingBottom="9dp"
+                            android:text="📡  TV en vivo"
+                            android:textColor="@color/accent"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:stateListAnimator="@animator/focus_scale_button" />
+
+                        <TextView
+                            android:id="@+id/chip_movies"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="10dp"
+                            android:background="@drawable/bg_pill_outline_accent"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingTop="9dp"
+                            android:paddingBottom="9dp"
+                            android:text="🎬  Películas"
+                            android:textColor="@color/accent"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:stateListAnimator="@animator/focus_scale_button" />
+
+                        <TextView
+                            android:id="@+id/chip_series"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="10dp"
+                            android:background="@drawable/bg_pill_outline_accent"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingTop="9dp"
+                            android:paddingBottom="9dp"
+                            android:text="📺  Series"
+                            android:textColor="@color/accent"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:stateListAnimator="@animator/focus_scale_button" />
+                    </LinearLayout>
+                </HorizontalScrollView>
 
                 <!-- Vistos Reciente (antes "Continuar viendo"; mismo dato,
                      solo se renombró el título según el diseño nuevo) -->
@@ -552,109 +665,6 @@
                         android:clipChildren="false"
                         android:clipToPadding="false"
                         android:layout_marginBottom="22dp" />
-                </LinearLayout>
-
-                <!-- Accesos rápidos: como ya no hay filas de TV en vivo /
-                     Películas / Series en el Home, estos 3 botones llevan
-                     directo a esas pantallas completas. -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="18dp">
-
-                    <LinearLayout
-                        android:id="@+id/quicknav_live"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_card_rounded"
-                        android:paddingTop="14dp"
-                        android:paddingBottom="14dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:stateListAnimator="@animator/focus_scale_card">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="📡"
-                            android:textSize="18sp"
-                            android:layout_marginBottom="4dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="TV en vivo"
-                            android:textColor="@color/text_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/quicknav_movies"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_card_rounded"
-                        android:paddingTop="14dp"
-                        android:paddingBottom="14dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:stateListAnimator="@animator/focus_scale_card">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="🎬"
-                            android:textSize="18sp"
-                            android:layout_marginBottom="4dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Películas"
-                            android:textColor="@color/text_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/quicknav_series"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_card_rounded"
-                        android:paddingTop="14dp"
-                        android:paddingBottom="14dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:stateListAnimator="@animator/focus_scale_card">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="📺"
-                            android:textSize="18sp"
-                            android:layout_marginBottom="4dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Series"
-                            android:textColor="@color/text_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
                 </LinearLayout>
 
             </LinearLayout>
