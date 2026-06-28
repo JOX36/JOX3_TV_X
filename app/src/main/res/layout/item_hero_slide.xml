@@ -1,65 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Versión MÓVIL del banner: solo la imagen a pantalla completa, sin
-    sinopsis ni botones encima (eso ahora vive en la pantalla de detalle,
-    que se abre al tocar esta card completa). La versión "TV box" con
-    sinopsis y botones inline sigue existiendo aparte en
-    item_hero_slide_tv.xml, para cuando se navega con control remoto.
+    Version MOVIL del banner: imagen a pantalla completa + etiqueta de
+    genero + borde con resplandor de marca. Sin sinopsis ni botones (eso
+    vive en la pantalla de detalle, que se abre al tocar esta card
+    completa). La version "TV box" sigue en item_hero_slide_tv.xml.
+
+    Estructura para el borde con resplandor: el FrameLayout raiz tiene
+    fondo = degradado cian->morado (bg_chip_active) y 2dp de padding; el
+    FrameLayout interior (inner_card) ocupa el resto y tiene fondo solido
+    oscuro normal, dejando ver solo un anillo de 2dp del degradado
+    alrededor, igual al truco de "borde con gradiente" que se usa en
+    CSS con background + padding, pero en XML de Android.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_card_rounded"
-    android:clipToOutline="true"
+    android:background="@drawable/bg_chip_active"
+    android:padding="2dp"
     android:clickable="true"
     android:focusable="true"
     android:stateListAnimator="@animator/focus_scale_card">
 
-    <ImageView
-        android:id="@+id/hero_poster"
+    <FrameLayout
+        android:id="@+id/inner_card"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop" />
+        android:background="@drawable/bg_card_rounded"
+        android:clipToOutline="true">
 
-    <!-- Degradado oscuro abajo para que el título siempre se lea, sin
-         importar qué tan clara sea la imagen de fondo. -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:layout_gravity="bottom"
-        android:background="@drawable/bg_gradient_fade_bottom" />
+        <ImageView
+            android:id="@+id/hero_poster"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
 
-    <TextView
-        android:id="@+id/hero_badge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|start"
-        android:layout_margin="12dp"
-        android:background="@drawable/bg_badge_live"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp"
-        android:text="EN VIVO"
-        android:textColor="@color/text_primary"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
+        <!-- Degradado oscuro abajo para que el titulo siempre se lea. -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bg_gradient_fade_bottom" />
 
-    <TextView
-        android:id="@+id/hero_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:padding="16dp"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:shadowColor="#CC000000"
-        android:shadowDx="0"
-        android:shadowDy="1"
-        android:shadowRadius="4" />
+        <!-- Etiqueta de genero/categoria, arriba a la izquierda. Solo se
+             muestra si el item tiene categoria (HeroSlideAdapter ya la
+             deja en mayusculas y oculta el TextView si viene vacia). -->
+        <TextView
+            android:id="@+id/hero_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="12dp"
+            android:background="@drawable/bg_pill_outline_accent"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textColor="@color/accent"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.04"
+            android:visibility="gone" />
 
+        <TextView
+            android:id="@+id/hero_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="12dp"
+            android:background="@drawable/bg_badge_live"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="EN VIVO"
+            android:textColor="@color/text_primary"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/hero_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:padding="16dp"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:shadowColor="#CC000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="4" />
+
+    </FrameLayout>
 </FrameLayout>
