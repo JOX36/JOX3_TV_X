@@ -31,9 +31,12 @@ import com.jox3.tv.ui.settings.SettingsActivity;
 import com.jox3.tv.util.AppPrefs;
 import com.jox3.tv.util.AppState;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +49,7 @@ public class HomeActivity extends AppCompatActivity {
     private static final long HERO_AUTOPLAY_MS = 5000;
 
     private LinearLayout layoutEmpty, rowFavoritesContainer, rowContinueContainer;
+    private TextView accountStatusText;
     private View scrollContent;
     private RecyclerView rowContinue, rowFavorites;
     private EditText inputSearch;
@@ -335,6 +339,7 @@ public class HomeActivity extends AppCompatActivity {
         scrollContent = findViewById(R.id.scroll_content);
         rowFavoritesContainer = findViewById(R.id.row_favorites_container);
         rowContinueContainer = findViewById(R.id.row_continue_container);
+        accountStatusText = findViewById(R.id.account_status_text);
 
         rowContinue = findViewById(R.id.row_continue);
         rowFavorites = findViewById(R.id.row_favorites);
@@ -602,6 +607,7 @@ public class HomeActivity extends AppCompatActivity {
         rowContinueContainer.setVisibility(continueWatching.isEmpty() ? View.GONE : View.VISIBLE);
         continueAdapter.updateData(capList(continueWatching));
         bindContinueHero(continueWatching);
+        updateAccountStatus();
 
         List<MediaItem> favorites = collectFavorites(state);
         rowFavoritesContainer.setVisibility(favorites.isEmpty() ? View.GONE : View.VISIBLE);
@@ -609,6 +615,32 @@ public class HomeActivity extends AppCompatActivity {
 
         setupHero(state);
         applyFilters();
+    }
+
+    /**
+     * Texto discreto de estado de cuenta debajo del header. A propósito
+     * NO lleva caja, ícono grande ni color de marca — solo una línea chica
+     * en gris, para no competir visualmente con el resto del Home. Si la
+     * cuenta es M3U (sin fecha de vencimiento) o no hay cuenta, se oculta.
+     */
+    private void updateAccountStatus() {
+        com.jox3.tv.model.PlaylistConfig config = prefs.getPlaylistConfig();
+        if (config == null || config.expDateEpoch <= 0) {
+            accountStatusText.setVisibility(View.GONE);
+            return;
+        }
+        long daysLeft = (config.expDateEpoch * 1000L - System.currentTimeMillis())
+                / (1000L * 60 * 60 * 24);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", new Locale("es"));
+        String dateText = sdf.format(new Date(config.expDateEpoch * 1000L));
+
+        String name = config.name != null && !config.name.isEmpty() ? config.name : "Lista activa";
+        String text = daysLeft >= 0
+                ? name + " · vence " + dateText + " (" + daysLeft + " días)"
+                : name + " · vencida desde " + dateText;
+
+        accountStatusText.setText(text);
+        accountStatusText.setVisibility(View.VISIBLE);
     }
 
     /**
