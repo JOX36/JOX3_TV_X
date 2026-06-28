@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Reemplaza el contorno de color por un efecto de "lupa": el botón
-    aumenta de tamaño cuando el control remoto lo selecciona (state_focused),
-    y vuelve a su tamaño normal al perder el foco. En modo táctil Android
-    nunca activa state_focused al tocar, así que esto es invisible en celular.
+    Efecto de "lupa" para botones/iconos individuales al recibir foco de
+    control remoto (state_focused). Invisible en modo tactil.
+    Historial de ajuste: empezo en 1.22, esta version es el doble de
+    crecimiento respecto a esa primera version (200%).
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <set>
             <objectAnimator
                 android:propertyName="scaleX"
-                android:valueTo="1.33"
+                android:valueTo="1.44"
                 android:valueType="floatType"
                 android:duration="120" />
             <objectAnimator
                 android:propertyName="scaleY"
-                android:valueTo="1.33"
+                android:valueTo="1.44"
                 android:valueType="floatType"
                 android:duration="120" />
             <objectAnimator
                 android:propertyName="translationZ"
-                android:valueTo="12"
+                android:valueTo="14"
                 android:valueType="floatType"
                 android:duration="120" />
         </set>

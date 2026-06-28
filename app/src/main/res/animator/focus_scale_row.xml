@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Versión para filas de lista (canales, categorías), donde una fila ocupa
-    todo el ancho y está pegada a las de arriba/abajo. El escalado es menor
-    que el de los botones circulares para no montarse feo sobre las filas
-    vecinas, pero ya se nota claramente al navegar con el control remoto.
+    Para filas de lista que ocupan todo el ancho (canales, categorias del
+    dropdown, enlaces "Ver todo"). Crecimiento mas moderado que el de
+    botones/cards para no montarse feo sobre las filas vecinas.
+    Historial: empezo en 1.05/1.08, esta version duplica ese crecimiento
+    (200%).
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <set>
             <objectAnimator
                 android:propertyName="scaleX"
-                android:valueTo="1.08"
+                android:valueTo="1.10"
                 android:valueType="floatType"
                 android:duration="120" />
             <objectAnimator
                 android:propertyName="scaleY"
-                android:valueTo="1.12"
+                android:valueTo="1.16"
                 android:valueType="floatType"
                 android:duration="120" />
             <objectAnimator
                 android:propertyName="translationZ"
-                android:valueTo="9"
+                android:valueTo="10"
                 android:valueType="floatType"
                 android:duration="120" />
         </set>
