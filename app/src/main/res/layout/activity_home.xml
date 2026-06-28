@@ -89,6 +89,22 @@
                 android:stateListAnimator="@animator/focus_scale_button" />
         </LinearLayout>
 
+        <!-- Estado de cuenta: muy discreto a propósito (texto chico, color
+             secundario, sin caja ni fondo) — solo un dato de referencia
+             rápida, no debe competir visualmente con el resto del Home. -->
+        <TextView
+            android:id="@+id/account_status_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="10sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:visibility="gone" />
+
         <!-- Barra de búsqueda expandible, oculta por defecto (se abre desde
              "Buscar" en el panel lateral) -->
         <LinearLayout
