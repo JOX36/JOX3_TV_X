@@ -4,6 +4,8 @@
     android:layout_height="match_parent"
     android:background="@color/bg_primary"
     android:fitsSystemWindows="true"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:orientation="vertical">
 
     <LinearLayout
@@ -72,7 +74,7 @@
         android:layout_marginStart="18dp"
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="14dp"
-        android:background="@drawable/bg_card_rounded"
+        android:background="@drawable/bg_chip_inactive_transparent40"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:visibility="gone" />

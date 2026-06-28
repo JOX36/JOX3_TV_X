@@ -48,6 +48,8 @@
 
     <!-- Botón de categorías (compacto) + lupa -->
     <LinearLayout
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -93,7 +95,7 @@
         android:layout_marginStart="18dp"
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="14dp"
-        android:background="@drawable/bg_card_rounded"
+        android:background="@drawable/bg_chip_inactive_transparent40"
         android:orientation="vertical"
         android:clipChildren="false"
         android:clipToPadding="false"
