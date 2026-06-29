@@ -467,6 +467,61 @@
                     </LinearLayout>
                 </HorizontalScrollView>
 
+                <View android:id="@+id/divider_a" style="@null"
+                    android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginBottom="18dp"
+                    android:background="@drawable/bg_section_divider"
+                    android:visibility="gone" />
+
+                <!-- "Seguir viendo series": separado de "Vistos Reciente"
+                     porque son cosas distintas (esta solo trae series con
+                     episodio a medias, con su badge T{temporada} E{episodio}
+                     usando los campos season/episode de MediaItem). -->
+                <LinearLayout
+                    android:id="@+id/row_continue_series_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="📺  Seguir viendo series"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/row_continue_series"
+                        android:descendantFocusability="afterDescendants"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:layout_marginBottom="22dp" />
+                </LinearLayout>
+
+                <View android:id="@+id/divider_b" style="@null"
+                    android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginBottom="18dp"
+                    android:background="@drawable/bg_section_divider"
+                    android:visibility="gone" />
+
                 <!-- Vistos Reciente (antes "Continuar viendo"; mismo dato,
                      solo se renombró el título según el diseño nuevo) -->
                 <LinearLayout
@@ -520,6 +575,12 @@
                         android:clipToPadding="false"
                         android:layout_marginBottom="22dp" />
                 </LinearLayout>
+
+                <View android:id="@+id/divider_c"
+                    android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginBottom="18dp"
+                    android:background="@drawable/bg_section_divider"
+                    android:visibility="gone" />
 
                 <!-- Última reproducción: card grande con miniatura + barra
                      de progreso + botón continuar, para el ítem visto MÁS
@@ -614,6 +675,12 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <View android:id="@+id/divider_d"
+                    android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginBottom="18dp"
+                    android:background="@drawable/bg_section_divider"
+                    android:visibility="gone" />
+
                 <!-- Favoritos -->
                 <LinearLayout
                     android:id="@+id/row_favorites_container"
@@ -656,6 +723,115 @@
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/row_favorites"
+                        android:descendantFocusability="afterDescendants"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:layout_marginBottom="22dp" />
+                </LinearLayout>
+
+                <View android:id="@+id/divider_e"
+                    android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginBottom="18dp"
+                    android:background="@drawable/bg_section_divider"
+                    android:visibility="gone" />
+
+                <!-- "Descubre algo nuevo": random de lo que NO está en
+                     Vistos Reciente, con botón 🔀 para regenerar la
+                     selección sin recargar toda la lista de la cuenta. -->
+                <LinearLayout
+                    android:id="@+id/row_discover_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="🔀  Descubre algo nuevo"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btn_shuffle_discover"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="6dp"
+                            android:text="🔀"
+                            android:textSize="16sp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:stateListAnimator="@animator/focus_scale_button" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/row_discover"
+                        android:descendantFocusability="afterDescendants"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:layout_marginBottom="22dp" />
+                </LinearLayout>
+
+                <View android:id="@+id/divider_f"
+                    android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginBottom="18dp"
+                    android:background="@drawable/bg_section_divider"
+                    android:visibility="gone" />
+
+                <!-- Fila fija de UNA categoría destacada (la de más ítems
+                     en tu catálogo de películas/series). El título se
+                     llena dinámicamente con el nombre real de esa
+                     categoría, no es un texto fijo en el XML. -->
+                <LinearLayout
+                    android:id="@+id/row_featured_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:id="@+id/tv_featured_title"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="⭐  Destacados"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/row_featured"
                         android:descendantFocusability="afterDescendants"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
