@@ -58,6 +58,7 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
                 MediaItem.LIVE.equals(item.type) ? View.VISIBLE : View.GONE);
 
         bindQualityBadge(holder, item);
+        bindEpisodeBadge(holder, item);
 
         boolean isFav = prefs != null && prefs.isFav(item.favKey());
         holder.tvFavBadge.setVisibility(isFav ? View.VISIBLE : View.GONE);
@@ -94,6 +95,17 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
             holder.tvQualityBadge.setVisibility(View.VISIBLE);
         } else {
             holder.tvQualityBadge.setVisibility(View.GONE);
+        }
+    }
+
+    /** Para episodios de serie con temporada/episodio conocidos, ej. "T1 E4". */
+    private void bindEpisodeBadge(CardHolder holder, MediaItem item) {
+        if (holder.tvEpisodeBadge == null) return;
+        if (MediaItem.SERIES.equals(item.type) && item.season >= 0 && item.episode >= 0) {
+            holder.tvEpisodeBadge.setText("T" + item.season + " E" + item.episode);
+            holder.tvEpisodeBadge.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvEpisodeBadge.setVisibility(View.GONE);
         }
     }
 
@@ -156,7 +168,7 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
 
     static class CardHolder extends RecyclerView.ViewHolder {
         ImageView imgLogo;
-        TextView tvName, tvCategory, tvLiveBadge, tvFavBadge, tvQualityBadge;
+        TextView tvName, tvCategory, tvLiveBadge, tvFavBadge, tvQualityBadge, tvEpisodeBadge;
         LinearLayout progressTrack;
         View progressFill;
 
@@ -168,6 +180,7 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
             tvLiveBadge = itemView.findViewById(R.id.tv_live_badge);
             tvFavBadge = itemView.findViewById(R.id.tv_fav_badge);
             tvQualityBadge = itemView.findViewById(R.id.tv_quality_badge);
+            tvEpisodeBadge = itemView.findViewById(R.id.tv_episode_badge);
             progressTrack = itemView.findViewById(R.id.progress_track);
             progressFill = itemView.findViewById(R.id.progress_fill);
         }

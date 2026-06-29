@@ -52,6 +52,12 @@ public class HomeActivity extends AppCompatActivity {
     private TextView accountStatusText;
     private View scrollContent;
     private RecyclerView rowContinue, rowFavorites;
+    private LinearLayout rowContinueSeriesContainer, rowDiscoverContainer, rowFeaturedContainer;
+    private RecyclerView rowContinueSeries, rowDiscover, rowFeatured;
+    private TextView tvFeaturedTitle;
+    private View btnShuffleDiscover;
+    private View dividerA, dividerB, dividerC, dividerD, dividerE, dividerF;
+    private MediaCardAdapter continueSeriesAdapter, discoverAdapter, featuredAdapter;
     private EditText inputSearch;
     private View searchBarContainer;
     private View btnGoSettings;
@@ -344,6 +350,22 @@ public class HomeActivity extends AppCompatActivity {
         rowContinue = findViewById(R.id.row_continue);
         rowFavorites = findViewById(R.id.row_favorites);
 
+        rowContinueSeriesContainer = findViewById(R.id.row_continue_series_container);
+        rowContinueSeries = findViewById(R.id.row_continue_series);
+        rowDiscoverContainer = findViewById(R.id.row_discover_container);
+        rowDiscover = findViewById(R.id.row_discover);
+        btnShuffleDiscover = findViewById(R.id.btn_shuffle_discover);
+        rowFeaturedContainer = findViewById(R.id.row_featured_container);
+        rowFeatured = findViewById(R.id.row_featured);
+        tvFeaturedTitle = findViewById(R.id.tv_featured_title);
+
+        dividerA = findViewById(R.id.divider_a);
+        dividerB = findViewById(R.id.divider_b);
+        dividerC = findViewById(R.id.divider_c);
+        dividerD = findViewById(R.id.divider_d);
+        dividerE = findViewById(R.id.divider_e);
+        dividerF = findViewById(R.id.divider_f);
+
         inputSearch = findViewById(R.id.input_search);
         searchBarContainer = findViewById(R.id.search_bar_container);
         btnGoSettings = findViewById(R.id.btn_go_settings);
@@ -393,12 +415,21 @@ public class HomeActivity extends AppCompatActivity {
     private void setupRows() {
         rowContinue.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rowFavorites.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rowContinueSeries.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rowDiscover.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rowFeatured.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         continueAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
         favAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
+        continueSeriesAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
+        discoverAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
+        featuredAdapter = new MediaCardAdapter(new ArrayList<>(), prefs, this::openItem);
 
         rowContinue.setAdapter(continueAdapter);
         rowFavorites.setAdapter(favAdapter);
+        rowContinueSeries.setAdapter(continueSeriesAdapter);
+        rowDiscover.setAdapter(discoverAdapter);
+        rowFeatured.setAdapter(featuredAdapter);
     }
 
     private void setupHeroPager() {
@@ -509,6 +540,8 @@ public class HomeActivity extends AppCompatActivity {
         chipMovies.setOnClickListener(v -> openContentList(MediaItem.VOD));
         chipSeries.setOnClickListener(v -> openContentList(MediaItem.SERIES));
 
+        btnShuffleDiscover.setOnClickListener(v -> bindDiscoverRow());
+
         // ---- Panel lateral (drawer) ----
         btnOpenDrawer.setOnClickListener(v -> openDrawer());
         btnSettings.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
@@ -615,8 +648,114 @@ public class HomeActivity extends AppCompatActivity {
         rowFavoritesContainer.setVisibility(favorites.isEmpty() ? View.GONE : View.VISIBLE);
         favAdapter.updateData(capList(favorites));
 
+        bindContinueSeriesRow(continueWatching);
+        bindDiscoverRow();
+        bindFeaturedRow(state);
+
         setupHero(state);
         applyFilters();
+        updateSectionDividers();
+    }
+
+    /**
+     * "Seguir viendo series": mismo origen de datos que "Vistos Reciente"
+     * (prefs.getRecentlyWatched()), pero filtrado solo a series — y le
+     * agrega su propio badge T{temporada} E{episodio} en MediaCardAdapter.
+     */
+    private void bindContinueSeriesRow(List<MediaItem> continueWatching) {
+        List<MediaItem> series = new ArrayList<>();
+        for (MediaItem item : continueWatching) {
+            if (MediaItem.SERIES.equals(item.type)) series.add(item);
+        }
+        rowContinueSeriesContainer.setVisibility(series.isEmpty() ? View.GONE : View.VISIBLE);
+        continueSeriesAdapter.updateData(capList(series));
+    }
+
+    /**
+     * "Descubre algo nuevo": random de películas/series que NO están en
+     * "Vistos Reciente" todavía. Se puede regenerar con el botón 🔀 sin
+     * tener que recargar toda la cuenta otra vez.
+     */
+    private void bindDiscoverRow() {
+        AppState state = AppState.get();
+        java.util.Set<String> watchedIds = new java.util.HashSet<>();
+        for (MediaItem item : prefs.getRecentlyWatched()) watchedIds.add(item.id);
+
+        List<MediaItem> pool = new ArrayList<>();
+        for (MediaItem item : state.movies) {
+            if (!watchedIds.contains(item.id) && item.logoUrl != null && !item.logoUrl.isEmpty()) {
+                pool.add(item);
+            }
+        }
+        for (MediaItem item : state.series) {
+            if (!watchedIds.contains(item.id) && item.logoUrl != null && !item.logoUrl.isEmpty()) {
+                pool.add(item);
+            }
+        }
+        Collections.shuffle(pool);
+
+        List<MediaItem> selected = pool.size() > MAX_ITEMS_PER_ROW
+                ? pool.subList(0, MAX_ITEMS_PER_ROW) : pool;
+        rowDiscoverContainer.setVisibility(selected.isEmpty() ? View.GONE : View.VISIBLE);
+        discoverAdapter.updateData(new ArrayList<>(selected));
+    }
+
+    /**
+     * Fila fija de UNA categoría destacada: se elige automáticamente la
+     * categoría con más ítems entre tus películas y series (sin inventar
+     * ningún nombre — usa el nombre real tal como viene en tu lista).
+     */
+    private void bindFeaturedRow(AppState state) {
+        java.util.Map<String, Integer> countByCategory = new java.util.HashMap<>();
+        java.util.Map<String, List<MediaItem>> itemsByCategory = new java.util.HashMap<>();
+
+        for (MediaItem item : state.movies) addToCategory(countByCategory, itemsByCategory, item);
+        for (MediaItem item : state.series) addToCategory(countByCategory, itemsByCategory, item);
+
+        String bestCategory = null;
+        int bestCount = 0;
+        for (java.util.Map.Entry<String, Integer> entry : countByCategory.entrySet()) {
+            if (entry.getValue() > bestCount) {
+                bestCount = entry.getValue();
+                bestCategory = entry.getKey();
+            }
+        }
+
+        if (bestCategory == null || bestCount < 4) {
+            // Si ninguna categoría tiene al menos 4 ítems con miniatura,
+            // no vale la pena mostrar esta fila (se vería muy vacía).
+            rowFeaturedContainer.setVisibility(View.GONE);
+            return;
+        }
+
+        List<MediaItem> items = new ArrayList<>(itemsByCategory.get(bestCategory));
+        Collections.shuffle(items);
+        tvFeaturedTitle.setText("⭐  " + bestCategory);
+        featuredAdapter.updateData(capList(items));
+        rowFeaturedContainer.setVisibility(View.VISIBLE);
+    }
+
+    private void addToCategory(java.util.Map<String, Integer> countByCategory,
+                                java.util.Map<String, List<MediaItem>> itemsByCategory,
+                                MediaItem item) {
+        if (item.category == null || item.category.trim().isEmpty()) return;
+        if (item.logoUrl == null || item.logoUrl.isEmpty()) return;
+        countByCategory.merge(item.category, 1, Integer::sum);
+        itemsByCategory.computeIfAbsent(item.category, k -> new ArrayList<>()).add(item);
+    }
+
+    /**
+     * Cada separador se muestra solo si la sección que viene justo
+     * después de él también está visible — así nunca queda una línea
+     * "huérfana" antes de una sección oculta.
+     */
+    private void updateSectionDividers() {
+        dividerA.setVisibility(rowContinueSeriesContainer.getVisibility());
+        dividerB.setVisibility(rowContinueContainer.getVisibility());
+        dividerC.setVisibility(continueHeroContainer.getVisibility());
+        dividerD.setVisibility(rowFavoritesContainer.getVisibility());
+        dividerE.setVisibility(rowDiscoverContainer.getVisibility());
+        dividerF.setVisibility(rowFeaturedContainer.getVisibility());
     }
 
     /**
@@ -659,7 +798,6 @@ public class HomeActivity extends AppCompatActivity {
         MediaItem item = continueWatching.get(0);
 
         continueHeroTitle.setText(item.name);
-        continueHeroSub.setText(item.category != null ? item.category.toUpperCase() : "");
 
         if (item.logoUrl != null && !item.logoUrl.isEmpty()) {
             com.bumptech.glide.Glide.with(continueHeroThumb.getContext())
@@ -670,9 +808,59 @@ public class HomeActivity extends AppCompatActivity {
             continueHeroThumb.setImageDrawable(null);
         }
 
-        long pos = prefs.getPos(item.id);
-        long dur = prefs.getDur(item.id);
-        int percent = dur > 0 ? (int) Math.min(100, Math.max(0, (pos * 100) / dur)) : 0;
+        if (MediaItem.LIVE.equals(item.type)) {
+            // Es un canal en vivo: la posición/duración guardada de la
+            // última vez que se vio ya no sirve de nada (pudo haber sido
+            // hace horas o un día completo, la programación ya cambió).
+            // En vez de eso, se consulta la guía EPG EN VIVO ahora mismo,
+            // igual que ya se hace para el mini-reproductor del Home.
+            continueHeroSub.setText(item.category != null ? item.category.toUpperCase() : "");
+            loadContinueHeroLiveEpg(item);
+        } else {
+            // Película o serie: aquí sí tiene sentido mostrar cuánto
+            // llevaba visto, porque esa posición no "vence" con el tiempo.
+            continueHeroSub.setText(item.category != null ? item.category.toUpperCase() : "");
+            long pos = prefs.getPos(item.id);
+            long dur = prefs.getDur(item.id);
+            int percent = dur > 0 ? (int) Math.min(100, Math.max(0, (pos * 100) / dur)) : 0;
+            setContinueHeroProgress(percent);
+        }
+    }
+
+    /**
+     * Trae "qué está dando ahora" para el canal de la card de "Última
+     * reproducción", igual que loadMiniPlayerEpg() pero para esta card.
+     * Se hace en tiempo real cada vez que se refresca el Home: si la
+     * última vez que viste este canal fue hace un buen rato, la guía que
+     * se muestra es la de AHORA, no la de ese momento.
+     */
+    private void loadContinueHeroLiveEpg(MediaItem channel) {
+        setContinueHeroProgress(0);
+        PlaylistConfig config = prefs.getPlaylistConfig();
+        if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) return;
+
+        synopsisExecutor.execute(() -> {
+            XtreamClient client = new XtreamClient(config);
+            List<XtreamClient.EpgProgram> programs = client.getShortEpg(channel.id);
+            if (programs.isEmpty()) return;
+
+            XtreamClient.EpgProgram now = programs.get(0);
+            mainHandler.post(() -> {
+                // Si para cuando termina de cargar la guía el usuario ya
+                // recargó el Home y ahora el ítem más reciente es otro,
+                // no pisamos el texto de un canal que ya no es el que se
+                // está mostrando.
+                List<MediaItem> current = prefs.getRecentlyWatched();
+                if (current.isEmpty() || !current.get(0).id.equals(channel.id)) return;
+
+                continueHeroSub.setText("▶ Ahora: " + now.title);
+                int percent = now.progressPercent();
+                setContinueHeroProgress(Math.max(percent, 0));
+            });
+        });
+    }
+
+    private void setContinueHeroProgress(int percent) {
         LinearLayout.LayoutParams fillParams =
                 (LinearLayout.LayoutParams) continueHeroProgressFill.getLayoutParams();
         fillParams.weight = percent;
