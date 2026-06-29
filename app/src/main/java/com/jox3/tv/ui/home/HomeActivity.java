@@ -793,16 +793,28 @@ public class HomeActivity extends AppCompatActivity {
      * recientemente (el primero de la misma lista que alimenta "Vistos
      * Reciente"). Si no hay nada visto todavía, oculta la card completa.
      */
+    /**
+     * Llena la card grande de "Última reproducción" con el canal EN VIVO
+     * visto más recientemente. Películas y series YA NO entran aquí: ya
+     * tienen su propio espacio ("Continúa tus películas" / "Seguir viendo
+     * series"), así que mostrarlas también acá era redundante.
+     */
     private void bindContinueHero(List<MediaItem> continueWatching) {
-        if (continueWatching.isEmpty()) {
+        MediaItem item = null;
+        for (MediaItem candidate : continueWatching) {
+            if (MediaItem.LIVE.equals(candidate.type)) {
+                item = candidate;
+                break;
+            }
+        }
+        if (item == null) {
             continueHeroContainer.setVisibility(View.GONE);
             return;
         }
         continueHeroContainer.setVisibility(View.VISIBLE);
-        MediaItem item = continueWatching.get(0);
 
         continueHeroTitle.setText(item.name);
-        continueHeroLiveBadge.setVisibility(MediaItem.LIVE.equals(item.type) ? View.VISIBLE : View.GONE);
+        continueHeroLiveBadge.setVisibility(View.VISIBLE);
 
         String quality = MediaCardAdapter.detectQuality(item.name);
         if (quality != null) {
@@ -832,23 +844,14 @@ public class HomeActivity extends AppCompatActivity {
             continueHeroBg.setImageDrawable(null);
         }
 
-        if (MediaItem.LIVE.equals(item.type)) {
-            // Es un canal en vivo: la posición/duración guardada de la
-            // última vez que se vio ya no sirve de nada (pudo haber sido
-            // hace horas o un día completo, la programación ya cambió).
-            // En vez de eso, se consulta la guía EPG EN VIVO ahora mismo,
-            // igual que ya se hace para el mini-reproductor del Home.
-            continueHeroSub.setText(item.category != null ? item.category.toUpperCase() : "");
-            loadContinueHeroLiveEpg(item);
-        } else {
-            // Película o serie: aquí sí tiene sentido mostrar cuánto
-            // llevaba visto, porque esa posición no "vence" con el tiempo.
-            continueHeroSub.setText(item.category != null ? item.category.toUpperCase() : "");
-            long pos = prefs.getPos(item.id);
-            long dur = prefs.getDur(item.id);
-            int percent = dur > 0 ? (int) Math.min(100, Math.max(0, (pos * 100) / dur)) : 0;
-            setContinueHeroProgress(percent);
-        }
+        // Siempre es un canal en vivo a esta altura (el filtro de arriba ya
+        // se encargó de eso). La posición/duración guardada de la última
+        // vez que se vio no sirve de nada para un canal (pudo haber sido
+        // hace horas o un día completo, la programación ya cambió) — en vez
+        // de eso, se consulta la guía EPG EN VIVO ahora mismo, igual que ya
+        // se hace para el mini-reproductor del Home.
+        continueHeroSub.setText(item.category != null ? item.category.toUpperCase() : "");
+        loadContinueHeroLiveEpg(item);
     }
 
     /**
