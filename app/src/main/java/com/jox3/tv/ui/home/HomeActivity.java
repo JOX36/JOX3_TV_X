@@ -101,8 +101,8 @@ public class HomeActivity extends AppCompatActivity {
 
     // ---- Card grande "Última reproducción" ----
     private View continueHeroContainer, continueHeroCard;
-    private ImageView continueHeroThumb;
-    private TextView continueHeroTitle, continueHeroSub;
+    private ImageView continueHeroThumb, continueHeroBg;
+    private TextView continueHeroTitle, continueHeroSub, continueHeroQuality, continueHeroLiveBadge;
     private View continueHeroProgressFill;
     private View chipFavorites, chipLive, chipMovies, chipSeries;
 
@@ -398,8 +398,11 @@ public class HomeActivity extends AppCompatActivity {
         continueHeroContainer = findViewById(R.id.continue_hero_container);
         continueHeroCard = findViewById(R.id.continue_hero_card);
         continueHeroThumb = findViewById(R.id.continue_hero_thumb);
+        continueHeroBg = findViewById(R.id.continue_hero_bg);
         continueHeroTitle = findViewById(R.id.continue_hero_title);
         continueHeroSub = findViewById(R.id.continue_hero_sub);
+        continueHeroQuality = findViewById(R.id.continue_hero_quality);
+        continueHeroLiveBadge = findViewById(R.id.continue_hero_live_badge);
         continueHeroProgressFill = findViewById(R.id.continue_hero_progress_fill);
 
         chipFavorites = findViewById(R.id.chip_favorites);
@@ -639,8 +642,9 @@ public class HomeActivity extends AppCompatActivity {
         if (!hasData) return;
 
         List<MediaItem> continueWatching = prefs.getRecentlyWatched();
-        rowContinueContainer.setVisibility(continueWatching.isEmpty() ? View.GONE : View.VISIBLE);
-        continueAdapter.updateData(capList(continueWatching));
+        List<MediaItem> continueMoviesList = continueMovies();
+        rowContinueContainer.setVisibility(continueMoviesList.isEmpty() ? View.GONE : View.VISIBLE);
+        continueAdapter.updateData(capList(continueMoviesList));
         bindContinueHero(continueWatching);
         updateAccountStatus();
 
@@ -798,14 +802,34 @@ public class HomeActivity extends AppCompatActivity {
         MediaItem item = continueWatching.get(0);
 
         continueHeroTitle.setText(item.name);
+        continueHeroLiveBadge.setVisibility(MediaItem.LIVE.equals(item.type) ? View.VISIBLE : View.GONE);
+
+        String quality = MediaCardAdapter.detectQuality(item.name);
+        if (quality != null) {
+            continueHeroQuality.setText(quality);
+            continueHeroQuality.setVisibility(View.VISIBLE);
+        } else {
+            continueHeroQuality.setVisibility(View.GONE);
+        }
 
         if (item.logoUrl != null && !item.logoUrl.isEmpty()) {
             com.bumptech.glide.Glide.with(continueHeroThumb.getContext())
                     .load(item.logoUrl)
                     .centerCrop()
                     .into(continueHeroThumb);
+
+            // Fondo difuminado (vidrio esmerilado): misma imagen, pero con
+            // blur real de jp.wasabeef:glide-transformations. Esto mismo
+            // se puede reutilizar a futuro en cualquier otra pantalla que
+            // necesite este efecto.
+            com.bumptech.glide.Glide.with(continueHeroBg.getContext())
+                    .load(item.logoUrl)
+                    .apply(new com.bumptech.glide.request.RequestOptions()
+                            .transform(new jp.wasabeef.glide.transformations.BlurTransformation(25, 3)))
+                    .into(continueHeroBg);
         } else {
             continueHeroThumb.setImageDrawable(null);
+            continueHeroBg.setImageDrawable(null);
         }
 
         if (MediaItem.LIVE.equals(item.type)) {
@@ -1066,19 +1090,28 @@ public class HomeActivity extends AppCompatActivity {
      * La búsqueda en el Home ahora es simple: como ya no hay filas de TV en
      * vivo/Películas/Series aquí (se movieron a sus propias pantallas, que
      * ya tienen su propia búsqueda), esta solo filtra por nombre dentro de
-     * "Vistos Reciente" y "Favoritos".
+     * "Continúa tus películas" y "Favoritos".
      */
     private void applyFilters() {
         AppState state = AppState.get();
         String lowerQuery = currentSearchQuery.toLowerCase();
 
         if (lowerQuery.isEmpty()) {
-            continueAdapter.updateData(capList(prefs.getRecentlyWatched()));
+            continueAdapter.updateData(capList(continueMovies()));
             favAdapter.updateData(capList(collectFavorites(state)));
         } else {
-            continueAdapter.updateData(capList(filterByName(prefs.getRecentlyWatched(), lowerQuery)));
+            continueAdapter.updateData(capList(filterByName(continueMovies(), lowerQuery)));
             favAdapter.updateData(capList(filterByName(collectFavorites(state), lowerQuery)));
         }
+    }
+
+    /** Solo películas con avance, para la fila "Continúa tus películas". */
+    private List<MediaItem> continueMovies() {
+        List<MediaItem> movies = new ArrayList<>();
+        for (MediaItem item : prefs.getRecentlyWatched()) {
+            if (MediaItem.VOD.equals(item.type)) movies.add(item);
+        }
+        return movies;
     }
 
     private List<MediaItem> filterByName(List<MediaItem> source, String lowerQuery) {

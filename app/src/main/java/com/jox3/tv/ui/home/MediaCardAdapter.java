@@ -109,7 +109,11 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
         }
     }
 
-    private static String detectQuality(String name) {
+    /**
+     * Público y estático para poder reutilizarlo desde otras pantallas
+     * (ej. la card "Última reproducción" del Home).
+     */
+    public static String detectQuality(String name) {
         if (name == null) return null;
         String upper = name.toUpperCase();
         // El orden importa: hay que buscar "4K" y "FHD" ANTES que "HD",
