@@ -522,8 +522,10 @@
                     android:background="@drawable/bg_section_divider"
                     android:visibility="gone" />
 
-                <!-- Vistos Reciente (antes "Continuar viendo"; mismo dato,
-                     solo se renombró el título según el diseño nuevo) -->
+                <!-- "Continúa tus películas" (antes "Vistos Reciente",
+                     que era redundante con "Última reproducción" y
+                     "Seguir viendo series"). Ahora solo trae películas con
+                     avance, igual de specifico que la fila de series. -->
                 <LinearLayout
                     android:id="@+id/row_continue_container"
                     android:layout_width="match_parent"
@@ -544,7 +546,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🕐  Vistos Reciente"
+                            android:text="🎬  Continúa tus películas"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -582,9 +584,11 @@
                     android:background="@drawable/bg_section_divider"
                     android:visibility="gone" />
 
-                <!-- Última reproducción: card grande con miniatura + barra
-                     de progreso + botón continuar, para el ítem visto MÁS
-                     reciente (el primero de la misma lista de arriba). -->
+                <!-- Última reproducción: card grande, ahora con la imagen
+                     del canal/poster DIFUMINADA de fondo (vidrio esmerilado)
+                     y la info al frente. El difuminado real lo hace
+                     BlurTransformation (jp.wasabeef:glide-transformations)
+                     al cargar continue_hero_bg en HomeActivity.java. -->
                 <LinearLayout
                     android:id="@+id/continue_hero_container"
                     android:layout_width="match_parent"
@@ -595,84 +599,151 @@
                     android:layout_marginBottom="22dp"
                     android:visibility="gone">
 
-                    <LinearLayout
+                    <FrameLayout
                         android:id="@+id/continue_hero_card"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_height="172dp"
                         android:background="@drawable/bg_card_rounded"
-                        android:padding="14dp"
+                        android:clipToOutline="true"
                         android:clickable="true"
                         android:focusable="true"
                         android:stateListAnimator="@animator/focus_scale_card">
 
+                        <!-- Fondo difuminado (la misma imagen del canal/
+                             poster, pero borrosa). Si Glide todavía no
+                             cargó nada, se ve el fondo oscuro normal de
+                             bg_card_rounded por detrás. -->
                         <ImageView
-                            android:id="@+id/continue_hero_thumb"
-                            android:layout_width="110dp"
-                            android:layout_height="65dp"
-                            android:scaleType="centerCrop"
-                            android:background="@drawable/bg_card_rounded" />
+                            android:id="@+id/continue_hero_bg"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop" />
+
+                        <!-- Oscurecido encima del difuminado, para que el
+                             texto siempre se lea sin importar qué tan
+                             clara sea la imagen de fondo. -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_gradient_glass_overlay" />
+
+                        <TextView
+                            android:id="@+id/continue_hero_live_badge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="12dp"
+                            android:background="@drawable/bg_badge_live"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp"
+                            android:text="EN VIVO"
+                            android:textColor="@color/text_primary"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
 
                         <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="14dp"
-                            android:orientation="vertical"
-                            android:gravity="center_vertical">
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="16dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="▶  Última reproducción"
-                                android:textColor="@color/accent"
-                                android:textSize="10sp"
-                                android:textStyle="bold"
-                                android:layout_marginBottom="6dp" />
-
-                            <TextView
-                                android:id="@+id/continue_hero_title"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/text_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:maxLines="1"
-                                android:ellipsize="end" />
-
-                            <TextView
-                                android:id="@+id/continue_hero_sub"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="1dp"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="10sp"
-                                android:maxLines="1"
-                                android:ellipsize="end" />
+                            <ImageView
+                                android:id="@+id/continue_hero_thumb"
+                                android:layout_width="80dp"
+                                android:layout_height="80dp"
+                                android:scaleType="centerCrop"
+                                android:background="@drawable/bg_card_rounded" />
 
                             <LinearLayout
-                                android:id="@+id/continue_hero_progress_track"
-                                android:layout_width="match_parent"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="8dp"
-                                android:background="#2A2A3A"
-                                android:orientation="horizontal">
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="14dp"
+                                android:orientation="vertical"
+                                android:gravity="center_vertical">
 
-                                <View
-                                    android:id="@+id/continue_hero_progress_fill"
-                                    android:layout_width="0dp"
-                                    android:layout_height="match_parent"
-                                    android:layout_weight="0"
-                                    android:background="@drawable/bg_chip_active" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="▶  ÚLTIMA REPRODUCCIÓN"
+                                    android:textColor="@color/accent"
+                                    android:textSize="10sp"
+                                    android:textStyle="bold"
+                                    android:letterSpacing="0.03"
+                                    android:layout_marginBottom="6dp" />
 
-                                <View
-                                    android:layout_width="0dp"
-                                    android:layout_height="match_parent"
-                                    android:layout_weight="100"
-                                    android:background="@android:color/transparent" />
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <TextView
+                                        android:id="@+id/continue_hero_title"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:textColor="@color/text_primary"
+                                        android:textSize="15sp"
+                                        android:textStyle="bold"
+                                        android:maxLines="1"
+                                        android:ellipsize="end" />
+
+                                    <TextView
+                                        android:id="@+id/continue_hero_quality"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:background="#88000000"
+                                        android:paddingStart="6dp"
+                                        android:paddingEnd="6dp"
+                                        android:paddingTop="2dp"
+                                        android:paddingBottom="2dp"
+                                        android:text="HD"
+                                        android:textColor="@color/text_primary"
+                                        android:textSize="9sp"
+                                        android:textStyle="bold"
+                                        android:visibility="gone" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/continue_hero_sub"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp"
+                                    android:maxLines="1"
+                                    android:ellipsize="end" />
+
+                                <LinearLayout
+                                    android:id="@+id/continue_hero_progress_track"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="4dp"
+                                    android:layout_marginTop="9dp"
+                                    android:background="#40FFFFFF"
+                                    android:orientation="horizontal">
+
+                                    <View
+                                        android:id="@+id/continue_hero_progress_fill"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:layout_weight="0"
+                                        android:background="@drawable/bg_chip_active" />
+
+                                    <View
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:layout_weight="100"
+                                        android:background="@android:color/transparent" />
+                                </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
-                    </LinearLayout>
+                    </FrameLayout>
                 </LinearLayout>
 
                 <View android:id="@+id/divider_d"
