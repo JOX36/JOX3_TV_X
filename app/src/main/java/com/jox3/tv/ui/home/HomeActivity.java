@@ -816,7 +816,13 @@ public class HomeActivity extends AppCompatActivity {
         continueHeroTitle.setText(item.name);
         continueHeroLiveBadge.setVisibility(View.VISIBLE);
 
-        String quality = MediaCardAdapter.detectQuality(item.name);
+        // Prioridad: 1) calidad REAL medida por el reproductor la última
+        // vez que se vio este canal (mucho más confiable); 2) si todavía
+        // nunca se reprodujo, se intenta adivinar por el nombre o la
+        // categoría como respaldo.
+        String quality = prefs.getDetectedQuality(item.id);
+        if (quality == null) quality = MediaCardAdapter.detectQuality(item.name);
+        if (quality == null) quality = MediaCardAdapter.detectQuality(item.category);
         if (quality != null) {
             continueHeroQuality.setText(quality);
             continueHeroQuality.setVisibility(View.VISIBLE);

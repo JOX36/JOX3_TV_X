@@ -89,7 +89,9 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
      */
     private void bindQualityBadge(CardHolder holder, MediaItem item) {
         if (holder.tvQualityBadge == null) return;
-        String quality = detectQuality(item.name);
+        String quality = prefs != null ? prefs.getDetectedQuality(item.id) : null;
+        if (quality == null) quality = detectQuality(item.name);
+        if (quality == null) quality = detectQuality(item.category);
         if (quality != null) {
             holder.tvQualityBadge.setText(quality);
             holder.tvQualityBadge.setVisibility(View.VISIBLE);
