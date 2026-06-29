@@ -809,6 +809,12 @@ public class PlayerActivity extends AppCompatActivity {
                         tvResolution.setText(vs.width + "x" + vs.height + " " + q);
                         tvResolution.setVisibility(View.VISIBLE);
                     });
+                    // Se guarda para que el Home (card "Última reproducción"
+                    // y las demás cards) pueda mostrar la calidad real sin
+                    // tener que adivinarla por el nombre del canal.
+                    if (item != null && item.id != null) {
+                        prefs.saveDetectedQuality(item.id, q);
+                    }
                 }
             }
         };
