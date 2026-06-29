@@ -4,10 +4,14 @@
     contenido (miniatura + texto). Sin esto, el blur solo no garantiza
     suficiente contraste para que el texto blanco se lea bien si la
     imagen de fondo es clara.
+
+    Historial de opacidad (canal alfa en hex, 2 primeros dígitos del
+    color): empezó en 9E (62%) -> E0 (88%). Esta versión bajó a
+    66 (40%) -> 99 (60%) para que se note más la imagen de fondo.
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <gradient
         android:angle="135"
-        android:startColor="#9E0A0A14"
-        android:endColor="#E00A0A14" />
+        android:startColor="#660A0A14"
+        android:endColor="#990A0A14" />
 </shape>
