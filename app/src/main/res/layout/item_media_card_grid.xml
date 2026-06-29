@@ -49,6 +49,42 @@
             android:textSize="14sp"
             android:visibility="gone" />
 
+        <!-- Badge "T1 E4" para episodios de serie -->
+        <TextView
+            android:id="@+id/tv_episode_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="26dp"
+            android:layout_marginEnd="6dp"
+            android:background="#AA000000"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:textColor="@color/text_primary"
+            android:textSize="8sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- Badge de calidad SD/HD/FHD/4K -->
+        <TextView
+            android:id="@+id/tv_quality_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="6dp"
+            android:background="#AA000000"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="HD"
+            android:textColor="@color/text_primary"
+            android:textSize="8sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <LinearLayout
             android:id="@+id/progress_track"
             android:layout_width="match_parent"
