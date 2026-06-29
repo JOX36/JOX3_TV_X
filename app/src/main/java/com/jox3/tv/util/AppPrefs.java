@@ -35,6 +35,7 @@ public class AppPrefs {
     private static final String PREFIX_POS = "pos_";
     private static final String PREFIX_DUR = "dur_";
     private static final String KEY_CRASH_LOG = "last_crash_log";
+    private static final String PREFIX_QUALITY = "quality_";
 
     private final SharedPreferences prefs;
     private final Gson gson = new Gson();
@@ -76,6 +77,29 @@ public class AppPrefs {
 
     public long getDur(String itemId) {
         return prefs.getLong(PREFIX_DUR + itemId, 0);
+    }
+
+    // ---- Calidad real medida por el reproductor ----
+
+    /**
+     * El reproductor mide la resolución REAL del stream mientras se
+     * reproduce (vs.width x vs.height vía ExoPlayer) y la guarda aquí.
+     * Esto es mucho más confiable que adivinar la calidad buscando
+     * palabras como "HD"/"FHD" en el nombre del canal — funciona aunque
+     * el nombre no diga nada. Se guarda por itemId, así que la primera
+     * vez que se reproduce un canal/película todavía no hay dato (se
+     * usa el respaldo por nombre/categoría hasta que se reproduzca al
+     * menos una vez).
+     */
+    public void saveDetectedQuality(String itemId, String quality) {
+        if (itemId == null || quality == null) return;
+        prefs.edit().putString(PREFIX_QUALITY + itemId, quality).apply();
+    }
+
+    /** Calidad real ya medida para este ítem, o null si nunca se ha reproducido. */
+    public String getDetectedQuality(String itemId) {
+        if (itemId == null) return null;
+        return prefs.getString(PREFIX_QUALITY + itemId, null);
     }
 
     // ---- Continuar viendo ----
