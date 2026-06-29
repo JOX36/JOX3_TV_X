@@ -52,11 +52,22 @@ public class CategoryDropdownAdapter extends RecyclerView.Adapter<CategoryDropdo
         String category = categories.get(position);
         boolean isActive = category.equals(activeCategory);
 
-        holder.text.setText(isActive ? ("●  " + category) : category);
-        holder.text.setTextColor(holder.text.getResources().getColor(
-                isActive ? R.color.accent : R.color.text_primary));
-        holder.text.setTypeface(null, isActive
-                ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        if (isActive) {
+            holder.text.setText("●  " + category);
+            holder.text.setTextColor(holder.text.getResources().getColor(R.color.accent));
+            holder.text.setTypeface(null, android.graphics.Typeface.BOLD);
+        } else {
+            // Un puntito de color según el género (mismo mapeo que las
+            // cards de Películas/Series), para que el desplegable se vea
+            // tan vivo como el resto de la app y no solo texto plano.
+            int dotColor = MediaCardAdapter.getCategoryColor(category);
+            android.text.SpannableString label = new android.text.SpannableString("●  " + category);
+            label.setSpan(new android.text.style.ForegroundColorSpan(dotColor), 0, 1,
+                    android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            holder.text.setText(label);
+            holder.text.setTextColor(holder.text.getResources().getColor(R.color.text_primary));
+            holder.text.setTypeface(null, android.graphics.Typeface.NORMAL);
+        }
 
         holder.text.setOnClickListener(v -> {
             if (listener != null) listener.onSelected(category);

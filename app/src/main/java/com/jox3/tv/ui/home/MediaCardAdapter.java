@@ -53,6 +53,7 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
 
         holder.tvName.setText(item.name);
         holder.tvCategory.setText(item.category != null ? item.category : "");
+        holder.tvCategory.setTextColor(getCategoryColor(item.category));
 
         holder.tvLiveBadge.setVisibility(
                 MediaItem.LIVE.equals(item.type) ? View.VISIBLE : View.GONE);
@@ -87,6 +88,53 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
      * detecta buscando esas palabras en el nombre, sin inventar nada — si
      * el nombre no la menciona, no se muestra ningún badge.
      */
+    /**
+     * Color llamativo según palabras clave del género/categoría. Si no
+     * coincide con ninguna, se queda con el gris discreto de siempre
+     * (@color/text_secondary), así nunca queda un texto sin color válido.
+     * Las categorías reales de JOX3 ya traen prefijos como "P-" (ej.
+     * "P-ACCION", "P-ANIMACION"), por eso se busca con "contains" y no
+     * con coincidencia exacta.
+     */
+    public static int getCategoryColor(String category) {
+        if (category == null) return android.graphics.Color.parseColor("#B8B8CC");
+        String upper = category.toUpperCase();
+
+        if (upper.contains("ACCION") || upper.contains("ACCIÓN"))
+            return android.graphics.Color.parseColor("#FF5252");
+        if (upper.contains("TERROR") || upper.contains("HORROR"))
+            return android.graphics.Color.parseColor("#D500F9");
+        if (upper.contains("COMEDIA"))
+            return android.graphics.Color.parseColor("#FFD740");
+        if (upper.contains("DRAMA"))
+            return android.graphics.Color.parseColor("#448AFF");
+        if (upper.contains("ANIMA") || upper.contains("INFANTIL") || upper.contains("KIDS"))
+            return android.graphics.Color.parseColor("#FF80AB");
+        if (upper.contains("CIENCIA FICCION") || upper.contains("CIENCIA FICCIÓN") || upper.contains("SCI-FI"))
+            return android.graphics.Color.parseColor("#00E5FF");
+        if (upper.contains("ROMANCE") || upper.contains("ROMANTIC"))
+            return android.graphics.Color.parseColor("#FF4FD8");
+        if (upper.contains("DOCUMENTAL"))
+            return android.graphics.Color.parseColor("#69F0AE");
+        if (upper.contains("DEPORTE") || upper.contains("SPORT") || upper.contains("FUTBOL") || upper.contains("FÚTBOL"))
+            return android.graphics.Color.parseColor("#FFAB40");
+        if (upper.contains("NAVIDAD") || upper.contains("CHRISTMAS"))
+            return android.graphics.Color.parseColor("#4CAF50");
+        if (upper.contains("ESTRENO"))
+            return android.graphics.Color.parseColor("#FFD700");
+        if (upper.contains("PREMIUM"))
+            return android.graphics.Color.parseColor("#7C4DFF");
+        if (upper.contains("RETRO") || upper.contains("CLASIC"))
+            return android.graphics.Color.parseColor("#FF9E80");
+        if (upper.contains("NOTICIA") || upper.contains("NEWS"))
+            return android.graphics.Color.parseColor("#90A4AE");
+        if (upper.contains("MUSICA") || upper.contains("MÚSICA") || upper.contains("MUSIC"))
+            return android.graphics.Color.parseColor("#E040FB");
+
+        // Sin coincidencia: el gris discreto de siempre.
+        return android.graphics.Color.parseColor("#B8B8CC");
+    }
+
     private void bindQualityBadge(CardHolder holder, MediaItem item) {
         if (holder.tvQualityBadge == null) return;
         String quality = prefs != null ? prefs.getDetectedQuality(item.id) : null;

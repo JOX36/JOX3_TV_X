@@ -104,6 +104,10 @@ public class HomeActivity extends AppCompatActivity {
     private ImageView continueHeroThumb, continueHeroBg;
     private TextView continueHeroTitle, continueHeroSub, continueHeroQuality, continueHeroLiveBadge;
     private View continueHeroProgressFill;
+    // El ítem que se está mostrando actualmente en la card. El click
+    // siempre abre ESTE, no el primero de la lista general (que puede
+    // ser una película/serie si la viste después del canal).
+    private MediaItem continueHeroItem;
     private View chipFavorites, chipLive, chipMovies, chipSeries;
 
     @Override
@@ -534,8 +538,7 @@ public class HomeActivity extends AppCompatActivity {
         btnMiniMute.setOnClickListener(v -> toggleMiniPlayerMute());
 
         continueHeroCard.setOnClickListener(v -> {
-            List<MediaItem> recent = prefs.getRecentlyWatched();
-            if (!recent.isEmpty()) openItem(recent.get(0), 0);
+            if (continueHeroItem != null) openItem(continueHeroItem, 0);
         });
 
         chipFavorites.setOnClickListener(v -> openContentList("favorites"));
@@ -812,6 +815,7 @@ public class HomeActivity extends AppCompatActivity {
             return;
         }
         continueHeroContainer.setVisibility(View.VISIBLE);
+        continueHeroItem = item;
 
         continueHeroTitle.setText(item.name);
         continueHeroLiveBadge.setVisibility(View.VISIBLE);
