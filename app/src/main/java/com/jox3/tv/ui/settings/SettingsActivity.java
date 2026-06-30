@@ -43,6 +43,8 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText inputNameM3u, inputM3uUrl;
     private ProgressBar progressLoading;
     private TextView tvStatus;
+    private TextView tvParentalStatus;
+    private Button btnSetParentalPin;
 
     private AppPrefs prefs;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -84,6 +86,9 @@ public class SettingsActivity extends AppCompatActivity {
         progressLoading = findViewById(R.id.progress_loading);
         tvStatus = findViewById(R.id.tv_status);
 
+        tvParentalStatus = findViewById(R.id.tv_parental_status);
+        btnSetParentalPin = findViewById(R.id.btn_set_parental_pin);
+
         accountsRecycler.setLayoutManager(new LinearLayoutManager(this));
     }
 
@@ -105,6 +110,39 @@ public class SettingsActivity extends AppCompatActivity {
         btnSaveXtream.setOnClickListener(v -> onSaveXtream());
         btnSaveM3u.setOnClickListener(v -> onSaveM3u());
         btnToggleAddAccount.setOnClickListener(v -> toggleAddAccountForm());
+        btnSetParentalPin.setOnClickListener(v -> showSetPinDialog());
+        updateParentalStatus();
+    }
+
+    private void updateParentalStatus() {
+        boolean hasPin = prefs.hasParentalPin();
+        tvParentalStatus.setText(hasPin
+                ? "✓ PIN configurado — las categorías de adultos están protegidas"
+                : "Sin PIN configurado — las categorías de adultos NO están protegidas todavía");
+        btnSetParentalPin.setText(hasPin ? "Cambiar o quitar PIN" : "Configurar PIN");
+    }
+
+    private void showSetPinDialog() {
+        EditText input = new EditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+        input.setHint("Nuevo PIN (déjalo vacío para quitar protección)");
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Control parental")
+                .setMessage("Define un PIN de 4 dígitos o más. Se pedirá una vez por sesión al entrar a categorías de contenido para adultos.")
+                .setView(input)
+                .setPositiveButton("Guardar", (dialog, which) -> {
+                    String pin = input.getText().toString().trim();
+                    prefs.setParentalPin(pin.isEmpty() ? null : pin);
+                    com.jox3.tv.util.AppPrefs.setAdultUnlockedThisSession(false);
+                    Toast.makeText(this,
+                            pin.isEmpty() ? "Protección de control parental desactivada" : "PIN guardado",
+                            Toast.LENGTH_SHORT).show();
+                    updateParentalStatus();
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     private void toggleAddAccountForm() {
@@ -167,6 +205,7 @@ public class SettingsActivity extends AppCompatActivity {
                         state.series.clear();
                         prefs.clearRecentlyWatched();
                     }
+                    com.jox3.tv.util.AlternateCatalogCache.get().refresh(this);
                     refreshAccountsList();
                     Toast.makeText(this, "Cuenta eliminada", Toast.LENGTH_SHORT).show();
                 })
@@ -211,6 +250,11 @@ public class SettingsActivity extends AppCompatActivity {
 
                 prefs.setActiveAccountId(account.id);
                 prefs.clearRecentlyWatched();
+                // La cuenta que era "principal" hasta ahora pasa a ser una
+                // alterna más, y la nueva activa sale de la lista de
+                // alternas — hay que recalcular la caché del buscador
+                // global para que refleje esto.
+                com.jox3.tv.util.AlternateCatalogCache.get().refresh(this);
 
                 mainHandler.post(() -> {
                     Toast.makeText(this, "Cuenta cambiada: " + account.name, Toast.LENGTH_SHORT).show();
@@ -270,6 +314,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 prefs.savePlaylistConfig(config);
                 prefs.clearRecentlyWatched();
+                com.jox3.tv.util.AlternateCatalogCache.get().refresh(this);
 
                 mainHandler.post(() -> {
                     Toast.makeText(this, "Cuenta guardada: " + live.size() + " canales, "
@@ -320,6 +365,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 prefs.savePlaylistConfig(config);
                 prefs.clearRecentlyWatched();
+                com.jox3.tv.util.AlternateCatalogCache.get().refresh(this);
 
                 mainHandler.post(() -> {
                     Toast.makeText(this, "Cuenta guardada: " + all.size() + " elementos en total",
