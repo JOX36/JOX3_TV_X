@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Card de CANAL EN VIVO, formato horizontal 16:9 en vez de póster
+    vertical. Reusa exactamente los mismos IDs que item_media_card.xml
+    (img_logo, tv_name, tv_category, tv_live_badge, tv_fav_badge,
+    tv_quality_badge) para que MediaCardAdapter no necesite ningún cambio
+    de lógica: solo se infla este layout en vez del otro cuando el ítem es
+    de tipo LIVE. No incluye tv_episode_badge ni progress_track/fill
+    porque no aplican a canales (el CardHolder ya verifica null antes de
+    usarlos).
+-->
+<!--
+    Misma card que item_channel_card.xml pero para uso dentro de un
+    GridLayoutManager (ej. al entrar a una categoria especifica de
+    Canales): ancho match_parent porque el grid ya controla el ancho de
+    columna, y margen simetrico en vez de solo al final.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:stateListAnimator="@animator/focus_scale_card"
+    android:transformPivotX="0dp"
+    android:layout_margin="6dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="94dp"
+        android:background="@drawable/bg_card_rounded"
+        android:clipToOutline="true">
+
+        <ImageView
+            android:id="@+id/img_logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerInside"
+            android:padding="14dp" />
+
+        <!-- "EN VIVO" con puntito animado (el pulso lo arma
+             MediaCardAdapter con un ObjectAnimator sobre live_dot,
+             cancelado al reciclar la vista). -->
+        <LinearLayout
+            android:id="@+id/tv_live_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="7dp"
+            android:background="@drawable/bg_badge_live"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="6dp"
+            android:paddingEnd="7dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:visibility="gone">
+
+            <View
+                android:id="@+id/live_dot"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/dot_white_solid" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EN VIVO"
+                android:textColor="@color/text_primary"
+                android:textSize="8.5sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_fav_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="7dp"
+            android:text="★"
+            android:textColor="@color/favorite_yellow"
+            android:textSize="14sp"
+            android:shadowColor="#CC000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="3"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_quality_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="7dp"
+            android:background="@drawable/bg_pill_outline_accent"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="HD"
+            android:textColor="@color/accent"
+            android:textSize="8sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/text_primary"
+        android:textSize="12.5sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_category"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/text_secondary"
+        android:textSize="10.5sp" />
+
+</LinearLayout>
