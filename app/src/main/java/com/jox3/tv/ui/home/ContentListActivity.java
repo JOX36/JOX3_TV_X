@@ -2,6 +2,8 @@ package com.jox3.tv.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -50,6 +52,8 @@ public class ContentListActivity extends AppCompatActivity {
     private View scrollContent;
 
     private AppPrefs prefs;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingSearch;
     private String contentType;
     private String selectedCategory; // null = "Todos"
     private List<MediaItem> allItems = new ArrayList<>();
@@ -127,7 +131,17 @@ public class ContentListActivity extends AppCompatActivity {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void afterTextChanged(Editable s) {
-                renderSections(s.toString().trim().toLowerCase());
+                // Con catálogos grandes (miles de canales), recorrer todo
+                // y reconstruir las secciones EN CADA TECLA se sentía
+                // lento/pegado al escribir. Ahora se espera 350ms desde
+                // la última tecla antes de buscar de verdad — si sigues
+                // escribiendo dentro de ese tiempo, la búsqueda anterior
+                // se cancela y se reprograma, así solo se ejecuta una vez
+                // que dejas de escribir.
+                if (pendingSearch != null) searchHandler.removeCallbacks(pendingSearch);
+                String query = s.toString().trim().toLowerCase();
+                pendingSearch = () -> renderSections(query);
+                searchHandler.postDelayed(pendingSearch, 350);
             }
         });
     }

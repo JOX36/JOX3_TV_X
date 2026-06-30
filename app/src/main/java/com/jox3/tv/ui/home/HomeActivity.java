@@ -101,7 +101,7 @@ public class HomeActivity extends AppCompatActivity {
     private String currentSearchQuery = "";
 
     // ---- Panel lateral (drawer) ----
-    private View drawerScrim, drawerPanel, btnOpenDrawer, btnSettings;
+    private View drawerScrim, drawerPanel, btnOpenDrawer, btnSettings, btnSearchHeader;
     private View drawerItemHome, drawerItemLive, drawerItemMovies, drawerItemSeries,
             drawerItemFavorites, drawerItemHistory, drawerItemSearch, drawerItemSettings;
     private int drawerWidthPx;
@@ -407,6 +407,7 @@ public class HomeActivity extends AppCompatActivity {
 
         btnOpenDrawer = findViewById(R.id.btn_open_drawer);
         btnSettings = findViewById(R.id.btn_settings);
+        btnSearchHeader = findViewById(R.id.btn_search_header);
         drawerScrim = findViewById(R.id.drawer_scrim);
         drawerPanel = findViewById(R.id.drawer_panel);
         drawerItemHome = findViewById(R.id.drawer_item_home);
@@ -524,14 +525,25 @@ public class HomeActivity extends AppCompatActivity {
         heroHandler.removeCallbacks(heroAutoplayRunnable);
     }
 
+    private Runnable pendingHomeSearch;
+
     private void setupSearch() {
         inputSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void afterTextChanged(Editable s) {
+                // Misma razón que en ContentListActivity: la búsqueda
+                // global recorre la cuenta activa Y hasta 5 cuentas
+                // alternas completas en cada tecla, lo que se sentía
+                // pegado al escribir con catálogos grandes. Se espera
+                // 350ms de silencio antes de ejecutar la búsqueda real.
+                if (pendingHomeSearch != null) mainHandler.removeCallbacks(pendingHomeSearch);
                 currentSearchQuery = s.toString().trim();
-                applyFilters();
-                updateGlobalSearch();
+                pendingHomeSearch = () -> {
+                    applyFilters();
+                    updateGlobalSearch();
+                };
+                mainHandler.postDelayed(pendingHomeSearch, 350);
             }
         });
     }
@@ -656,6 +668,14 @@ public class HomeActivity extends AppCompatActivity {
         // ---- Panel lateral (drawer) ----
         btnOpenDrawer.setOnClickListener(v -> openDrawer());
         btnSettings.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
+
+        btnSearchHeader.setOnClickListener(v -> {
+            searchBarContainer.setVisibility(View.VISIBLE);
+            inputSearch.requestFocus();
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager)
+                    getSystemService(INPUT_METHOD_SERVICE);
+            if (imm != null) imm.showSoftInput(inputSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        });
         drawerScrim.setOnClickListener(v -> closeDrawer());
 
         drawerItemHome.setOnClickListener(v -> closeDrawer());
