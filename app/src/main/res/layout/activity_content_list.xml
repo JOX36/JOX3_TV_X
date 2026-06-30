@@ -6,7 +6,9 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Barra superior -->
+    <!-- Barra superior. El boton atras y el contador total ahora llevan
+         el mismo estilo de marca que el resto de la app (boton con zoom,
+         color cian, fondo redondeado). -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,11 +21,12 @@
 
         <ImageView
             android:id="@+id/btn_back"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:background="@drawable/bg_chip_inactive"
-            android:padding="8dp"
+            android:padding="9dp"
             android:src="@drawable/ic_back"
+            android:tint="@color/accent"
             android:clickable="true"
             android:focusable="true"
             android:stateListAnimator="@animator/focus_scale_button" />
@@ -42,11 +45,19 @@
             android:id="@+id/tv_total_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
+            android:background="@drawable/bg_pill_outline_accent"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textColor="@color/accent"
+            android:textSize="11sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Botón de categorías (compacto) + lupa -->
+    <!-- Botón de categorías (compacto) + lupa. Ambos pasan de fondo plano
+         gris a contorno de color de marca, igual al resto de chips de la
+         app. -->
     <LinearLayout
         android:clipChildren="false"
         android:clipToPadding="false"
@@ -61,15 +72,16 @@
         <TextView
             android:id="@+id/btn_category_toggle"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="38dp"
             android:layout_marginEnd="10dp"
-            android:background="@drawable/bg_chip_inactive"
+            android:background="@drawable/bg_pill_outline_accent"
             android:gravity="center_vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:text="Categorías  ▾"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/accent"
             android:textSize="13sp"
+            android:textStyle="bold"
             android:singleLine="true"
             android:clickable="true"
             android:focusable="true"
@@ -77,11 +89,12 @@
 
         <ImageView
             android:id="@+id/btn_search_toggle"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:background="@drawable/bg_chip_inactive"
-            android:padding="8dp"
+            android:padding="9dp"
             android:src="@drawable/ic_search"
+            android:tint="@color/accent"
             android:clickable="true"
             android:focusable="true"
             android:stateListAnimator="@animator/focus_scale_button" />
@@ -138,6 +151,13 @@
         android:orientation="vertical"
         android:gravity="center"
         android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔍"
+            android:textSize="40sp"
+            android:layout_marginBottom="10dp" />
 
         <TextView
             android:layout_width="wrap_content"
