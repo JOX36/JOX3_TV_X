@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Fondo circular sutil para los botones de control que NO son la accion
+    principal (todo menos play/pausa y stop, que usan bg_circle_accent
+    con el degradado de marca). Antes estos botones flotaban sueltos sin
+    ningun fondo sobre la barra negra plana.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#1AFFFFFF" />
+</shape>
