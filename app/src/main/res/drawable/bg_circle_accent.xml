@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Antes: naranja plano (#FF4D2D). Ahora: degradado cian->morado de
+    marca, igual al de los botones "Reproducir"/"Conectar" del resto de
+    la app. Lo usa el boton central de play/pausa del reproductor (VOD).
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
-    <solid android:color="#FF4D2D" />
+    <gradient
+        android:startColor="#00E5FF"
+        android:centerColor="#2979FF"
+        android:endColor="#7C4DFF"
+        android:angle="45" />
 </shape>
