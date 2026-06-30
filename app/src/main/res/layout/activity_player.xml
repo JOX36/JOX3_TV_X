@@ -43,13 +43,14 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="10dp"
-            android:background="@drawable/bg_chip_inactive"
+            android:background="@drawable/bg_pill_outline_accent"
             android:gravity="center_vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:text="Categorías  ▾"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/accent"
             android:textSize="13sp"
+            android:textStyle="bold"
             android:singleLine="true"
             android:clickable="true"
             android:focusable="true"
@@ -218,20 +219,30 @@
 
         <ImageView
             android:id="@+id/btn_back"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:padding="2dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_chip_inactive"
+            android:padding="7dp"
             android:src="@drawable/ic_back"
+            android:tint="@color/accent"
             android:clickable="true"
             android:focusable="true"
             android:stateListAnimator="@animator/focus_scale_button" />
 
+        <!-- El título (canal o "BRASIL vs JAPÓN") ahora va dentro de un
+             pill con fondo oscuro propio, en vez de texto suelto flotando
+             directo sobre la barra. -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="10dp"
-            android:orientation="vertical">
+            android:background="@drawable/bg_chip_inactive_transparent40"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
 
             <TextView
                 android:id="@+id/tv_name"
@@ -258,7 +269,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="3dp"
                 android:layout_marginTop="3dp"
-                android:background="#40000000"
+                android:background="#40FFFFFF"
                 android:orientation="horizontal"
                 android:visibility="gone">
 
@@ -267,7 +278,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="0"
-                    android:background="@color/accent_purple" />
+                    android:background="@drawable/bg_chip_active" />
 
                 <View
                     android:layout_width="0dp"
@@ -277,15 +288,30 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Resolución: antes texto gris suelto, ahora pill con borde
+             cian, mismo estilo que el badge de calidad de las cards. -->
         <TextView
             android:id="@+id/tv_resolution"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="11sp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_pill_outline_accent"
+            android:paddingStart="9dp"
+            android:paddingEnd="9dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textColor="@color/accent"
+            android:textSize="10sp"
+            android:textStyle="bold"
             android:visibility="gone" />
 
+        <!-- tv_status muestra varios mensajes distintos (EN VIVO,
+             Cargando..., Reconectando..., Error, o vacío en VOD), por
+             eso se deja como texto plano sin badge fijo, para no forzar
+             un "pill rojo vacío" cuando no hay texto, o uno engañoso
+             cuando dice "Cargando...". El color semántico rojo se
+             mantiene igual que antes. -->
         <TextView
             android:id="@+id/tv_status"
             android:layout_width="wrap_content"
@@ -295,10 +321,14 @@
             android:textSize="12sp"
             android:textStyle="bold" />
 
+        <!-- El favorito se mantiene amarillo (color semántico, no de
+             marca), igual que el resto de la app. -->
         <ImageView
             android:id="@+id/btn_fav"
-            android:layout_width="26dp"
-            android:layout_height="26dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/bg_chip_inactive"
+            android:padding="6dp"
             android:src="@drawable/ic_star_outline"
             android:clickable="true"
             android:focusable="true"
@@ -379,6 +409,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
@@ -390,6 +422,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
@@ -399,10 +433,12 @@
                 <Button
                     android:id="@+id/btn_stop"
                     style="?android:attr/borderlessButtonStyle"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_accent"
                     android:minWidth="0dp"
-                    android:padding="10dp"
+                    android:padding="12dp"
                     android:text=""
                     android:drawableTop="@drawable/ic_stop"
                     android:stateListAnimator="@animator/focus_scale_button" />
@@ -412,6 +448,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
@@ -423,6 +461,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
@@ -434,6 +474,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="10dp"
                     android:text=""
@@ -458,6 +500,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
@@ -470,6 +514,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
@@ -505,6 +551,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
@@ -516,6 +564,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
@@ -528,6 +578,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
@@ -539,6 +591,8 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
                     android:minWidth="0dp"
                     android:padding="8dp"
                     android:text=""
