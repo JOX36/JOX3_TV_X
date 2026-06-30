@@ -105,6 +105,19 @@ public class PlayerActivity extends AppCompatActivity {
 
     private MediaItem item;
     private AppPrefs prefs;
+
+    /**
+     * Mismo concepto que en DetailActivity: si el canal viene de una
+     * cuenta ALTERNA (encontrado vía buscador global), la guía EPG debe
+     * pedirse a ESE servidor, no al de la cuenta activa.
+     */
+    private PlaylistConfig resolveAccountForItem(MediaItem mediaItem) {
+        if (mediaItem.sourceAccountId == null) return prefs.getPlaylistConfig();
+        for (PlaylistConfig account : prefs.getAccounts()) {
+            if (account.id.equals(mediaItem.sourceAccountId)) return account;
+        }
+        return prefs.getPlaylistConfig();
+    }
     private TextView tvEpgNow;
     private LinearLayout tvEpgProgressTrack;
     private View tvEpgProgressFill;
@@ -863,7 +876,7 @@ public class PlayerActivity extends AppCompatActivity {
         tvEpgNow.setVisibility(View.GONE);
         if (tvEpgProgressTrack != null) tvEpgProgressTrack.setVisibility(View.GONE);
 
-        PlaylistConfig config = prefs.getPlaylistConfig();
+        PlaylistConfig config = resolveAccountForItem(item);
         if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) return;
 
         MediaItem channelAtRequestTime = item;
