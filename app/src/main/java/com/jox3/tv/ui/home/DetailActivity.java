@@ -52,6 +52,21 @@ public class DetailActivity extends AppCompatActivity {
 
     private AppPrefs prefs;
     private MediaItem item;
+
+    /**
+     * Resuelve qué cuenta usar para pedir episodios/info extra de "item":
+     * si vino de una cuenta ALTERNA (sourceAccountId no nulo, encontrado
+     * vía buscador global), usa esa cuenta específica; si no, usa la
+     * cuenta activa de siempre. Si la cuenta alterna ya no existe (se
+     * borró mientras tanto), cae de vuelta a la activa en vez de fallar.
+     */
+    private PlaylistConfig resolveAccountForItem(MediaItem mediaItem) {
+        if (mediaItem.sourceAccountId == null) return prefs.getPlaylistConfig();
+        for (PlaylistConfig account : prefs.getAccounts()) {
+            if (account.id.equals(mediaItem.sourceAccountId)) return account;
+        }
+        return prefs.getPlaylistConfig();
+    }
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -163,7 +178,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void loadEpisodesInBackground() {
-        PlaylistConfig config = prefs.getPlaylistConfig();
+        PlaylistConfig config = resolveAccountForItem(item);
         if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) {
             episodesStatus.setText("Esta función requiere una lista Xtream Codes.");
             return;
@@ -262,7 +277,7 @@ public class DetailActivity extends AppCompatActivity {
     // ---------------- Sinopsis ----------------
 
     private void loadSynopsisInBackground() {
-        PlaylistConfig config = prefs.getPlaylistConfig();
+        PlaylistConfig config = resolveAccountForItem(item);
         if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) {
             detailSynopsis.setText("Disponible en tu lista privada.");
             return;
@@ -364,9 +379,9 @@ public class DetailActivity extends AppCompatActivity {
             // identifiquen como un reproductor de video válido.
             request.addRequestHeader("User-Agent",
                     "Mozilla/5.0 (Linux; Android 13) ExoPlayerLib/1.6.1");
-            PlaylistConfig activeConfig = prefs.getPlaylistConfig();
-            if (activeConfig != null && activeConfig.serverUrl != null) {
-                request.addRequestHeader("Referer", activeConfig.serverUrl);
+            PlaylistConfig sourceConfig = resolveAccountForItem(target);
+            if (sourceConfig != null && sourceConfig.serverUrl != null) {
+                request.addRequestHeader("Referer", sourceConfig.serverUrl);
             }
 
             DownloadManager downloadManager =

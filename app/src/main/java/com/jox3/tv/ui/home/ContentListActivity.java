@@ -256,6 +256,14 @@ public class ContentListActivity extends AppCompatActivity {
     }
 
     private void openCategoryGrid(String category) {
+        if (prefs.isAdultCategory(category)) {
+            ParentalPinDialog.requireUnlock(this, prefs, () -> openCategoryGridUnlocked(category));
+            return;
+        }
+        openCategoryGridUnlocked(category);
+    }
+
+    private void openCategoryGridUnlocked(String category) {
         Intent intent = new Intent(this, CategoryGridActivity.class);
         intent.putExtra(CategoryGridActivity.EXTRA_TYPE, contentType);
         intent.putExtra(CategoryGridActivity.EXTRA_CATEGORY, category);

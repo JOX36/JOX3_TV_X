@@ -57,6 +57,8 @@ public class HomeActivity extends AppCompatActivity {
     private TextView tvFeaturedTitle;
     private View btnShuffleDiscover;
     private View dividerA, dividerB, dividerC, dividerD, dividerE, dividerF;
+    private View homeDefaultContent;
+    private LinearLayout globalSearchResults;
     private MediaCardAdapter continueSeriesAdapter, discoverAdapter, featuredAdapter;
     private EditText inputSearch;
     private View searchBarContainer;
@@ -123,6 +125,12 @@ public class HomeActivity extends AppCompatActivity {
         setupButtons();
         checkCrashLog();
         applyOrientationLayout();
+
+        // Carga en segundo plano (hasta 5 cuentas alternas guardadas,
+        // todas menos la activa) para que el buscador global pueda
+        // encontrar contenido que la cuenta principal no tenga. No afecta
+        // en nada la carga normal de la cuenta activa.
+        com.jox3.tv.util.AlternateCatalogCache.get().startBackgroundLoadIfNeeded(this);
     }
 
     /**
@@ -370,6 +378,9 @@ public class HomeActivity extends AppCompatActivity {
         dividerE = findViewById(R.id.divider_e);
         dividerF = findViewById(R.id.divider_f);
 
+        homeDefaultContent = findViewById(R.id.home_default_content);
+        globalSearchResults = findViewById(R.id.global_search_results);
+
         inputSearch = findViewById(R.id.input_search);
         searchBarContainer = findViewById(R.id.search_bar_container);
         btnGoSettings = findViewById(R.id.btn_go_settings);
@@ -512,8 +523,94 @@ public class HomeActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {
                 currentSearchQuery = s.toString().trim();
                 applyFilters();
+                updateGlobalSearch();
             }
         });
+    }
+
+    /**
+     * Mientras hay texto en el buscador, esconde el contenido normal del
+     * Home (banner, chips, secciones) y muestra en su lugar los
+     * resultados encontrados en TODAS las cuentas (la activa + hasta 5
+     * alternas cargadas en segundo plano), agrupados en una fila por
+     * cuenta. Al borrar el texto, vuelve a mostrarse el Home normal.
+     */
+    private void updateGlobalSearch() {
+        if (currentSearchQuery.isEmpty()) {
+            homeDefaultContent.setVisibility(View.VISIBLE);
+            globalSearchResults.setVisibility(View.GONE);
+            globalSearchResults.removeAllViews();
+            return;
+        }
+
+        homeDefaultContent.setVisibility(View.GONE);
+        globalSearchResults.setVisibility(View.VISIBLE);
+        globalSearchResults.removeAllViews();
+
+        String lowerQuery = currentSearchQuery.toLowerCase();
+        LayoutInflater inflater = LayoutInflater.from(this);
+        boolean anyResults = false;
+
+        // 1) Cuenta ACTIVA primero (el catálogo que ya tiene cargado AppState).
+        AppState state = AppState.get();
+        List<MediaItem> activeResults = new ArrayList<>();
+        activeResults.addAll(filterByName(state.liveChannels, lowerQuery));
+        activeResults.addAll(filterByName(state.movies, lowerQuery));
+        activeResults.addAll(filterByName(state.series, lowerQuery));
+        if (!activeResults.isEmpty()) {
+            String activeName = "Esta cuenta";
+            com.jox3.tv.model.PlaylistConfig activeConfig = prefs.getPlaylistConfig();
+            if (activeConfig != null && activeConfig.name != null && !activeConfig.name.isEmpty()) {
+                activeName = activeConfig.name;
+            }
+            addSearchResultSection(inflater, activeName, activeResults);
+            anyResults = true;
+        }
+
+        // 2) Cuentas ALTERNAS (las que ya hayan terminado de cargar en
+        // segundo plano para cuando el usuario escribió la búsqueda).
+        for (com.jox3.tv.util.AlternateCatalogCache.AccountCatalog catalog :
+                com.jox3.tv.util.AlternateCatalogCache.get().getAllCatalogs()) {
+            if (!catalog.loaded) continue;
+            List<MediaItem> results = new ArrayList<>();
+            results.addAll(filterByName(catalog.liveChannels, lowerQuery));
+            results.addAll(filterByName(catalog.movies, lowerQuery));
+            results.addAll(filterByName(catalog.series, lowerQuery));
+            if (!results.isEmpty()) {
+                addSearchResultSection(inflater, catalog.accountName, results);
+                anyResults = true;
+            }
+        }
+
+        if (!anyResults) {
+            TextView empty = new TextView(this);
+            empty.setText("Sin resultados en ninguna cuenta");
+            empty.setTextColor(getResources().getColor(R.color.text_secondary));
+            empty.setTextSize(14f);
+            empty.setPadding(dp(18), dp(20), dp(18), dp(20));
+            globalSearchResults.addView(empty);
+        }
+    }
+
+    /** Una fila horizontal de resultados, con el nombre de la cuenta como título de sección. */
+    private void addSearchResultSection(LayoutInflater inflater, String accountName, List<MediaItem> items) {
+        View sectionView = inflater.inflate(R.layout.section_category, globalSearchResults, false);
+        TextView title = sectionView.findViewById(R.id.section_title);
+        RecyclerView recycler = sectionView.findViewById(R.id.section_recycler);
+
+        title.setText("📡  " + accountName + "  (" + items.size() + ")");
+        title.setOnClickListener(null);
+        title.setClickable(false);
+        title.setFocusable(false);
+
+        recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recycler.setAdapter(new MediaCardAdapter(capList(items), prefs, this::openItem));
+
+        globalSearchResults.addView(sectionView);
+    }
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density);
     }
 
     private void setupButtons() {
@@ -690,12 +787,14 @@ public class HomeActivity extends AppCompatActivity {
 
         List<MediaItem> pool = new ArrayList<>();
         for (MediaItem item : state.movies) {
-            if (!watchedIds.contains(item.id) && item.logoUrl != null && !item.logoUrl.isEmpty()) {
+            if (!watchedIds.contains(item.id) && item.logoUrl != null && !item.logoUrl.isEmpty()
+                    && !prefs.isAdultCategory(item.category)) {
                 pool.add(item);
             }
         }
         for (MediaItem item : state.series) {
-            if (!watchedIds.contains(item.id) && item.logoUrl != null && !item.logoUrl.isEmpty()) {
+            if (!watchedIds.contains(item.id) && item.logoUrl != null && !item.logoUrl.isEmpty()
+                    && !prefs.isAdultCategory(item.category)) {
                 pool.add(item);
             }
         }
@@ -747,6 +846,7 @@ public class HomeActivity extends AppCompatActivity {
                                 MediaItem item) {
         if (item.category == null || item.category.trim().isEmpty()) return;
         if (item.logoUrl == null || item.logoUrl.isEmpty()) return;
+        if (prefs.isAdultCategory(item.category)) return;
         countByCategory.merge(item.category, 1, Integer::sum);
         itemsByCategory.computeIfAbsent(item.category, k -> new ArrayList<>()).add(item);
     }
@@ -871,9 +971,23 @@ public class HomeActivity extends AppCompatActivity {
      * última vez que viste este canal fue hace un buen rato, la guía que
      * se muestra es la de AHORA, no la de ese momento.
      */
+    /**
+     * Mismo concepto que en DetailActivity/PlayerActivity: si el canal
+     * guardado en "recientes" vino de una cuenta ALTERNA (se reprodujo
+     * desde un resultado del buscador global), su EPG debe pedirse a ESE
+     * servidor, no al de la cuenta activa.
+     */
+    private PlaylistConfig resolveAccountForItem(MediaItem mediaItem) {
+        if (mediaItem.sourceAccountId == null) return prefs.getPlaylistConfig();
+        for (PlaylistConfig account : prefs.getAccounts()) {
+            if (account.id.equals(mediaItem.sourceAccountId)) return account;
+        }
+        return prefs.getPlaylistConfig();
+    }
+
     private void loadContinueHeroLiveEpg(MediaItem channel) {
         setContinueHeroProgress(0);
-        PlaylistConfig config = prefs.getPlaylistConfig();
+        PlaylistConfig config = resolveAccountForItem(channel);
         if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) return;
 
         synopsisExecutor.execute(() -> {
@@ -968,11 +1082,14 @@ public class HomeActivity extends AppCompatActivity {
         List<MediaItem> seriesPool = new ArrayList<>();
         List<MediaItem> livePool = new ArrayList<>();
         for (MediaItem item : state.movies)
-            if (item.logoUrl != null && !item.logoUrl.isEmpty()) moviePool.add(item);
+            if (item.logoUrl != null && !item.logoUrl.isEmpty() && !prefs.isAdultCategory(item.category))
+                moviePool.add(item);
         for (MediaItem item : state.series)
-            if (item.logoUrl != null && !item.logoUrl.isEmpty()) seriesPool.add(item);
+            if (item.logoUrl != null && !item.logoUrl.isEmpty() && !prefs.isAdultCategory(item.category))
+                seriesPool.add(item);
         for (MediaItem item : state.liveChannels)
-            if (item.logoUrl != null && !item.logoUrl.isEmpty()) livePool.add(item);
+            if (item.logoUrl != null && !item.logoUrl.isEmpty() && !prefs.isAdultCategory(item.category))
+                livePool.add(item);
 
         Collections.shuffle(moviePool);
         Collections.shuffle(seriesPool);
@@ -1146,8 +1263,22 @@ public class HomeActivity extends AppCompatActivity {
         AppState state = AppState.get();
 
         if (MediaItem.LIVE.equals(item.type)) {
-            state.channelList = state.liveChannels;
-            state.channelIdx = state.liveChannels.indexOf(item);
+            int idx = state.liveChannels.indexOf(item);
+            if (idx >= 0) {
+                // Canal de la cuenta activa: navegación anterior/siguiente
+                // funciona normal dentro de toda la lista de canales.
+                state.channelList = state.liveChannels;
+                state.channelIdx = idx;
+            } else {
+                // Canal encontrado por el buscador global en una cuenta
+                // ALTERNA: no pertenece a state.liveChannels, así que se
+                // arma una lista de un solo elemento. El canal reproduce
+                // perfecto igual (su URL ya trae su propio servidor y
+                // credenciales), pero los botones anterior/siguiente del
+                // reproductor no tendrían a qué otro canal saltar.
+                state.channelList = java.util.Collections.singletonList(item);
+                state.channelIdx = 0;
+            }
 
             Intent intent = new Intent(this, PlayerActivity.class);
             intent.putExtra("item", item);

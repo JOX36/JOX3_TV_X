@@ -103,7 +103,11 @@ public class CategoryGridActivity extends AppCompatActivity {
         List<String> categoryList = new ArrayList<>(categories);
         categoryDropdownList.setAdapter(new CategoryDropdownAdapter(categoryList, currentCategory, category -> {
             categoryDropdownList.setVisibility(View.GONE);
-            showCategory(category);
+            if (prefs.isAdultCategory(category)) {
+                ParentalPinDialog.requireUnlock(this, prefs, () -> showCategory(category));
+            } else {
+                showCategory(category);
+            }
         }));
     }
 
