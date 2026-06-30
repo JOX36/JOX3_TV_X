@@ -73,6 +73,23 @@
                     android:textStyle="bold|italic" />
             </LinearLayout>
 
+            <!-- Botón de búsqueda global directo en el header: acceso
+                 rápido sin necesidad de abrir el panel lateral primero.
+                 Muestra/oculta la misma barra de búsqueda que ya existe
+                 dentro del drawer (comparten el mismo inputSearch). -->
+            <ImageView
+                android:id="@+id/btn_search_header"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_chip_inactive"
+                android:padding="10dp"
+                android:src="@drawable/ic_search"
+                android:tint="@color/accent"
+                android:clickable="true"
+                android:focusable="true"
+                android:stateListAnimator="@animator/focus_scale_button" />
+
             <!-- Acceso directo a Ajustes sin tener que abrir el panel
                  lateral. "Ajustes" sigue existiendo también dentro del
                  drawer; este es solo un atajo rápido. -->
