@@ -223,7 +223,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (newItem != null) {
             isInPip = false;
             item = newItem;
-            tvName.setText(item.name);
+            setChannelTitle(item.name);
             tvResolution.setVisibility(View.GONE);
             updateFavBtn();
             setupButtonsForType();
@@ -334,7 +334,7 @@ public class PlayerActivity extends AppCompatActivity {
         tvNextEpisodeTitle = findViewById(R.id.tv_next_episode_title);
 
         playerView.setPadding(0, 0, 0, 0);
-        tvName.setText(item.name);
+        setChannelTitle(item.name);
         updateFavBtn();
 
         btnBack.setOnClickListener(v -> exitPlayer());
@@ -395,6 +395,29 @@ public class PlayerActivity extends AppCompatActivity {
             if (!isInPip) toggleBars();
         });
         playerView.setOnTouchListener(this::onTouch);
+    }
+
+    /**
+     * Pinta el título (canal o "EQUIPO1 vs EQUIPO2") con un degradado real
+     * cian -> azul -> morado, los 3 colores de marca, en vez de texto
+     * plano de un solo color. Android no soporta degradado de texto
+     * nativo en XML, así que se aplica un Shader directamente sobre el
+     * Paint del TextView, midiendo el ancho real del texto (no el ancho
+     * del contenedor) para que el degradado se vea proporcional sin
+     * importar si el título es corto o largo.
+     */
+    private void setChannelTitle(String text) {
+        tvName.setText(text);
+        android.text.TextPaint paint = tvName.getPaint();
+        float textWidth = text != null ? paint.measureText(text) : 0;
+        if (textWidth <= 0) textWidth = 1;
+        android.graphics.Shader shader = new android.graphics.LinearGradient(
+                0, 0, textWidth, 0,
+                new int[]{0xFF00E5FF, 0xFF2979FF, 0xFF7C4DFF},
+                null,
+                android.graphics.Shader.TileMode.CLAMP);
+        paint.setShader(shader);
+        tvName.invalidate();
     }
 
     private void setupButtonsForType() {
@@ -477,7 +500,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (newIdx < 0 || newIdx >= state.episodeQueue.size()) return;
         state.episodeIdx = newIdx;
         item = state.episodeQueue.get(newIdx);
-        tvName.setText(item.name);
+        setChannelTitle(item.name);
         nextEpisodeShown = false;
         if (nextEpisodePanel != null) nextEpisodePanel.setVisibility(View.GONE);
         updateEpisodeNavButtons();
@@ -534,7 +557,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void playNextEpisode(MediaItem next) {
         state.episodeIdx++;
         item = next;
-        tvName.setText(item.name);
+        setChannelTitle(item.name);
         nextEpisodeShown = false;
         initPlayer();
     }
@@ -859,7 +882,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (next >= state.channelList.size()) next = 0;
         state.channelIdx = next;
         item = state.channelList.get(next);
-        tvName.setText(item.name);
+        setChannelTitle(item.name);
         tvResolution.setVisibility(View.GONE);
         updateFavBtn();
         isInPip = false;
@@ -1075,7 +1098,7 @@ public class PlayerActivity extends AppCompatActivity {
                 state.channelList = state.liveChannels;
                 state.channelIdx = idx;
                 item = channel;
-                tvName.setText(item.name);
+                setChannelTitle(item.name);
                 tvResolution.setVisibility(View.GONE);
                 updateFavBtn();
                 isInPip = false;
