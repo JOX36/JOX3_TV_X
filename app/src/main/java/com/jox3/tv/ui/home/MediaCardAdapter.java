@@ -149,8 +149,18 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
      * "P-ACCION", "P-ANIMACION"), por eso se busca con "contains" y no
      * con coincidencia exacta.
      */
+    /**
+     * Color llamativo según palabras clave del género/categoría. Si la
+     * categoría no coincide con ningún género conocido (países, nombres
+     * propios como "EVENTOS DEPORTIVOS", "MOTO GP", etc.), en vez de
+     * quedarse en gris plano, se le asigna UNO DE LOS 3 COLORES DE MARCA
+     * (cian/azul/morado) de forma determinística según su propio nombre
+     * — la misma categoría siempre cae en el mismo color cada vez, así
+     * nunca se ve "al azar", pero tampoco queda ninguna categoría sin
+     * algún color intencional.
+     */
     public static int getCategoryColor(String category) {
-        if (category == null) return android.graphics.Color.parseColor("#B8B8CC");
+        if (category == null) return android.graphics.Color.parseColor("#00E5FF");
         String upper = category.toUpperCase();
 
         if (upper.contains("ACCION") || upper.contains("ACCIÓN"))
@@ -169,7 +179,12 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
             return android.graphics.Color.parseColor("#FF4FD8");
         if (upper.contains("DOCUMENTAL"))
             return android.graphics.Color.parseColor("#69F0AE");
-        if (upper.contains("DEPORTE") || upper.contains("SPORT") || upper.contains("FUTBOL") || upper.contains("FÚTBOL"))
+        // "DEPORT" en vez de "DEPORTE": así coincide tanto con "DEPORTE"
+        // como con "DEPORTIVO/DEPORTIVOS" (ej. "EVENTOS DEPORTIVOS", que
+        // antes se quedaba sin color porque "DEPORTIVOS" no contiene la
+        // palabra completa "DEPORTE").
+        if (upper.contains("DEPORT") || upper.contains("SPORT") || upper.contains("FUTBOL") || upper.contains("FÚTBOL")
+                || upper.contains("MOTO GP") || upper.contains("F1") || upper.contains("NBA") || upper.contains("UFC"))
             return android.graphics.Color.parseColor("#FFAB40");
         if (upper.contains("NAVIDAD") || upper.contains("CHRISTMAS"))
             return android.graphics.Color.parseColor("#4CAF50");
@@ -184,8 +199,17 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
         if (upper.contains("MUSICA") || upper.contains("MÚSICA") || upper.contains("MUSIC"))
             return android.graphics.Color.parseColor("#E040FB");
 
-        // Sin coincidencia: el gris discreto de siempre.
-        return android.graphics.Color.parseColor("#B8B8CC");
+        // Sin coincidencia de género conocido (países, "24/7 SERIES",
+        // nombres propios, etc.): en vez de gris plano, se reparte entre
+        // los 3 colores de marca según el propio texto, así siempre se ve
+        // intencional y nunca "vacío" visualmente.
+        int[] brandColors = {
+                android.graphics.Color.parseColor("#00E5FF"), // cian
+                android.graphics.Color.parseColor("#2979FF"), // azul
+                android.graphics.Color.parseColor("#7C4DFF")  // morado
+        };
+        int index = Math.abs(upper.hashCode()) % brandColors.length;
+        return brandColors[index];
     }
 
     private void bindQualityBadge(CardHolder holder, MediaItem item) {

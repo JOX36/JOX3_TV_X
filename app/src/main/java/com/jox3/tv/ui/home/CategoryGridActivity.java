@@ -115,10 +115,7 @@ public class CategoryGridActivity extends AppCompatActivity {
     private void showCategory(String category) {
         currentCategory = category;
         tvTitle.setText(category);
-        int titleColor = MediaCardAdapter.getCategoryColor(category);
-        boolean hasGenreColor = titleColor != android.graphics.Color.parseColor("#B8B8CC");
-        tvTitle.setTextColor(hasGenreColor ? titleColor
-                : tvTitle.getResources().getColor(R.color.text_primary));
+        tvTitle.setTextColor(MediaCardAdapter.getCategoryColor(category));
         btnCategoryToggle.setText(category + "  ▾");
         buildCategorySwitcher();
 

@@ -168,11 +168,24 @@ public class ContentListActivity extends AppCompatActivity {
 
         categoryDropdownList.setAdapter(new CategoryDropdownAdapter(categoryList, activeLabel, category -> {
             categoryDropdownList.setVisibility(View.GONE);
-            selectedCategory = "Todos".equals(category) ? null : category;
-            btnCategoryToggle.setText((selectedCategory != null ? selectedCategory : "Categorías") + "  ▾");
-            buildCategoryShortcuts();
-            renderSections(inputSearch.getText() != null ? inputSearch.getText().toString().trim().toLowerCase() : "");
+            // "Categorías ▾" renderiza la grilla EN ESTA MISMA pantalla
+            // (no navega a CategoryGridActivity), así que necesita su
+            // propia verificación de PIN — antes solo estaba protegido el
+            // camino de tocar el título de una sección, dejando este
+            // atajo sin control parental.
+            if (prefs.isAdultCategory(category)) {
+                ParentalPinDialog.requireUnlock(this, prefs, () -> selectCategoryFromDropdown(category));
+            } else {
+                selectCategoryFromDropdown(category);
+            }
         }));
+    }
+
+    private void selectCategoryFromDropdown(String category) {
+        selectedCategory = "Todos".equals(category) ? null : category;
+        btnCategoryToggle.setText((selectedCategory != null ? selectedCategory : "Categorías") + "  ▾");
+        buildCategoryShortcuts();
+        renderSections(inputSearch.getText() != null ? inputSearch.getText().toString().trim().toLowerCase() : "");
     }
 
     /** Agrupa por categoría real (o solo la seleccionada) y construye una sección por cada una. */
@@ -220,15 +233,12 @@ public class ContentListActivity extends AppCompatActivity {
             RecyclerView recycler = sectionView.findViewById(R.id.section_recycler);
 
             title.setText(entry.getKey() + " (" + entry.getValue().size() + ")  ›");
-            // Si la categoría coincide con un género reconocido (Acción,
-            // Terror, Comedia...) se colorea igual que en las cards. Si es
-            // un país o algo sin coincidencia (ej. "BOLIVIA"), se queda
-            // con el color de marca por defecto en vez de forzar un color
-            // que no aplica.
-            int sectionColor = MediaCardAdapter.getCategoryColor(entry.getKey());
-            boolean hasGenreColor = sectionColor != android.graphics.Color.parseColor("#B8B8CC");
-            title.setTextColor(hasGenreColor ? sectionColor
-                    : title.getResources().getColor(R.color.text_primary));
+            // getCategoryColor ya nunca devuelve un gris "vacío": si la
+            // categoría coincide con un género conocido usa ese color, y
+            // si no (países, nombres propios), reparte entre los 3
+            // colores de marca de forma determinística — así ningún
+            // título de sección queda sin color intencional.
+            title.setTextColor(MediaCardAdapter.getCategoryColor(entry.getKey()));
             recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
             recycler.setAdapter(new MediaCardAdapter(entry.getValue(), prefs, this::openItem));
 
