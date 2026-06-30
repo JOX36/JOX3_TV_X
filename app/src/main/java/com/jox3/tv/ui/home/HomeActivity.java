@@ -60,6 +60,10 @@ public class HomeActivity extends AppCompatActivity {
     private View dividerA, dividerB, dividerC, dividerD, dividerE, dividerF;
     private View homeDefaultContent;
     private LinearLayout globalSearchResults;
+    private View layoutLoading;
+    private TextView loadingEmoji, loadingText;
+    private Runnable loadingAnimationRunnable;
+    private int loadingAnimationStep = 0;
     private MediaCardAdapter continueSeriesAdapter, discoverAdapter, featuredAdapter;
     private EditText inputSearch;
     private View searchBarContainer;
@@ -381,6 +385,9 @@ public class HomeActivity extends AppCompatActivity {
 
         homeDefaultContent = findViewById(R.id.home_default_content);
         globalSearchResults = findViewById(R.id.global_search_results);
+        layoutLoading = findViewById(R.id.layout_loading);
+        loadingEmoji = findViewById(R.id.loading_emoji);
+        loadingText = findViewById(R.id.loading_text);
 
         inputSearch = findViewById(R.id.input_search);
         searchBarContainer = findViewById(R.id.search_bar_container);
@@ -1028,7 +1035,7 @@ public class HomeActivity extends AppCompatActivity {
     private void autoLoadActiveAccount(PlaylistConfig config) {
         layoutEmpty.setVisibility(View.GONE);
         scrollContent.setVisibility(View.GONE);
-        // (se podría mostrar un spinner de carga aquí si se desea más adelante)
+        showLoadingScreen();
 
         synopsisExecutor.execute(() -> {
             try {
@@ -1058,9 +1065,13 @@ public class HomeActivity extends AppCompatActivity {
                         else state.liveChannels.add(mi);
                     }
                 }
-                mainHandler.post(this::refreshContent);
+                mainHandler.post(() -> {
+                    hideLoadingScreen();
+                    refreshContent();
+                });
             } catch (Exception e) {
                 mainHandler.post(() -> {
+                    hideLoadingScreen();
                     layoutEmpty.setVisibility(View.VISIBLE);
                     scrollContent.setVisibility(View.GONE);
                     android.widget.Toast.makeText(this,
@@ -1069,6 +1080,42 @@ public class HomeActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    /**
+     * Pantalla de carga con un emoji que va cambiando y un texto que
+     * rota, para que esos segundos de descarga inicial (antes en blanco
+     * total) se sientan como que la app está trabajando, no congelada.
+     */
+    private static final String[] LOADING_EMOJIS = {"📡", "📺", "🎬", "📡"};
+    private static final String[] LOADING_TEXTS = {
+            "Cargando tu lista...",
+            "Sintonizando canales...",
+            "Organizando tu catálogo...",
+            "Ya casi está..."
+    };
+
+    private void showLoadingScreen() {
+        layoutLoading.setVisibility(View.VISIBLE);
+        loadingAnimationStep = 0;
+        loadingAnimationRunnable = new Runnable() {
+            @Override public void run() {
+                int i = loadingAnimationStep % LOADING_EMOJIS.length;
+                loadingEmoji.setText(LOADING_EMOJIS[i]);
+                loadingText.setText(LOADING_TEXTS[i]);
+                loadingAnimationStep++;
+                mainHandler.postDelayed(this, 1400);
+            }
+        };
+        mainHandler.post(loadingAnimationRunnable);
+    }
+
+    private void hideLoadingScreen() {
+        layoutLoading.setVisibility(View.GONE);
+        if (loadingAnimationRunnable != null) {
+            mainHandler.removeCallbacks(loadingAnimationRunnable);
+            loadingAnimationRunnable = null;
+        }
     }
 
     /** Construye hasta 5 recomendaciones para el carrusel del banner,

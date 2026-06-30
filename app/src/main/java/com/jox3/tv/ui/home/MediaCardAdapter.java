@@ -1,5 +1,7 @@
 package com.jox3.tv.ui.home;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,11 +41,31 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
         this.layoutResId = layoutResId;
     }
 
+    private static final int VIEW_TYPE_CHANNEL = 1;
+    private static final int VIEW_TYPE_POSTER = 2;
+
+    @Override
+    public int getItemViewType(int position) {
+        return MediaItem.LIVE.equals(items.get(position).type) ? VIEW_TYPE_CHANNEL : VIEW_TYPE_POSTER;
+    }
+
     @NonNull
     @Override
     public CardHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        int resolvedLayout;
+        if (viewType == VIEW_TYPE_CHANNEL) {
+            // Los canales en vivo SIEMPRE usan el formato horizontal
+            // nuevo, sin importar si la pantalla los muestra en fila o en
+            // grilla — solo cambia cuál de las 2 variantes (ancho fijo
+            // para fila, match_parent para grilla), inferido de qué
+            // layout de póster se pidió para el resto del contenido.
+            boolean gridContext = layoutResId == R.layout.item_media_card_grid;
+            resolvedLayout = gridContext ? R.layout.item_channel_card_grid : R.layout.item_channel_card;
+        } else {
+            resolvedLayout = layoutResId;
+        }
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(layoutResId, parent, false);
+                .inflate(resolvedLayout, parent, false);
         return new CardHolder(view);
     }
 
@@ -57,6 +79,8 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
 
         holder.tvLiveBadge.setVisibility(
                 MediaItem.LIVE.equals(item.type) ? View.VISIBLE : View.GONE);
+
+        startLiveDotPulse(holder, item);
 
         bindQualityBadge(holder, item);
         bindEpisodeBadge(holder, item);
@@ -79,6 +103,35 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onClick(item, position);
         });
+    }
+
+    /**
+     * Punto blanco dentro del badge "EN VIVO" que pulsa continuamente
+     * (igual concepto que el Ken Burns del banner: se cancela en
+     * onViewRecycled para no dejar animaciones corriendo sobre vistas
+     * recicladas que ya muestran otro canal).
+     */
+    private void startLiveDotPulse(CardHolder holder, MediaItem item) {
+        if (holder.liveDot == null) return;
+        if (holder.liveDotAnimator != null) holder.liveDotAnimator.cancel();
+
+        if (!MediaItem.LIVE.equals(item.type)) return;
+
+        ObjectAnimator anim = ObjectAnimator.ofFloat(holder.liveDot, "alpha", 1f, 0.25f);
+        anim.setDuration(700);
+        anim.setRepeatMode(ValueAnimator.REVERSE);
+        anim.setRepeatCount(ValueAnimator.INFINITE);
+        anim.start();
+        holder.liveDotAnimator = anim;
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull CardHolder holder) {
+        super.onViewRecycled(holder);
+        if (holder.liveDotAnimator != null) {
+            holder.liveDotAnimator.cancel();
+            holder.liveDotAnimator = null;
+        }
     }
 
     /**
@@ -222,9 +275,12 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
 
     static class CardHolder extends RecyclerView.ViewHolder {
         ImageView imgLogo;
-        TextView tvName, tvCategory, tvLiveBadge, tvFavBadge, tvQualityBadge, tvEpisodeBadge;
+        TextView tvName, tvCategory, tvFavBadge, tvQualityBadge, tvEpisodeBadge;
+        View tvLiveBadge;
         LinearLayout progressTrack;
         View progressFill;
+        View liveDot;
+        android.animation.Animator liveDotAnimator;
 
         CardHolder(@NonNull View itemView) {
             super(itemView);
@@ -237,6 +293,7 @@ public class MediaCardAdapter extends RecyclerView.Adapter<MediaCardAdapter.Card
             tvEpisodeBadge = itemView.findViewById(R.id.tv_episode_badge);
             progressTrack = itemView.findViewById(R.id.progress_track);
             progressFill = itemView.findViewById(R.id.progress_fill);
+            liveDot = itemView.findViewById(R.id.live_dot);
         }
     }
 }
