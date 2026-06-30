@@ -475,8 +475,8 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         if (btnLock != null) {
-            btnLock.setCompoundDrawablesWithIntrinsicBounds(
-                    0, screenLocked ? R.drawable.ic_lock_accent : R.drawable.ic_lock_open, 0, 0);
+            btnLock.setImageResource(
+                    screenLocked ? R.drawable.ic_lock_accent : R.drawable.ic_lock_open);
         }
 
         if (screenLocked) {
@@ -577,8 +577,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void setPlayPauseIcon(boolean playing) {
         if (btnPlayPause == null) return;
-        btnPlayPause.setCompoundDrawablesWithIntrinsicBounds(
-                0, playing ? R.drawable.ic_pause : R.drawable.ic_play, 0, 0);
+        btnPlayPause.setImageResource(playing ? R.drawable.ic_pause : R.drawable.ic_play);
     }
 
     private void showAudioTracks() {
