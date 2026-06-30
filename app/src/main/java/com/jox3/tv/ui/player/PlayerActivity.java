@@ -987,8 +987,12 @@ public class PlayerActivity extends AppCompatActivity {
             if (candidateCategory.equals(category)) sameCategory.add(candidate);
         }
 
-        channelPanelTitle.setText(category + " (" + sameCategory.size() + ")");
-        channelPanelCategoryToggle.setText(category + "  ▾");
+        // "channelPanelTitle" ahora es un encabezado fijo ("Canales"), no
+        // se repite la categoría ahí: antes mostraba el mismo nombre dos
+        // veces seguidas (aquí y en el botón de abajo), apretado y
+        // confuso. El conteo "(42)" se movió al propio botón de
+        // categorías, que es donde tiene sentido verlo.
+        channelPanelCategoryToggle.setText(category + "  (" + sameCategory.size() + ")  ▾");
         currentChannelPanelCategory = category;
         buildChannelPanelCategorySwitcher();
         channelPanelRecycler.setLayoutManager(new LinearLayoutManager(this));
