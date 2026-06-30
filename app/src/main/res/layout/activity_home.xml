@@ -176,6 +176,12 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/home_default_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingBottom="24dp">
 
@@ -913,6 +919,25 @@
                         android:clipToPadding="false"
                         android:layout_marginBottom="22dp" />
                 </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Resultados de búsqueda global: agrupados por cuenta (la
+                 activa primero, luego las alternas que tengan
+                 coincidencias). Solo visible mientras hay texto en el
+                 buscador; HomeActivity construye una fila por cuenta
+                 dinámicamente, igual que las secciones de
+                 ContentListActivity. -->
+            <LinearLayout
+                android:id="@+id/global_search_results"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingTop="6dp"
+                android:paddingBottom="24dp"
+                android:visibility="gone" />
 
             </LinearLayout>
         </ScrollView>

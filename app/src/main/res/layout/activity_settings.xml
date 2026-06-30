@@ -283,6 +283,54 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
+        <!-- Control parental -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_rounded"
+            android:padding="16dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔒  Control parental"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Protege las categorías de contenido para adultos con un PIN. Se pide una vez por sesión."
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/tv_parental_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btn_set_parental_pin"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_pill_outline_accent"
+                android:text="Configurar PIN"
+                android:textAllCaps="false"
+                android:textColor="@color/accent"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:stateListAnimator="@animator/focus_scale_button" />
+        </LinearLayout>
+
         <!-- Pie de versión -->
         <TextView
             android:id="@+id/tv_app_version"
