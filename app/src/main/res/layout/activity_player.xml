@@ -405,83 +405,97 @@
                 android:gravity="center"
                 android:visibility="gone">
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_prev"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="10dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_skip_previous"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_skip_previous"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_pip_live"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="10dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_pip"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_pip"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
-                <Button
-                    android:id="@+id/btn_stop"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_margin="3dp"
-                    android:background="@drawable/bg_circle_accent"
-                    android:minWidth="0dp"
-                    android:padding="12dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_stop"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                <FrameLayout
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="3dp">
 
-                <Button
+                    <!-- Resplandor sutil detrás, mismo concepto que el
+                         glow del banner: un círculo translúcido más
+                         grande que el botón, para que no se vea como un
+                         punto plano flotando solo. -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_circle_glow" />
+
+                    <ImageButton
+                        android:id="@+id/btn_stop"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_circle_accent"
+                        android:padding="12dp"
+                        android:stateListAnimator="@animator/focus_scale_button"
+                        android:src="@drawable/ic_stop"
+                        android:scaleType="centerInside"
+                    />
+                </FrameLayout>
+
+                <ImageButton
                     android:id="@+id/btn_next"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="10dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_skip_next"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_skip_next"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_channel_list"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="10dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_channel_list"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_channel_list"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_refresh"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="10dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_refresh"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_refresh"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
             </LinearLayout>
 
             <!-- Botones específicos de VOD -->
@@ -496,109 +510,115 @@
                 android:gravity="center"
                 android:visibility="gone">
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_prev_ep"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="8dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_skip_previous"
                     android:stateListAnimator="@animator/focus_scale_button"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    android:src="@drawable/ic_skip_previous"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_rewind"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="8dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_rewind"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_rewind"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
                 <FrameLayout
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
                     android:layout_marginStart="6dp"
                     android:layout_marginEnd="6dp">
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="@drawable/bg_circle_glow" />
+
+                    <View
+                        android:layout_width="58dp"
+                        android:layout_height="58dp"
+                        android:layout_gravity="center"
                         android:background="@drawable/bg_circle_accent" />
 
-                    <Button
+                    <ImageButton
                         android:id="@+id/btn_play_pause"
-                        style="?android:attr/borderlessButtonStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:minWidth="0dp"
+                        android:layout_width="58dp"
+                        android:layout_height="58dp"
+                        android:layout_gravity="center"
                         android:padding="14dp"
                         android:background="@android:color/transparent"
-                        android:text=""
-                        android:drawableTop="@drawable/ic_pause"
-                        android:stateListAnimator="@animator/focus_scale_button" />
+                        android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_pause"
+                    android:scaleType="centerInside"
+                />
                 </FrameLayout>
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_forward"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="8dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_forward"
-                    android:stateListAnimator="@animator/focus_scale_button" />
-
-                <Button
-                    android:id="@+id/btn_next_ep"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_margin="3dp"
-                    android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
-                    android:padding="8dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_skip_next"
                     android:stateListAnimator="@animator/focus_scale_button"
-                    android:visibility="gone" />
+                    android:src="@drawable/ic_forward"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
-                <Button
+                <ImageButton
+                    android:id="@+id/btn_next_ep"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/bg_circle_subtle"
+                    android:padding="8dp"
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:visibility="gone"
+                    android:src="@drawable/ic_skip_next"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
+
+                <ImageButton
                     android:id="@+id/btn_audio"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="8dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_audio"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_audio"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_subs"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_margin="3dp"
                     android:background="@drawable/bg_circle_subtle"
-                    android:minWidth="0dp"
                     android:padding="8dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_subtitles"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_subtitles"
+                    android:scaleType="centerInside"
+                    android:tint="#D8FFFFFF"
+                />
 
                 <Button
                     android:id="@+id/btn_speed"
@@ -614,39 +634,36 @@
                     android:textAllCaps="false"
                     android:stateListAnimator="@animator/focus_scale_button" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_pip"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:minWidth="0dp"
                     android:padding="8dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_pip"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_pip"
+                    android:scaleType="centerInside"
+                />
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_stop_vod"
-                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:minWidth="0dp"
                     android:padding="8dp"
-                    android:text=""
-                    android:drawableTop="@drawable/ic_stop"
-                    android:stateListAnimator="@animator/focus_scale_button" />
+                    android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_stop"
+                    android:scaleType="centerInside"
+                />
             </LinearLayout>
 
-            <Button
+            <ImageButton
                 android:id="@+id/btn_lock"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:minWidth="0dp"
                 android:padding="8dp"
-                android:text=""
-                android:drawableTop="@drawable/ic_lock_open"
-                android:stateListAnimator="@animator/focus_scale_button" />
+                android:stateListAnimator="@animator/focus_scale_button"
+                    android:src="@drawable/ic_lock_open"
+                    android:scaleType="centerInside"
+                />
         </LinearLayout>
     </LinearLayout>
 

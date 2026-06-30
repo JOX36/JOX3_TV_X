@@ -29,8 +29,7 @@
             android:id="@+id/img_logo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerInside"
-            android:padding="14dp" />
+            android:scaleType="centerCrop" />
 
         <!-- "EN VIVO" con puntito animado (el pulso lo arma
              MediaCardAdapter con un ObjectAnimator sobre live_dot,
