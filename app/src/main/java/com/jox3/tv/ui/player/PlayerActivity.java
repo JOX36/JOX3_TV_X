@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -72,7 +73,7 @@ public class PlayerActivity extends AppCompatActivity {
     private TextView tvName, tvResolution, tvStatus;
     private ImageView btnBack, btnFav;
 
-    private Button btnPrev, btnNext, btnPipLive, btnStop, btnChannelList, btnRefresh;
+    private ImageButton btnPrev, btnNext, btnPipLive, btnStop, btnChannelList, btnRefresh;
     private LinearLayout channelPanel;
     private TextView channelPanelTitle;
     private RecyclerView channelPanelRecycler;
@@ -81,9 +82,10 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean channelPanelOpen = false;
     private String currentChannelPanelCategory = null;
 
-    private Button btnPlayPause, btnRewind, btnForward;
-    private Button btnAudio, btnSubs, btnPip, btnStopVod;
-    private Button btnSpeed, btnLock, btnPrevEp, btnNextEp;
+    private ImageButton btnPlayPause, btnRewind, btnForward;
+    private ImageButton btnAudio, btnSubs, btnPip, btnStopVod;
+    private Button btnSpeed;
+    private ImageButton btnLock, btnPrevEp, btnNextEp;
 
     private SeekBar seekBar;
     private TextView tvPosition, tvDuration;
