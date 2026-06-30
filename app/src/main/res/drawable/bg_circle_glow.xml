@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Mismo concepto que bg_banner_glow pero mas chico y centrado, para que
+    el boton principal del reproductor (play/pausa, stop) no se vea como
+    un punto plano flotando solo sobre la barra de controles.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <gradient
+        android:type="radial"
+        android:gradientRadius="31dp"
+        android:startColor="#4D7C4DFF"
+        android:centerColor="#262979FF"
+        android:endColor="#00000000" />
+</shape>
