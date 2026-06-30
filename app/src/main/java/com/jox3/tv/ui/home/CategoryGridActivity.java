@@ -50,8 +50,10 @@ public class CategoryGridActivity extends AppCompatActivity {
         tvTotalCount = findViewById(R.id.tv_total_count);
         gridRecycler = findViewById(R.id.grid_recycler);
         btnCategoryToggle = findViewById(R.id.btn_category_toggle);
-        // Mismo motivo que en ContentListActivity: el botón está pegado al
-        // borde izquierdo, así que el zoom crece solo hacia la derecha.
+        // El zoom de foco crece desde el centro por defecto; como este
+        // botón está pegado al borde izquierdo de la pantalla, eso hacía
+        // que el texto se "perdiera" fuera del área visible al recibir
+        // foco. Fijamos el pivote en su propio borde izquierdo.
         btnCategoryToggle.setPivotX(0f);
         categoryDropdownList = findViewById(R.id.category_dropdown_list);
 
@@ -109,6 +111,10 @@ public class CategoryGridActivity extends AppCompatActivity {
     private void showCategory(String category) {
         currentCategory = category;
         tvTitle.setText(category);
+        int titleColor = MediaCardAdapter.getCategoryColor(category);
+        boolean hasGenreColor = titleColor != android.graphics.Color.parseColor("#B8B8CC");
+        tvTitle.setTextColor(hasGenreColor ? titleColor
+                : tvTitle.getResources().getColor(R.color.text_primary));
         btnCategoryToggle.setText(category + "  ▾");
         buildCategorySwitcher();
 

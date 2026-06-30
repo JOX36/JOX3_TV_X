@@ -220,6 +220,15 @@ public class ContentListActivity extends AppCompatActivity {
             RecyclerView recycler = sectionView.findViewById(R.id.section_recycler);
 
             title.setText(entry.getKey() + " (" + entry.getValue().size() + ")  ›");
+            // Si la categoría coincide con un género reconocido (Acción,
+            // Terror, Comedia...) se colorea igual que en las cards. Si es
+            // un país o algo sin coincidencia (ej. "BOLIVIA"), se queda
+            // con el color de marca por defecto en vez de forzar un color
+            // que no aplica.
+            int sectionColor = MediaCardAdapter.getCategoryColor(entry.getKey());
+            boolean hasGenreColor = sectionColor != android.graphics.Color.parseColor("#B8B8CC");
+            title.setTextColor(hasGenreColor ? sectionColor
+                    : title.getResources().getColor(R.color.text_primary));
             recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
             recycler.setAdapter(new MediaCardAdapter(entry.getValue(), prefs, this::openItem));
 
