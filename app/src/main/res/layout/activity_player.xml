@@ -32,8 +32,9 @@
             android:paddingEnd="16dp"
             android:paddingTop="16dp"
             android:paddingBottom="10dp"
+            android:text="Canales"
             android:textColor="@color/text_primary"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
