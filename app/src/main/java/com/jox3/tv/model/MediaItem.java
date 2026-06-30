@@ -21,6 +21,16 @@ public class MediaItem implements Serializable {
 
     public String synopsis;
 
+    /**
+     * Id de la cuenta (PlaylistConfig.id) de la que viene este ítem.
+     * null significa "la cuenta ACTIVA" (comportamiento de siempre, sin
+     * cambios para todo lo que ya existía antes del buscador global).
+     * Se rellena solo para ítems encontrados en cuentas ALTERNAS, así
+     * DetailActivity y PlayerActivity saben a qué servidor preguntarle
+     * por episodios/EPG en vez de asumir siempre la cuenta activa.
+     */
+    public String sourceAccountId;
+
     public MediaItem() { }
 
     public MediaItem(String id, String name, String logoUrl, String url,
