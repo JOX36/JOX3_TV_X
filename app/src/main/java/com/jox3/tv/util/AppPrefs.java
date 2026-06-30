@@ -36,6 +36,10 @@ public class AppPrefs {
     private static final String PREFIX_DUR = "dur_";
     private static final String KEY_CRASH_LOG = "last_crash_log";
     private static final String PREFIX_QUALITY = "quality_";
+    private static final String KEY_PARENTAL_PIN = "parental_pin";
+    private static final String KEY_ADULT_KEYWORDS = "adult_keywords";
+    /** Palabras clave por defecto si JOX3 nunca configuró ninguna. */
+    private static final String DEFAULT_ADULT_KEYWORDS = "XXX,ADULTO,ADULTOS,+18,PORN";
 
     private final SharedPreferences prefs;
     private final Gson gson = new Gson();
@@ -100,6 +104,71 @@ public class AppPrefs {
     public String getDetectedQuality(String itemId) {
         if (itemId == null) return null;
         return prefs.getString(PREFIX_QUALITY + itemId, null);
+    }
+
+    // ---- Control parental ----
+
+    /** true si ya se configuró un PIN (la sección de Ajustes lo muestra distinto). */
+    public boolean hasParentalPin() {
+        return prefs.getString(KEY_PARENTAL_PIN, null) != null;
+    }
+
+    /** Guarda/cambia el PIN. Pasar null o "" para quitar la protección. */
+    public void setParentalPin(String pin) {
+        if (pin == null || pin.trim().isEmpty()) {
+            prefs.edit().remove(KEY_PARENTAL_PIN).apply();
+        } else {
+            prefs.edit().putString(KEY_PARENTAL_PIN, pin.trim()).apply();
+        }
+    }
+
+    public boolean checkParentalPin(String attempt) {
+        String saved = prefs.getString(KEY_PARENTAL_PIN, null);
+        return saved != null && saved.equals(attempt != null ? attempt.trim() : null);
+    }
+
+    /**
+     * Palabras clave (separadas por coma) que marcan una categoría como
+     * contenido para adultos. Configurable desde Ajustes; si nunca se
+     * tocó, usa la lista por defecto (XXX, ADULTO, +18, etc.).
+     */
+    public List<String> getAdultKeywords() {
+        String raw = prefs.getString(KEY_ADULT_KEYWORDS, DEFAULT_ADULT_KEYWORDS);
+        List<String> result = new ArrayList<>();
+        for (String word : raw.split(",")) {
+            String trimmed = word.trim().toUpperCase();
+            if (!trimmed.isEmpty()) result.add(trimmed);
+        }
+        return result;
+    }
+
+    public void setAdultKeywords(String commaSeparated) {
+        prefs.edit().putString(KEY_ADULT_KEYWORDS, commaSeparated).apply();
+    }
+
+    /** true si la categoría coincide con alguna palabra clave de adultos. */
+    public boolean isAdultCategory(String category) {
+        if (category == null) return false;
+        String upper = category.toUpperCase();
+        for (String keyword : getAdultKeywords()) {
+            if (upper.contains(keyword)) return true;
+        }
+        return false;
+    }
+
+    // ---- Sesión de control parental (se olvida al cerrar la app) ----
+    // No se guarda en SharedPreferences a propósito: "una vez por sesión"
+    // significa que, al cerrar la app por completo, hay que volver a
+    // escribir el PIN. Un campo estático en memoria logra exactamente
+    // eso sin tocar disco.
+    private static boolean adultUnlockedThisSession = false;
+
+    public static boolean isAdultUnlockedThisSession() {
+        return adultUnlockedThisSession;
+    }
+
+    public static void setAdultUnlockedThisSession(boolean unlocked) {
+        adultUnlockedThisSession = unlocked;
     }
 
     // ---- Continuar viendo ----
