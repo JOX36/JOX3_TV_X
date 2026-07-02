@@ -521,7 +521,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (player == null || nextEpisodeShown) return;
         if (state.episodeQueue == null || state.episodeQueue.isEmpty()) return;
         if (state.episodeIdx < 0 || state.episodeIdx >= state.episodeQueue.size() - 1) return;
-        if (!item.type.equals(MediaItem.VOD)) return;
+        if (MediaItem.LIVE.equals(item.type)) return;
 
         long dur = player.getDuration();
         long pos = player.getCurrentPosition();
@@ -788,7 +788,7 @@ public class PlayerActivity extends AppCompatActivity {
         player.setPlaybackSpeed(currentSpeed);
         player.addListener(makeListener());
 
-        if (item.type.equals(MediaItem.VOD)) {
+        if (!item.type.equals(MediaItem.LIVE)) {
             long pos = prefs.getPos(item.id);
             long dur = prefs.getDur(item.id);
             if (pos > 10000 && dur > 0 && (int)(pos * 100 / dur) < 95) {
