@@ -460,14 +460,17 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupHeroPager() {
-        // En vertical (celular) se usa la card simple: solo imagen + título,
-        // tocar abre la pantalla de detalle. En horizontal (TV box) se usa
-        // la card rica con sinopsis y botones Reproducir/Favorito directo
-        // en el banner, ya que ahí se navega con control remoto y no hay
-        // "toque" — conviene tener todo a la vista de una vez.
-        boolean isPortrait = getResources().getConfiguration().orientation
-                == android.content.res.Configuration.ORIENTATION_PORTRAIT;
-        int heroLayoutResId = isPortrait ? R.layout.item_hero_slide : R.layout.item_hero_slide_tv;
+        // Antes: en horizontal (TV box) se usaba la card rica con sinopsis
+        // y botones Reproducir/Favorito directo en el banner
+        // (item_hero_slide_tv), pensada para cuando el banner ocupaba casi
+        // toda la pantalla. Con el nuevo diseño horizontal (panel angosto
+        // a la izquierda + catálogo a la derecha) esa card ya no tiene
+        // espacio suficiente: el texto se apretaba y desbordaba, tapando
+        // visualmente al mini-reproductor de abajo. Ahora se usa siempre
+        // la card simple (solo póster), en cualquier orientación — la
+        // sinopsis y los botones ya viven en la pantalla de Detalle al
+        // tocar/seleccionar la card.
+        int heroLayoutResId = R.layout.item_hero_slide;
 
         heroAdapter = new HeroSlideAdapter(heroItems, prefs, new HeroSlideAdapter.OnHeroAction() {
             @Override public void onPlay(MediaItem heroItem) {
