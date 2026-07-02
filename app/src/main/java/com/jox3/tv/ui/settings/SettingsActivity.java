@@ -50,6 +50,12 @@ public class SettingsActivity extends AppCompatActivity {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    // Mientras alguna cuenta alterna sigue cargando en segundo plano
+    // (AlternateCatalogCache), refrescamos la lista cada 1.5s para que el
+    // punto pase de naranja a verde solo, sin que JOX3 tenga que salir y
+    // volver a entrar a Ajustes para ver que ya quedó lista.
+    private final Runnable statusPollRunnable = this::pollAccountStatus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +67,32 @@ public class SettingsActivity extends AppCompatActivity {
         setupActions();
         showAppVersion();
         refreshAccountsList();
+        mainHandler.postDelayed(statusPollRunnable, 1500);
+    }
+
+    private void pollAccountStatus() {
+        if (isFinishing() || isDestroyed()) return;
+
+        String activeId = prefs.getActiveAccountId();
+        boolean anyPending = false;
+        for (PlaylistConfig account : prefs.getAccounts()) {
+            if (account.id.equals(activeId) || !PlaylistConfig.TYPE_XTREAM.equals(account.type)) continue;
+            com.jox3.tv.util.AlternateCatalogCache.AccountCatalog cache =
+                    com.jox3.tv.util.AlternateCatalogCache.get().getCatalogFor(account.id);
+            if (cache == null || cache.loading) {
+                anyPending = true;
+                break;
+            }
+        }
+
+        refreshAccountsList();
+
+        // Se detiene solo cuando ya no queda ninguna cuenta "en camino":
+        // loadAccountInBackground siempre termina marcando loaded=true o
+        // false en su finally, así que esto nunca queda pegado.
+        if (anyPending) {
+            mainHandler.postDelayed(statusPollRunnable, 1500);
+        }
     }
 
     private void bindViews() {
@@ -213,9 +245,62 @@ public class SettingsActivity extends AppCompatActivity {
                 .show();
     }
 
-    /** Cambia a una cuenta ya guardada: no la borra, solo recarga sus datos. */
+    /**
+     * Cambia a una cuenta ya guardada. Antes esto SIEMPRE volvía a pedirle
+     * todo el catálogo al servidor (testConnection + 3 descargas), aunque
+     * esa cuenta ya estuviera precargada en segundo plano por
+     * AlternateCatalogCache para el buscador global. Ahora:
+     *
+     *   - Si es una cuenta Xtream y su catálogo ya está listo en caché ->
+     *     cambio INSTANTÁNEO, sin tocar la red, solo tocar y listo.
+     *   - Si no hay nada en caché todavía (recién agregada, M3U, o su
+     *     carga en 2do plano sigue en curso) -> cae al camino de siempre,
+     *     que sí pide los datos, para no dejar la app sin catálogo.
+     */
     private void switchToAccount(PlaylistConfig account) {
-        setLoading(true, "Cambiando a \"" + account.name + "\"...");
+        if (account.id.equals(prefs.getActiveAccountId())) {
+            finish();
+            return;
+        }
+
+        com.jox3.tv.util.AlternateCatalogCache.AccountCatalog cached =
+                com.jox3.tv.util.AlternateCatalogCache.get().getCatalogFor(account.id);
+
+        boolean readyFromCache = PlaylistConfig.TYPE_XTREAM.equals(account.type)
+                && cached != null && cached.loaded;
+
+        if (readyFromCache) {
+            applyAccountFromCache(account, cached);
+        } else {
+            boolean stillLoadingInBackground = cached != null && cached.loading;
+            switchToAccountFromNetwork(account, stillLoadingInBackground);
+        }
+    }
+
+    /** Camino rápido: copia lo que AlternateCatalogCache ya descargó. */
+    private void applyAccountFromCache(PlaylistConfig account,
+                                        com.jox3.tv.util.AlternateCatalogCache.AccountCatalog cached) {
+        AppState state = AppState.get();
+        state.liveChannels = new java.util.ArrayList<>(cached.liveChannels);
+        state.movies = new java.util.ArrayList<>(cached.movies);
+        state.series = new java.util.ArrayList<>(cached.series);
+
+        prefs.setActiveAccountId(account.id);
+        prefs.clearRecentlyWatched();
+        // La cuenta que era "principal" hasta ahora pasa a ser una alterna
+        // más, y la nueva activa sale de la lista de alternas — hay que
+        // recalcular la caché del buscador global para que refleje esto.
+        com.jox3.tv.util.AlternateCatalogCache.get().refresh(this);
+
+        Toast.makeText(this, "Cuenta cambiada: " + account.name, Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
+    /** Camino anterior: solo se usa cuando todavía no hay nada en caché. */
+    private void switchToAccountFromNetwork(PlaylistConfig account, boolean stillLoadingInBackground) {
+        setLoading(true, stillLoadingInBackground
+                ? "Esa cuenta aún se está cargando en segundo plano, esperando..."
+                : "Cambiando a \"" + account.name + "\"...");
 
         executor.execute(() -> {
             try {
@@ -250,10 +335,6 @@ public class SettingsActivity extends AppCompatActivity {
 
                 prefs.setActiveAccountId(account.id);
                 prefs.clearRecentlyWatched();
-                // La cuenta que era "principal" hasta ahora pasa a ser una
-                // alterna más, y la nueva activa sale de la lista de
-                // alternas — hay que recalcular la caché del buscador
-                // global para que refleje esto.
                 com.jox3.tv.util.AlternateCatalogCache.get().refresh(this);
 
                 mainHandler.post(() -> {
@@ -435,6 +516,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mainHandler.removeCallbacks(statusPollRunnable);
         executor.shutdownNow();
     }
 }
