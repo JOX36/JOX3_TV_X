@@ -79,7 +79,11 @@ public class HomeActivity extends AppCompatActivity {
 
     private FrameLayout miniPlayerContainer;
     private PlayerView miniPlayerView;
-    private ImageView btnMiniExpand, btnMiniMute;
+    private ImageView btnMiniExpand, btnMiniMute, btnMiniFav, btnMiniPrev, btnMiniPlayPause, btnMiniNext, btnMiniChannelList, btnMiniRefresh;
+    private TextView miniEpgNext;
+    private RecyclerView miniChannelStrip;
+    private MiniChannelStripAdapter miniChannelStripAdapter;
+    private boolean miniPlayerPlaying = true;
     private TextView miniChannelName, miniEpgNow;
     private LinearLayout miniEpgProgressTrack;
     private View miniEpgProgressFill;
@@ -245,10 +249,23 @@ public class HomeActivity extends AppCompatActivity {
         }
         miniPlayerContainer.setVisibility(View.VISIBLE);
 
-        miniPlayerChannel = pickMiniPlayerChannel(state);
-        if (miniPlayerChannel == null) return;
+        MediaItem initialChannel = pickMiniPlayerChannel(state);
+        if (initialChannel == null) return;
 
-        miniChannelName.setText(miniPlayerChannel.name);
+        loadMiniPlayerChannel(initialChannel);
+        bindMiniChannelStrip(state);
+    }
+
+    /**
+     * Carga UN canal puntual en el reproductor embebido de Home: crea el
+     * ExoPlayer (o lo reemplaza si ya había uno), actualiza nombre/EPG, y
+     * refresca los íconos de favorito/play-pausa para ese canal. La usan
+     * initMiniPlayer() (primera carga), los botones anterior/siguiente,
+     * el botón de refrescar, y la tira de selección rápida de canales.
+     */
+    private void loadMiniPlayerChannel(MediaItem channel) {
+        miniPlayerChannel = channel;
+        miniChannelName.setText(channel.name);
 
         if (miniPlayer != null) miniPlayer.release();
         miniPlayer = new ExoPlayer.Builder(this)
@@ -257,21 +274,92 @@ public class HomeActivity extends AppCompatActivity {
         miniPlayerView.setPlayer(miniPlayer);
 
         androidx.media3.common.MediaItem mediaItem =
-                androidx.media3.common.MediaItem.fromUri(miniPlayerChannel.url);
+                androidx.media3.common.MediaItem.fromUri(channel.url);
         miniPlayer.setMediaItem(mediaItem);
         miniPlayer.setVolume(miniPlayerMuted ? 0f : 1f);
         miniPlayer.prepare();
         miniPlayer.setPlayWhenReady(true);
+        miniPlayerPlaying = true;
 
         updateMuteIcon();
-        loadMiniPlayerEpg(miniPlayerChannel);
+        updateMiniPlayPauseIcon();
+        updateMiniFavIcon();
+        loadMiniPlayerEpg(channel);
+
+        if (miniChannelStripAdapter != null) miniChannelStripAdapter.setActiveChannelId(channel.id);
     }
 
-    /** Trae "qué está dando ahora" para el canal del mini-reproductor (1 sola llamada). */
+    /** Cambia al canal anterior/siguiente dentro de la lista completa de canales en vivo. */
+    private void switchMiniChannel(int direction) {
+        if (miniPlayerChannel == null) return;
+        List<MediaItem> channels = AppState.get().liveChannels;
+        if (channels.isEmpty()) return;
+
+        int idx = channels.indexOf(miniPlayerChannel);
+        if (idx < 0) idx = 0;
+        int nextIdx = (idx + direction + channels.size()) % channels.size();
+        loadMiniPlayerChannel(channels.get(nextIdx));
+    }
+
+    private void toggleMiniPlayPause() {
+        if (miniPlayer == null) return;
+        miniPlayerPlaying = !miniPlayerPlaying;
+        miniPlayer.setPlayWhenReady(miniPlayerPlaying);
+        updateMiniPlayPauseIcon();
+    }
+
+    private void updateMiniPlayPauseIcon() {
+        if (btnMiniPlayPause == null) return;
+        btnMiniPlayPause.setImageResource(miniPlayerPlaying ? R.drawable.ic_pause : R.drawable.ic_play);
+    }
+
+    private void toggleMiniFav() {
+        if (miniPlayerChannel == null) return;
+        prefs.toggleFav(miniPlayerChannel.favKey());
+        updateMiniFavIcon();
+    }
+
+    private void updateMiniFavIcon() {
+        if (btnMiniFav == null || miniPlayerChannel == null) return;
+        boolean isFav = prefs.isFav(miniPlayerChannel.favKey());
+        btnMiniFav.setImageResource(isFav ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
+    }
+
+    /**
+     * Llena la tira de miniaturas bajo el reproductor: prioriza canales de
+     * la MISMA categoría del canal actual (más útil para "seguir viendo
+     * algo parecido"); si esa categoría trae muy pocos, completa con los
+     * primeros canales en vivo disponibles para que la tira no se vea
+     * casi vacía.
+     */
+    private void bindMiniChannelStrip(AppState state) {
+        if (miniChannelStrip == null) return;
+
+        List<MediaItem> pool = new ArrayList<>();
+        if (miniPlayerChannel != null && miniPlayerChannel.category != null) {
+            for (MediaItem channel : state.liveChannels) {
+                if (miniPlayerChannel.category.equals(channel.category)) pool.add(channel);
+                if (pool.size() >= 20) break;
+            }
+        }
+        if (pool.size() < 5) {
+            int limit = Math.min(30, state.liveChannels.size());
+            pool = new ArrayList<>(state.liveChannels.subList(0, limit));
+        }
+
+        miniChannelStripAdapter = new MiniChannelStripAdapter(pool, this::loadMiniPlayerChannel);
+        miniChannelStrip.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        miniChannelStrip.setAdapter(miniChannelStripAdapter);
+        if (miniPlayerChannel != null) miniChannelStripAdapter.setActiveChannelId(miniPlayerChannel.id);
+    }
+
+    /** Trae "qué está dando ahora" (y "qué sigue", si el layout horizontal lo pide) para el canal del mini-reproductor. */
     private void loadMiniPlayerEpg(MediaItem channel) {
         miniEpgNow.setVisibility(View.GONE);
         miniEpgProgressTrack.setVisibility(View.GONE);
-        PlaylistConfig config = prefs.getPlaylistConfig();
+        if (miniEpgNext != null) miniEpgNext.setVisibility(View.GONE);
+
+        PlaylistConfig config = resolveAccountForItem(channel);
         if (config == null || !PlaylistConfig.TYPE_XTREAM.equals(config.type)) return;
 
         synopsisExecutor.execute(() -> {
@@ -280,19 +368,26 @@ public class HomeActivity extends AppCompatActivity {
             if (programs.isEmpty()) return;
 
             XtreamClient.EpgProgram now = programs.get(0);
-            mainHandler.post(() -> {
-                if (miniPlayerChannel == channel) {
-                    miniEpgNow.setText("Ahora: " + now.title);
-                    miniEpgNow.setVisibility(View.VISIBLE);
+            XtreamClient.EpgProgram next = programs.size() > 1 ? programs.get(1) : null;
 
-                    int percent = now.progressPercent();
-                    if (percent >= 0) {
-                        miniEpgProgressTrack.setVisibility(View.VISIBLE);
-                        LinearLayout.LayoutParams params =
-                                (LinearLayout.LayoutParams) miniEpgProgressFill.getLayoutParams();
-                        params.weight = percent;
-                        miniEpgProgressFill.setLayoutParams(params);
-                    }
+            mainHandler.post(() -> {
+                if (miniPlayerChannel != channel) return;
+
+                miniEpgNow.setText("Ahora: " + now.title);
+                miniEpgNow.setVisibility(View.VISIBLE);
+
+                int percent = now.progressPercent();
+                if (percent >= 0) {
+                    miniEpgProgressTrack.setVisibility(View.VISIBLE);
+                    LinearLayout.LayoutParams params =
+                            (LinearLayout.LayoutParams) miniEpgProgressFill.getLayoutParams();
+                    params.weight = percent;
+                    miniEpgProgressFill.setLayoutParams(params);
+                }
+
+                if (miniEpgNext != null && next != null) {
+                    miniEpgNext.setText("Sigue: " + next.title + "  ·  " + next.start + "–" + next.end);
+                    miniEpgNext.setVisibility(View.VISIBLE);
                 }
             });
         });
@@ -308,20 +403,6 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         }
-
-        // DIAGNÓSTICO TEMPORAL: si cae aquí es porque no encontró ninguna
-        // coincidencia. Este Toast nos dice exactamente por qué, para
-        // saber si el problema es que "recientes" viene vacío, o que sí
-        // trae datos pero no hace match contra los canales actuales.
-        int liveCountInRecent = 0;
-        for (MediaItem recent : recentList) {
-            if (MediaItem.LIVE.equals(recent.type)) liveCountInRecent++;
-        }
-        android.widget.Toast.makeText(this,
-                "DEBUG mini-player: recientes=" + recentList.size()
-                        + " (en vivo entre ellos=" + liveCountInRecent + ")"
-                        + " · canales totales=" + state.liveChannels.size(),
-                android.widget.Toast.LENGTH_LONG).show();
 
         if (state.liveChannels.isEmpty()) return null;
         int randomIndex = (int) (Math.random() * state.liveChannels.size());
@@ -400,6 +481,21 @@ public class HomeActivity extends AppCompatActivity {
         miniPlayerView = findViewById(R.id.mini_player_view);
         btnMiniExpand = findViewById(R.id.btn_mini_expand);
         btnMiniMute = findViewById(R.id.btn_mini_mute);
+
+        // Controles del reproductor "enriquecido" — SOLO existen en el
+        // layout horizontal (layout-land). En vertical, findViewById
+        // devuelve null para estos 8 (no hay crash por sí solo); cada
+        // lugar donde se usan más abajo hace su propio chequeo de null
+        // antes de tocarlos, para que vertical siga funcionando exacto
+        // igual que siempre.
+        btnMiniFav = findViewById(R.id.btn_mini_fav);
+        btnMiniPrev = findViewById(R.id.btn_mini_prev);
+        btnMiniPlayPause = findViewById(R.id.btn_mini_play_pause);
+        btnMiniNext = findViewById(R.id.btn_mini_next);
+        btnMiniChannelList = findViewById(R.id.btn_mini_channel_list);
+        btnMiniRefresh = findViewById(R.id.btn_mini_refresh);
+        miniEpgNext = findViewById(R.id.mini_epg_next);
+        miniChannelStrip = findViewById(R.id.mini_channel_strip);
         miniChannelName = findViewById(R.id.mini_channel_name);
         miniEpgNow = findViewById(R.id.mini_epg_now);
         miniEpgProgressTrack = findViewById(R.id.mini_epg_progress_track);
@@ -656,6 +752,18 @@ public class HomeActivity extends AppCompatActivity {
         btnMiniExpand.setOnClickListener(v -> expandMiniPlayer());
         miniPlayerContainer.setOnClickListener(v -> expandMiniPlayer());
         btnMiniMute.setOnClickListener(v -> toggleMiniPlayerMute());
+
+        // Solo existen en horizontal (layout-land) — ver comentario en bindViews().
+        if (btnMiniFav != null) btnMiniFav.setOnClickListener(v -> toggleMiniFav());
+        if (btnMiniPlayPause != null) btnMiniPlayPause.setOnClickListener(v -> toggleMiniPlayPause());
+        if (btnMiniPrev != null) btnMiniPrev.setOnClickListener(v -> switchMiniChannel(-1));
+        if (btnMiniNext != null) btnMiniNext.setOnClickListener(v -> switchMiniChannel(1));
+        if (btnMiniChannelList != null) btnMiniChannelList.setOnClickListener(v -> openContentList(MediaItem.LIVE));
+        if (btnMiniRefresh != null) {
+            btnMiniRefresh.setOnClickListener(v -> {
+                if (miniPlayerChannel != null) loadMiniPlayerChannel(miniPlayerChannel);
+            });
+        }
 
         continueHeroCard.setOnClickListener(v -> {
             if (continueHeroItem != null) openItem(continueHeroItem, 0);
