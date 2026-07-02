@@ -726,7 +726,11 @@ public class HomeActivity extends AppCompatActivity {
                 .start();
     }
 
-    /** Permite que el botón "atrás" cierre el panel o la búsqueda en vez de salir de la app. */
+    /**
+     * Permite que el botón "atrás" cierre el panel o la búsqueda en vez de
+     * salir de la app. Si no hay nada de eso abierto, antes salía directo
+     * sin avisar — ahora pide confirmación con el diálogo de marca.
+     */
     @Override
     public void onBackPressed() {
         if (drawerPanel.getVisibility() == View.VISIBLE) {
@@ -738,7 +742,13 @@ public class HomeActivity extends AppCompatActivity {
             inputSearch.setText("");
             return;
         }
-        super.onBackPressed();
+        com.jox3.tv.util.AppDialogs.showConfirm(this,
+                "📺", "JOX3 TV", "¿Seguro que quieres salir de la app?",
+                "Salir", "Cancelar", true,
+                new com.jox3.tv.util.AppDialogs.OnConfirmAction() {
+                    @Override public void onPrimary() { finish(); }
+                    @Override public void onSecondary() { }
+                });
     }
 
     private void openContentList(String type) {
