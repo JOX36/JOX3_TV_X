@@ -141,4 +141,19 @@ public class AlternateCatalogCache {
     public synchronized List<AccountCatalog> getAllCatalogs() {
         return new ArrayList<>(catalogs.values());
     }
+
+    /**
+     * Catálogo de UNA cuenta alterna puntual, o null si esa cuenta no está
+     * en caché todavía (por ejemplo, recién agregada antes de que corra
+     * refresh(), o es una cuenta M3U que esta clase no cachea).
+     *
+     * Se agrega para que Ajustes pueda cambiar de cuenta al instante
+     * usando estos datos ya descargados, en vez de volver a pedirle todo
+     * el catálogo al servidor Xtream y hacer esperar a JOX3 cada vez que
+     * alterna listas.
+     */
+    public synchronized AccountCatalog getCatalogFor(String accountId) {
+        if (accountId == null) return null;
+        return catalogs.get(accountId);
+    }
 }
