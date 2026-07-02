@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Anillo de borde (sin relleno) para marcar cuál miniatura del selector
+    rápido de canales es la que está sonando ahora mismo en el
+    reproductor embebido de Home.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+    <stroke android:width="2dp" android:color="@color/accent" />
+    <corners android:radius="8dp" />
+</shape>
