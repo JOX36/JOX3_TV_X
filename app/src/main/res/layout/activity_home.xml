@@ -1,467 +1,229 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Home en horizontal (Opción 3, elegida por JOX3): en vez de solo
+    reacomodar el mismo diseño vertical, se aprovecha el ancho extra con
+    un panel FIJO a la izquierda (banner + mini-reproductor de canal en
+    vivo + accesos rápidos) que nunca se mueve, y a la derecha una columna
+    con scroll propio que trae TODO el catálogo (Seguir viendo, Favoritos,
+    Descubre, Destacados...). El panel izquierdo se queda visible incluso
+    mientras se busca — solo la columna derecha cambia entre catálogo y
+    resultados de búsqueda.
+
+    Reutiliza EXACTAMENTE los mismos colores, degradados y drawables que
+    ya existen para vertical (bg_banner_glow, bg_card_rounded, degradado
+    de marca cian->azul->morado en el logo, etc.) — nada de esto es nuevo,
+    solo se reorganiza el espacio.
+
+    Comparte 3 bloques con el layout vertical vía <include> para que
+    nunca se desincronicen: home_top_chrome (header/carga/vacío),
+    home_content_rows (las filas de catálogo) y home_drawer (panel
+    lateral). Todos los IDs coinciden con activity_home.xml para que
+    HomeActivity.java funcione sin ningún cambio de código.
+-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_primary">
 
-    <!-- ======================= CONTENIDO PRINCIPAL ======================= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         android:orientation="vertical">
 
-        <!-- Barra superior: hamburguesa + logo. Las pestañas Inicio/Canales/
-             Películas/Series que estaban aquí se quitaron: ahora viven en
-             el panel lateral (drawer) y como accesos rápidos al fondo del
-             Home. -->
+        <include layout="@layout/home_top_chrome" />
+
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="18dp"
-            android:paddingEnd="18dp"
-            android:paddingTop="18dp"
-            android:paddingBottom="14dp">
-
-            <ImageView
-                android:id="@+id/btn_open_drawer"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:background="@drawable/bg_chip_inactive"
-                android:padding="10dp"
-                android:src="@drawable/ic_menu"
-                android:clickable="true"
-                android:focusable="true"
-                android:stateListAnimator="@animator/focus_scale_button"
-                android:layout_marginEnd="12dp" />
-
-            <!-- Logo en 3 tramos de color para imitar el degradado
-                 cian -> azul -> morado (un TextView solo no puede pintar
-                 un degradado real en el texto sin un shader personalizado,
-                 así que se simula con 3 colores planos consecutivos). -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="J"
-                    android:textColor="@color/accent"
-                    android:textSize="22sp"
-                    android:textStyle="bold|italic" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OX3"
-                    android:textColor="#2979FF"
-                    android:textSize="22sp"
-                    android:textStyle="bold|italic" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" TV"
-                    android:textColor="@color/accent_purple"
-                    android:textSize="22sp"
-                    android:textStyle="bold|italic" />
-            </LinearLayout>
-
-            <!-- Botón de búsqueda global directo en el header: acceso
-                 rápido sin necesidad de abrir el panel lateral primero.
-                 Muestra/oculta la misma barra de búsqueda que ya existe
-                 dentro del drawer (comparten el mismo inputSearch). -->
-            <ImageView
-                android:id="@+id/btn_search_header"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_chip_inactive"
-                android:padding="10dp"
-                android:src="@drawable/ic_search"
-                android:tint="@color/accent"
-                android:clickable="true"
-                android:focusable="true"
-                android:stateListAnimator="@animator/focus_scale_button" />
-
-            <!-- Acceso directo a Ajustes sin tener que abrir el panel
-                 lateral. "Ajustes" sigue existiendo también dentro del
-                 drawer; este es solo un atajo rápido. -->
-            <ImageView
-                android:id="@+id/btn_settings"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:background="@drawable/bg_chip_inactive"
-                android:padding="9dp"
-                android:src="@drawable/ic_settings"
-                android:tint="@color/accent"
-                android:clickable="true"
-                android:focusable="true"
-                android:stateListAnimator="@animator/focus_scale_button" />
-        </LinearLayout>
-
-        <!-- Estado de cuenta: muy discreto a propósito (texto chico, color
-             secundario, sin caja ni fondo) — solo un dato de referencia
-             rápida, no debe competir visualmente con el resto del Home. -->
-        <TextView
-            android:id="@+id/account_status_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="18dp"
-            android:paddingEnd="18dp"
-            android:paddingBottom="10dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="10sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:visibility="gone" />
-
-        <!-- Barra de búsqueda expandible, oculta por defecto (se abre desde
-             "Buscar" en el panel lateral) -->
-        <LinearLayout
-            android:id="@+id/search_bar_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="18dp"
-            android:paddingEnd="18dp"
-            android:paddingBottom="14dp"
-            android:visibility="gone">
-
-            <EditText
-                android:id="@+id/input_search"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:background="@drawable/bg_chip_inactive"
-                android:drawableStart="@drawable/ic_search"
-                android:drawablePadding="10dp"
-                android:hint="Buscar en vistos recientes o favoritos..."
-                android:textColorHint="@color/text_secondary"
-                android:textColor="@color/text_primary"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textSize="14sp"
-                android:singleLine="true"
-                android:imeOptions="actionSearch" />
-        </LinearLayout>
-
-        <!-- Pantalla de carga: visible mientras se descarga el catálogo
-             por primera vez (autoLoadActiveAccount en HomeActivity).
-             Antes esos segundos se veían en blanco/negro sin ningún
-             indicador. -->
-        <LinearLayout
-            android:id="@+id/layout_loading"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:visibility="gone">
-
-            <FrameLayout
-                android:layout_width="86dp"
-                android:layout_height="86dp"
-                android:layout_marginBottom="20dp">
-
-                <ProgressBar
-                    android:id="@+id/loading_spinner"
-                    style="?android:attr/progressBarStyleLarge"
-                    android:layout_width="86dp"
-                    android:layout_height="86dp"
-                    android:indeterminateTint="@color/accent" />
-
-                <TextView
-                    android:id="@+id/loading_emoji"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="📡"
-                    android:textSize="28sp" />
-            </FrameLayout>
-
-            <TextView
-                android:id="@+id/loading_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cargando tu lista..."
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="Esto puede tardar unos segundos"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!-- Estado vacío (sin lista cargada) -->
-        <LinearLayout
-            android:id="@+id/layout_empty"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Todavía no tienes una lista cargada"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/btn_go_settings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_chip_active"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:text="Ir a Ajustes"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Contenido principal -->
-        <ScrollView
             android:id="@+id/scroll_content"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:orientation="horizontal">
 
+            <!-- ============ PANEL IZQUIERDO: fijo, siempre visible ============ -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/home_default_content"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="38"
                 android:orientation="vertical"
-                android:paddingBottom="24dp">
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingStart="18dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="14dp">
 
-                <!-- Banner: en móvil ocupa todo el ancho, solo imagen (sin
-                     sinopsis ni botones, eso ahora vive en la pantalla de
-                     detalle al tocar la card). El mini-reproductor de canal
-                     en vivo que antes iba al lado solo se muestra en TV box
-                     (HomeActivity lo oculta en móvil con isTv == false). -->
-                <LinearLayout
+                <!-- Banner: mismo glow + carrusel que en vertical, ahora
+                     apilado arriba del mini-reproductor (la columna es
+                     angosta, no alcanza para ponerlos lado a lado y que
+                     ambos se vean bien). -->
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_height="0dp"
+                    android:layout_weight="3"
                     android:clipChildren="false"
-                    android:clipToPadding="false"
-                    android:layout_marginStart="18dp"
-                    android:layout_marginEnd="18dp"
+                    android:clipToPadding="false">
+
+                    <View
+                        android:id="@+id/banner_glow"
+                        android:layout_width="130dp"
+                        android:layout_height="130dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_banner_glow" />
+
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/hero_pager"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:id="@+id/hero_dots"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
                     android:layout_marginTop="4dp"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="8dp"
+                    android:orientation="horizontal"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:clickable="false"
+                    android:focusable="true"
+                    android:stateListAnimator="@animator/focus_scale_row" />
 
-                    <!-- Columna del carrusel. weight=4 por defecto: si el
-                         mini-reproductor de al lado queda GONE (móvil),
-                         esta columna pasa a ocupar el 100% del ancho
-                         automáticamente (así funciona layout_weight en
-                         LinearLayout cuando el otro hijo está GONE). -->
-                    <LinearLayout
-                        android:layout_width="0dp"
+                <!-- Mini-reproductor de canal en vivo: en horizontal
+                     siempre visible (HomeActivity ya lo muestra en
+                     cualquier orientación que no sea portrait — misma
+                     lógica de siempre, sin tocar el código). -->
+                <FrameLayout
+                    android:id="@+id/mini_player_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="2"
+                    android:background="@drawable/bg_card_rounded"
+                    android:clipToOutline="true"
+                    android:clickable="true"
+                    android:focusable="false">
+
+                    <androidx.media3.ui.PlayerView
+                        android:id="@+id/mini_player_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:surface_type="texture_view"
+                        app:use_controller="false" />
+
+                    <TextView
+                        android:id="@+id/mini_live_badge"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="4"
-                        android:layout_marginEnd="10dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:orientation="vertical">
+                        android:layout_gravity="top|start"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/bg_badge_live"
+                        android:paddingStart="7dp"
+                        android:paddingEnd="7dp"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp"
+                        android:text="EN VIVO"
+                        android:textColor="@color/text_primary"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
 
-                        <!-- "glow_wrap" agrega el resplandor de fondo detrás
-                             del banner: el View de glow va PRIMERO (en
-                             Android, el primer hijo de un FrameLayout queda
-                             atrás de los siguientes), centrado y más grande
-                             que el propio banner para que sobresalga un
-                             poco por los bordes. -->
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="260dp"
-                            android:clipChildren="false"
-                            android:clipToPadding="false">
-
-                            <View
-                                android:id="@+id/banner_glow"
-                                android:layout_width="160dp"
-                                android:layout_height="160dp"
-                                android:layout_gravity="center"
-                                android:background="@drawable/bg_banner_glow" />
-
-                            <androidx.viewpager2.widget.ViewPager2
-                                android:id="@+id/hero_pager"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent" />
-                        </FrameLayout>
-
-                        <!-- Indicador de posición del banner. Con control
-                             remoto, este mismo indicador recibe el foco y
-                             las flechas izquierda/derecha cambian la card
-                             del banner (ver HomeActivity.setupHeroPager). -->
-                        <LinearLayout
-                            android:id="@+id/hero_dots"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_marginTop="10dp"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingEnd="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingBottom="6dp"
-                            android:clickable="false"
-                            android:focusable="true"
-                            android:stateListAnimator="@animator/focus_scale_row" />
-                    </LinearLayout>
-
-                    <!-- Mini-reproductor de canal en vivo: SOLO TV box.
-                         HomeActivity le pone visibility=GONE en móvil. -->
-                    <FrameLayout
-                        android:id="@+id/mini_player_container"
-                        android:layout_width="0dp"
-                        android:layout_height="260dp"
-                        android:layout_weight="3"
-                        android:background="@drawable/bg_card_rounded"
-                        android:clipToOutline="true"
+                    <ImageView
+                        android:id="@+id/btn_mini_expand"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="8dp"
+                        android:background="#88000000"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_expand"
                         android:clickable="true"
-                        android:focusable="false">
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/focus_scale_button" />
 
-                        <androidx.media3.ui.PlayerView
-                            android:id="@+id/mini_player_view"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            app:surface_type="texture_view"
-                            app:use_controller="false" />
+                    <ImageView
+                        android:id="@+id/btn_mini_mute"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="8dp"
+                        android:background="#88000000"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_mute"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/focus_scale_button" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:background="#CC000000"
+                        android:orientation="vertical"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="8dp">
 
                         <TextView
-                            android:id="@+id/mini_live_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="top|start"
-                            android:layout_margin="8dp"
-                            android:background="@drawable/bg_badge_live"
-                            android:paddingStart="7dp"
-                            android:paddingEnd="7dp"
-                            android:paddingTop="3dp"
-                            android:paddingBottom="3dp"
-                            android:text="EN VIVO"
-                            android:textColor="@color/text_primary"
-                            android:textSize="9sp"
-                            android:textStyle="bold" />
-
-                        <ImageView
-                            android:id="@+id/btn_mini_expand"
-                            android:layout_width="34dp"
-                            android:layout_height="34dp"
-                            android:layout_gravity="top|end"
-                            android:layout_margin="8dp"
-                            android:background="#88000000"
-                            android:padding="6dp"
-                            android:src="@drawable/ic_expand"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:stateListAnimator="@animator/focus_scale_button" />
-
-                        <ImageView
-                            android:id="@+id/btn_mini_mute"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_gravity="bottom|end"
-                            android:layout_margin="8dp"
-                            android:background="#88000000"
-                            android:padding="6dp"
-                            android:src="@drawable/ic_mute"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:stateListAnimator="@animator/focus_scale_button" />
-
-                        <LinearLayout
+                            android:id="@+id/mini_channel_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="bottom"
-                            android:background="#CC000000"
-                            android:orientation="vertical"
-                            android:paddingStart="10dp"
-                            android:paddingEnd="10dp"
-                            android:paddingTop="20dp"
-                            android:paddingBottom="8dp">
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
 
-                            <TextView
-                                android:id="@+id/mini_channel_name"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                android:maxLines="1"
-                                android:ellipsize="end" />
+                        <TextView
+                            android:id="@+id/mini_epg_now"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="@color/accent_warm"
+                            android:textSize="10sp"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            android:visibility="gone" />
 
-                            <TextView
-                                android:id="@+id/mini_epg_now"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:textColor="@color/accent_warm"
-                                android:textSize="10sp"
-                                android:maxLines="1"
-                                android:ellipsize="end"
-                                android:visibility="gone" />
+                        <LinearLayout
+                            android:id="@+id/mini_epg_progress_track"
+                            android:layout_width="match_parent"
+                            android:layout_height="3dp"
+                            android:layout_marginTop="4dp"
+                            android:background="#40000000"
+                            android:orientation="horizontal"
+                            android:visibility="gone">
 
-                            <LinearLayout
-                                android:id="@+id/mini_epg_progress_track"
-                                android:layout_width="match_parent"
-                                android:layout_height="3dp"
-                                android:layout_marginTop="4dp"
-                                android:background="#40000000"
-                                android:orientation="horizontal"
-                                android:visibility="gone">
+                            <View
+                                android:id="@+id/mini_epg_progress_fill"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="0"
+                                android:background="@color/accent_purple" />
 
-                                <View
-                                    android:id="@+id/mini_epg_progress_fill"
-                                    android:layout_width="0dp"
-                                    android:layout_height="match_parent"
-                                    android:layout_weight="0"
-                                    android:background="@color/accent_purple" />
-
-                                <View
-                                    android:layout_width="0dp"
-                                    android:layout_height="match_parent"
-                                    android:layout_weight="100"
-                                    android:background="@android:color/transparent" />
-                            </LinearLayout>
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="100"
+                                android:background="@android:color/transparent" />
                         </LinearLayout>
-                    </FrameLayout>
-                </LinearLayout>
+                    </LinearLayout>
+                </FrameLayout>
 
-                <!-- Chips de navegación rápida: reemplazan los 3 botones
-                     grandes que había antes. Llevan directo a cada sección
-                     (ya no hay filas de TV en vivo/Películas/Series en el
-                     Home). El primero ("Favoritos") usa el degradado de
-                     marca como acento; los demás usan el mismo contorno de
-                     color que ya se ve en otras partes de la app. -->
+                <!-- Chips de acceso rápido: mismo estilo y colores de
+                     siempre. En esta columna angosta se deslizan
+                     horizontalmente dentro del panel en vez de quedar
+                     todos a la vista, igual que ya pasaría en un celular
+                     angosto en vertical. -->
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:scrollbars="none"
-                    android:clipToPadding="false"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="8dp"
-                    android:layout_marginBottom="20dp">
+                    android:clipToPadding="false">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -472,15 +234,15 @@
                             android:id="@+id/chip_favorites"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="10dp"
+                            android:layout_marginEnd="8dp"
                             android:background="@drawable/bg_chip_active"
-                            android:paddingStart="16dp"
-                            android:paddingEnd="16dp"
-                            android:paddingTop="9dp"
-                            android:paddingBottom="9dp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
                             android:text="🔥  Favoritos"
                             android:textColor="@color/text_primary"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true"
@@ -490,15 +252,15 @@
                             android:id="@+id/chip_live"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="10dp"
+                            android:layout_marginEnd="8dp"
                             android:background="@drawable/bg_pill_outline_accent"
-                            android:paddingStart="16dp"
-                            android:paddingEnd="16dp"
-                            android:paddingTop="9dp"
-                            android:paddingBottom="9dp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
                             android:text="📡  TV en vivo"
                             android:textColor="@color/accent"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true"
@@ -508,15 +270,15 @@
                             android:id="@+id/chip_movies"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="10dp"
+                            android:layout_marginEnd="8dp"
                             android:background="@drawable/bg_pill_outline_accent"
-                            android:paddingStart="16dp"
-                            android:paddingEnd="16dp"
-                            android:paddingTop="9dp"
-                            android:paddingBottom="9dp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
                             android:text="🎬  Películas"
                             android:textColor="@color/accent"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true"
@@ -526,702 +288,72 @@
                             android:id="@+id/chip_series"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="10dp"
                             android:background="@drawable/bg_pill_outline_accent"
-                            android:paddingStart="16dp"
-                            android:paddingEnd="16dp"
-                            android:paddingTop="9dp"
-                            android:paddingBottom="9dp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
                             android:text="📺  Series"
                             android:textColor="@color/accent"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             android:textStyle="bold"
                             android:clickable="true"
                             android:focusable="true"
                             android:stateListAnimator="@animator/focus_scale_button" />
                     </LinearLayout>
                 </HorizontalScrollView>
-
-                <View android:id="@+id/divider_a" style="@null"
-                    android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginBottom="18dp"
-                    android:background="@drawable/bg_section_divider"
-                    android:visibility="gone" />
-
-                <!-- "Seguir viendo series": separado de "Vistos Reciente"
-                     porque son cosas distintas (esta solo trae series con
-                     episodio a medias, con su badge T{temporada} E{episodio}
-                     usando los campos season/episode de MediaItem). -->
-                <LinearLayout
-                    android:id="@+id/row_continue_series_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:layout_marginBottom="10dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="📺  Seguir viendo series"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/row_continue_series"
-                        android:descendantFocusability="afterDescendants"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:layout_marginBottom="22dp" />
-                </LinearLayout>
-
-                <View android:id="@+id/divider_b" style="@null"
-                    android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginBottom="18dp"
-                    android:background="@drawable/bg_section_divider"
-                    android:visibility="gone" />
-
-                <!-- "Continúa tus películas" (antes "Vistos Reciente",
-                     que era redundante con "Última reproducción" y
-                     "Seguir viendo series"). Ahora solo trae películas con
-                     avance, igual de specifico que la fila de series. -->
-                <LinearLayout
-                    android:id="@+id/row_continue_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:layout_marginBottom="10dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="🎬  Continúa tus películas"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/btn_see_all_continue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:padding="4dp"
-                            android:text="Ver todo ›"
-                            android:textColor="@color/accent"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:stateListAnimator="@animator/focus_scale_row" />
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/row_continue"
-                        android:descendantFocusability="afterDescendants"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:layout_marginBottom="22dp" />
-                </LinearLayout>
-
-                <View android:id="@+id/divider_c"
-                    android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginBottom="18dp"
-                    android:background="@drawable/bg_section_divider"
-                    android:visibility="gone" />
-
-                <!-- Última reproducción: card grande, ahora con la imagen
-                     del canal/poster DIFUMINADA de fondo (vidrio esmerilado)
-                     y la info al frente. El difuminado real lo hace
-                     BlurTransformation (jp.wasabeef:glide-transformations)
-                     al cargar continue_hero_bg en HomeActivity.java. -->
-                <LinearLayout
-                    android:id="@+id/continue_hero_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="18dp"
-                    android:layout_marginBottom="22dp"
-                    android:visibility="gone">
-
-                    <FrameLayout
-                        android:id="@+id/continue_hero_card"
-                        android:layout_width="match_parent"
-                        android:layout_height="172dp"
-                        android:background="@drawable/bg_card_rounded"
-                        android:clipToOutline="true"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:stateListAnimator="@animator/focus_scale_card">
-
-                        <!-- Fondo difuminado (la misma imagen del canal/
-                             poster, pero borrosa). Si Glide todavía no
-                             cargó nada, se ve el fondo oscuro normal de
-                             bg_card_rounded por detrás. -->
-                        <ImageView
-                            android:id="@+id/continue_hero_bg"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:scaleType="centerCrop" />
-
-                        <!-- Oscurecido encima del difuminado, para que el
-                             texto siempre se lea sin importar qué tan
-                             clara sea la imagen de fondo. -->
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/bg_gradient_glass_overlay" />
-
-                        <TextView
-                            android:id="@+id/continue_hero_live_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="top|end"
-                            android:layout_margin="12dp"
-                            android:background="@drawable/bg_badge_live"
-                            android:paddingStart="8dp"
-                            android:paddingEnd="8dp"
-                            android:paddingTop="3dp"
-                            android:paddingBottom="3dp"
-                            android:text="EN VIVO"
-                            android:textColor="@color/text_primary"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:visibility="gone" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:padding="16dp">
-
-                            <ImageView
-                                android:id="@+id/continue_hero_thumb"
-                                android:layout_width="80dp"
-                                android:layout_height="80dp"
-                                android:scaleType="centerCrop"
-                                android:background="@drawable/bg_card_rounded" />
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:layout_marginStart="14dp"
-                                android:orientation="vertical"
-                                android:gravity="center_vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="▶  ÚLTIMA REPRODUCCIÓN"
-                                    android:textColor="@color/accent"
-                                    android:textSize="10sp"
-                                    android:textStyle="bold"
-                                    android:letterSpacing="0.03"
-                                    android:layout_marginBottom="6dp" />
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical">
-
-                                    <TextView
-                                        android:id="@+id/continue_hero_title"
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="1"
-                                        android:textColor="@color/text_primary"
-                                        android:textSize="15sp"
-                                        android:textStyle="bold"
-                                        android:maxLines="1"
-                                        android:ellipsize="end" />
-
-                                    <TextView
-                                        android:id="@+id/continue_hero_quality"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:layout_marginStart="8dp"
-                                        android:background="#88000000"
-                                        android:paddingStart="6dp"
-                                        android:paddingEnd="6dp"
-                                        android:paddingTop="2dp"
-                                        android:paddingBottom="2dp"
-                                        android:text="HD"
-                                        android:textColor="@color/text_primary"
-                                        android:textSize="9sp"
-                                        android:textStyle="bold"
-                                        android:visibility="gone" />
-                                </LinearLayout>
-
-                                <TextView
-                                    android:id="@+id/continue_hero_sub"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:textColor="@color/text_secondary"
-                                    android:textSize="11sp"
-                                    android:maxLines="1"
-                                    android:ellipsize="end" />
-
-                                <LinearLayout
-                                    android:id="@+id/continue_hero_progress_track"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="4dp"
-                                    android:layout_marginTop="9dp"
-                                    android:background="#40FFFFFF"
-                                    android:orientation="horizontal">
-
-                                    <View
-                                        android:id="@+id/continue_hero_progress_fill"
-                                        android:layout_width="0dp"
-                                        android:layout_height="match_parent"
-                                        android:layout_weight="0"
-                                        android:background="@drawable/bg_chip_active" />
-
-                                    <View
-                                        android:layout_width="0dp"
-                                        android:layout_height="match_parent"
-                                        android:layout_weight="100"
-                                        android:background="@android:color/transparent" />
-                                </LinearLayout>
-                            </LinearLayout>
-                        </LinearLayout>
-                    </FrameLayout>
-                </LinearLayout>
-
-                <View android:id="@+id/divider_d"
-                    android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginBottom="18dp"
-                    android:background="@drawable/bg_section_divider"
-                    android:visibility="gone" />
-
-                <!-- Favoritos -->
-                <LinearLayout
-                    android:id="@+id/row_favorites_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:layout_marginBottom="10dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="♡  Favoritos"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/btn_see_all_favorites"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:padding="4dp"
-                            android:text="Ver todo ›"
-                            android:textColor="@color/accent"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:stateListAnimator="@animator/focus_scale_row" />
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/row_favorites"
-                        android:descendantFocusability="afterDescendants"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:layout_marginBottom="22dp" />
-                </LinearLayout>
-
-                <View android:id="@+id/divider_e"
-                    android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginBottom="18dp"
-                    android:background="@drawable/bg_section_divider"
-                    android:visibility="gone" />
-
-                <!-- "Descubre algo nuevo": random de lo que NO está en
-                     Vistos Reciente, con botón 🔀 para regenerar la
-                     selección sin recargar toda la lista de la cuenta. -->
-                <LinearLayout
-                    android:id="@+id/row_discover_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:layout_marginBottom="10dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="🔀  Descubre algo nuevo"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/btn_shuffle_discover"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:padding="6dp"
-                            android:text="🔀"
-                            android:textSize="16sp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:stateListAnimator="@animator/focus_scale_button" />
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/row_discover"
-                        android:descendantFocusability="afterDescendants"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:layout_marginBottom="22dp" />
-                </LinearLayout>
-
-                <View android:id="@+id/divider_f"
-                    android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginBottom="18dp"
-                    android:background="@drawable/bg_section_divider"
-                    android:visibility="gone" />
-
-                <!-- Fila fija de UNA categoría destacada (la de más ítems
-                     en tu catálogo de películas/series). El título se
-                     llena dinámicamente con el nombre real de esa
-                     categoría, no es un texto fijo en el XML. -->
-                <LinearLayout
-                    android:id="@+id/row_featured_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:layout_marginBottom="10dp">
-
-                        <TextView
-                            android:id="@+id/tv_featured_title"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="⭐  Destacados"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/row_featured"
-                        android:descendantFocusability="afterDescendants"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="18dp"
-                        android:paddingEnd="18dp"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:layout_marginBottom="22dp" />
-                </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Resultados de búsqueda global: agrupados por cuenta (la
-                 activa primero, luego las alternas que tengan
-                 coincidencias). Solo visible mientras hay texto en el
-                 buscador; HomeActivity construye una fila por cuenta
-                 dinámicamente, igual que las secciones de
-                 ContentListActivity. -->
-            <LinearLayout
-                android:id="@+id/global_search_results"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                android:paddingTop="6dp"
-                android:paddingBottom="24dp"
-                android:visibility="gone" />
+            <!-- Separador sutil entre el panel fijo y el catálogo. -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="#22222E" />
 
-            </LinearLayout>
-        </ScrollView>
-    </LinearLayout>
+            <!-- ============ PANEL DERECHO: catálogo, con su propio scroll ============ -->
+            <ScrollView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="62">
 
-    <!-- ======================= PANEL LATERAL (DRAWER) ======================= -->
-    <!-- Implementado a mano con un FrameLayout + traslación (sin agregar
-         dependencias nuevas al proyecto). HomeActivity controla abrir/
-         cerrar animando translationX del panel y la opacidad del scrim. -->
-    <View
-        android:id="@+id/drawer_scrim"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#AA000000"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/drawer_panel"
-        android:layout_width="280dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:orientation="vertical"
-        android:background="@color/bg_secondary"
-        android:fitsSystemWindows="true"
-        android:visibility="gone"
-        android:translationX="-280dp"
-        android:paddingTop="22dp"
-        android:paddingBottom="22dp"
-        android:elevation="12dp">
+                    <LinearLayout
+                        android:id="@+id/home_default_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="24dp">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:layout_marginBottom="18dp">
+                        <include layout="@layout/home_content_rows" />
+                    </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="J"
-                android:textColor="@color/accent"
-                android:textSize="19sp"
-                android:textStyle="bold|italic" />
+                    <!-- Resultados de búsqueda global: reemplaza al
+                         catálogo en esta misma columna derecha. El panel
+                         izquierdo (banner + canal en vivo) se queda
+                         visible incluso buscando — mejora respecto a
+                         vertical, donde todo se oculta durante la
+                         búsqueda. -->
+                    <LinearLayout
+                        android:id="@+id/global_search_results"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="24dp"
+                        android:visibility="gone" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="OX3"
-                android:textColor="#2979FF"
-                android:textSize="19sp"
-                android:textStyle="bold|italic" />
+                </LinearLayout>
+            </ScrollView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=" TV"
-                android:textColor="@color/accent_purple"
-                android:textSize="19sp"
-                android:textStyle="bold|italic" />
         </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="8dp"
-            android:text="MENÚ"
-            android:textColor="@color/text_secondary"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.1" />
-
-        <TextView
-            android:id="@+id/drawer_item_home"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="13dp"
-            android:paddingBottom="13dp"
-            android:text="⌂   Inicio"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:stateListAnimator="@animator/focus_scale_row" />
-
-        <TextView
-            android:id="@+id/drawer_item_live"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="13dp"
-            android:paddingBottom="13dp"
-            android:text="📡   TV en vivo"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:stateListAnimator="@animator/focus_scale_row" />
-
-        <TextView
-            android:id="@+id/drawer_item_movies"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="13dp"
-            android:paddingBottom="13dp"
-            android:text="🎬   Películas"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:stateListAnimator="@animator/focus_scale_row" />
-
-        <TextView
-            android:id="@+id/drawer_item_series"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="13dp"
-            android:paddingBottom="13dp"
-            android:text="📺   Series"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:stateListAnimator="@animator/focus_scale_row" />
-
-        <View android:layout_width="match_parent" android:layout_height="1dp"
-            android:background="#22222E" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" />
-
-        <TextView
-            android:id="@+id/drawer_item_favorites"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="13dp"
-            android:paddingBottom="13dp"
-            android:text="♡   Favoritos"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:stateListAnimator="@animator/focus_scale_row" />
-
-        <TextView
-            android:id="@+id/drawer_item_history"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="13dp"
-            android:paddingBottom="13dp"
-            android:text="🕐   Historial"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:stateListAnimator="@animator/focus_scale_row" />
-
-        <TextView
-            android:id="@+id/drawer_item_search"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="13dp"
-            android:paddingBottom="13dp"
-            android:text="🔍   Buscar"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:stateListAnimator="@animator/focus_scale_row" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <View android:layout_width="match_parent" android:layout_height="1dp"
-            android:background="#22222E" android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/drawer_item_settings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="13dp"
-            android:paddingBottom="13dp"
-            android:text="⚙   Ajustes"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:stateListAnimator="@animator/focus_scale_row" />
     </LinearLayout>
 
+    <include layout="@layout/home_drawer" />
 </FrameLayout>
