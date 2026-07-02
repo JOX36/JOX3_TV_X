@@ -641,11 +641,12 @@
 
                         <!-- Banner: mismo glow + carrusel que en vertical,
                              ahora en la columna derecha arriba del
-                             catálogo (antes vivía en la izquierda; ese
-                             espacio ahora es del reproductor). -->
+                             catálogo. Más alto que antes (tipo card de
+                             película) para que se note bien en vez de
+                             verse como una tira angosta. -->
                         <FrameLayout
                             android:layout_width="match_parent"
-                            android:layout_height="120dp"
+                            android:layout_height="190dp"
                             android:layout_marginStart="18dp"
                             android:layout_marginEnd="10dp"
                             android:layout_marginBottom="6dp"
@@ -654,8 +655,8 @@
 
                             <View
                                 android:id="@+id/banner_glow"
-                                android:layout_width="110dp"
-                                android:layout_height="110dp"
+                                android:layout_width="150dp"
+                                android:layout_height="150dp"
                                 android:layout_gravity="center"
                                 android:background="@drawable/bg_banner_glow" />
 
