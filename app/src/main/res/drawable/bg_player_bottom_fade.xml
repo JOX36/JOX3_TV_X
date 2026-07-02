@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Misma idea que bg_player_top_fade pero al revés: oscuro abajo (donde
+    están los controles de reproducción) y transparente hacia arriba, para
+    que se note el video por encima de los controles.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="90"
+        android:startColor="#8C000000"
+        android:endColor="#00000000" />
+</shape>

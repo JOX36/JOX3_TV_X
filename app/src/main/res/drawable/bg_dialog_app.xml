@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Card de fondo para los diálogos con estilo de marca (salir de la app,
+    continuar viendo, y cualquier otro que se agregue después). Fondo
+    oscuro #1C1C2A + borde cian sutil, para reemplazar el AlertDialog por
+    defecto de Android (blanco con letras negras) que no combinaba con
+    el resto de la app.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#1C1C2A" />
+    <stroke android:width="1dp" android:color="#5900C2FF" />
+    <corners android:radius="20dp" />
+</shape>
