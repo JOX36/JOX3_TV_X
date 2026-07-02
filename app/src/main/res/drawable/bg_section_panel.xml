@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Card que envuelve cada sección de categoría (título + fila horizontal)
+    en las pantallas de listado (ej. "Canales en vivo"). Antes cada
+    sección era solo texto + fila flotando sobre el fondo general, sin
+    ninguna separación visual real entre una categoría y la siguiente —
+    con muchas categorías seguidas se sentía "apretado". Este panel sutil
+    (apenas más claro que el fondo, con borde casi invisible) hace que
+    cada categoría se lea como su propio bloque de un vistazo.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#12121C" />
+    <stroke android:width="1dp" android:color="#12FFFFFF" />
+    <corners android:radius="18dp" />
+</shape>

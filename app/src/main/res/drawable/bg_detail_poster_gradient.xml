@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Reemplaza la capa negra plana (#99000000) que tapaba TODO el poster
+    grande de Detalle por igual, dándole un tono "muerto" sin importar
+    qué tan colorida fuera la imagen real. Ahora solo se oscurece hacia
+    abajo, donde vive el título — arriba la imagen se ve casi con su
+    color real.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:type="linear"
+        android:startColor="#22000000"
+        android:centerColor="#66000000"
+        android:centerY="0.62"
+        android:endColor="#E6000000" />
+</shape>
