@@ -3,13 +3,16 @@ package com.jox3.tv.ui.settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jox3.tv.R;
 import com.jox3.tv.model.PlaylistConfig;
+import com.jox3.tv.util.AlternateCatalogCache;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,11 +50,14 @@ public class AccountListAdapter extends RecyclerView.Adapter<AccountListAdapter.
         boolean isActive = account.id.equals(activeId);
 
         holder.name.setText(account.name != null ? account.name : "Sin nombre");
-        holder.activeDot.setVisibility(isActive ? View.VISIBLE : View.INVISIBLE);
+
+        // Card con borde de marca para la cuenta activa; card plana para
+        // el resto. Reemplaza al viejo puntito como única señal.
+        holder.itemView.setBackgroundResource(
+                isActive ? R.drawable.bg_card_account_active : R.drawable.bg_card_rounded);
 
         StringBuilder meta = new StringBuilder();
         meta.append(PlaylistConfig.TYPE_XTREAM.equals(account.type) ? "Xtream Codes" : "Lista M3U");
-        if (isActive) meta.append(" · Activa");
         if (account.expDateEpoch > 0) {
             long daysLeft = (account.expDateEpoch * 1000L - System.currentTimeMillis()) / (1000L * 60 * 60 * 24);
             meta.append(" · Vence ").append(formatDate(account.expDateEpoch));
@@ -59,12 +65,62 @@ public class AccountListAdapter extends RecyclerView.Adapter<AccountListAdapter.
         }
         holder.meta.setText(meta.toString());
 
+        bindStatus(holder, account, isActive);
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onSelect(account);
         });
         holder.deleteText.setOnClickListener(v -> {
             if (listener != null) listener.onDelete(account);
         });
+    }
+
+    /**
+     * Pinta el punto + la etiqueta de estado de cada cuenta:
+     *  - Activa ahora mismo: glow degradado de marca, sin caché relevante.
+     *  - Alterna Xtream ya en caché (AlternateCatalogCache): verde, toca
+     *    y cambia al instante, sin esperar al servidor.
+     *  - Alterna Xtream todavía cargando en segundo plano: naranja.
+     *  - Alterna Xtream cuya última carga en segundo plano falló: rojo.
+     *  - Cuenta M3U: gris, esas nunca se cachean en segundo plano hoy,
+     *    así que tocarla sí pide los datos en el momento.
+     */
+    private void bindStatus(AccountHolder holder, PlaylistConfig account, boolean isActive) {
+        android.content.Context ctx = holder.itemView.getContext();
+
+        if (isActive) {
+            holder.statusDot.setImageResource(R.drawable.dot_active_glow);
+            holder.statusDot.clearColorFilter();
+            holder.statusLabel.setText("● Activa ahora");
+            holder.statusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.accent));
+            return;
+        }
+
+        holder.statusDot.setImageResource(R.drawable.dot_white_solid);
+
+        if (!PlaylistConfig.TYPE_XTREAM.equals(account.type)) {
+            holder.statusDot.setColorFilter(ContextCompat.getColor(ctx, R.color.text_secondary));
+            holder.statusLabel.setText("M3U · se descarga al tocar");
+            holder.statusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary));
+            return;
+        }
+
+        AlternateCatalogCache.AccountCatalog cache =
+                AlternateCatalogCache.get().getCatalogFor(account.id);
+
+        if (cache == null || cache.loading) {
+            holder.statusDot.setColorFilter(ContextCompat.getColor(ctx, R.color.warning_orange));
+            holder.statusLabel.setText("Cargando en 2do plano…");
+            holder.statusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.warning_orange));
+        } else if (cache.loaded) {
+            holder.statusDot.setColorFilter(ContextCompat.getColor(ctx, R.color.success_green));
+            holder.statusLabel.setText("Lista · toca para cambio instantáneo");
+            holder.statusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.success_green));
+        } else {
+            holder.statusDot.setColorFilter(ContextCompat.getColor(ctx, R.color.live_badge));
+            holder.statusLabel.setText("Sin conexión · toca para reintentar");
+            holder.statusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.live_badge));
+        }
     }
 
     private String formatDate(long epochSeconds) {
@@ -78,15 +134,16 @@ public class AccountListAdapter extends RecyclerView.Adapter<AccountListAdapter.
     }
 
     static class AccountHolder extends RecyclerView.ViewHolder {
-        TextView name, meta, deleteText;
-        View activeDot;
+        TextView name, meta, deleteText, statusLabel;
+        ImageView statusDot;
 
         AccountHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.account_name);
             meta = itemView.findViewById(R.id.account_meta);
             deleteText = itemView.findViewById(R.id.account_delete_text);
-            activeDot = itemView.findViewById(R.id.account_active_dot);
+            statusDot = itemView.findViewById(R.id.account_status_dot);
+            statusLabel = itemView.findViewById(R.id.account_status_label);
         }
     }
 }
