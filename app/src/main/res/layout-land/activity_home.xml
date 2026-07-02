@@ -1,24 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Home en horizontal (Opción 3, elegida por JOX3): en vez de solo
-    reacomodar el mismo diseño vertical, se aprovecha el ancho extra con
-    un panel FIJO a la izquierda (banner + mini-reproductor de canal en
-    vivo + accesos rápidos) que nunca se mueve, y a la derecha una columna
-    con scroll propio que trae TODO el catálogo (Seguir viendo, Favoritos,
-    Descubre, Destacados...). El panel izquierdo se queda visible incluso
-    mientras se busca — solo la columna derecha cambia entre catálogo y
-    resultados de búsqueda.
+    Home en horizontal — diseño v2 (reemplaza la Opción 3 anterior),
+    definido a mano por JOX3 en un boceto:
 
-    Reutiliza EXACTAMENTE los mismos colores, degradados y drawables que
-    ya existen para vertical (bg_banner_glow, bg_card_rounded, degradado
-    de marca cian->azul->morado en el logo, etc.) — nada de esto es nuevo,
-    solo se reorganiza el espacio.
+      - Header en una sola fila: hamburguesa + logo -> chips de categoría
+        -> buscar + ajustes.
+      - Panel IZQUIERDO (4/6 del ancho): el reproductor de canal en vivo
+        embebido, pero ahora "enriquecido" como el de PlayerActivity —
+        nombre de canal + EPG con barra de progreso, favorito, y
+        controles reales (anterior, mute, play/pausa, siguiente, lista de
+        canales, refrescar, pantalla completa). Ocupa 2/3 de la altura
+        del panel; el 1/3 restante es un panel propio con "qué sigue" en
+        la guía + un selector rápido de canales (miniaturas) para cambiar
+        sin salir de Home.
+      - Panel DERECHO (2/6 del ancho): el carrusel banner + TODO el
+        catálogo (Seguir viendo, Descubre, Última reproducción,
+        Favoritos, Destacados...) en su propia columna con scroll
+        independiente del reproductor.
 
-    Comparte 3 bloques con el layout vertical vía <include> para que
-    nunca se desincronicen: home_top_chrome (header/carga/vacío),
-    home_content_rows (las filas de catálogo) y home_drawer (panel
-    lateral). Todos los IDs coinciden con activity_home.xml para que
-    HomeActivity.java funcione sin ningún cambio de código.
+    Todos los IDs coinciden con activity_home.xml (vertical) para que
+    HomeActivity.java seleccione el layout correcto en tiempo de
+    ejecución sin ningún cambio de código fuera de lo estrictamente
+    necesario para los controles nuevos del reproductor enriquecido.
+
+    Comparte 2 bloques con el vertical vía <include> (home_content_rows y
+    home_drawer). El header YA NO comparte home_top_chrome porque acá los
+    chips de categoría viven dentro de la misma fila del header, algo que
+    vertical no necesita.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -32,8 +40,296 @@
         android:fitsSystemWindows="true"
         android:orientation="vertical">
 
-        <include layout="@layout/home_top_chrome" />
+        <!-- ============ HEADER: hamburguesa + logo + chips + buscar/ajustes ============ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="10dp">
 
+            <ImageView
+                android:id="@+id/btn_open_drawer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_chip_inactive"
+                android:padding="9dp"
+                android:src="@drawable/ic_menu"
+                android:clickable="true"
+                android:focusable="true"
+                android:stateListAnimator="@animator/focus_scale_button"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginEnd="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="J"
+                    android:textColor="@color/accent"
+                    android:textSize="19sp"
+                    android:textStyle="bold|italic" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OX3"
+                    android:textColor="#2979FF"
+                    android:textSize="19sp"
+                    android:textStyle="bold|italic" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" TV"
+                    android:textColor="@color/accent_purple"
+                    android:textSize="19sp"
+                    android:textStyle="bold|italic" />
+            </LinearLayout>
+
+            <!-- Chips de categoría: en horizontal viven en el header,
+                 entre el logo y buscar/ajustes (pedido puntual de JOX3).
+                 HorizontalScrollView por seguridad, por si en pantallas
+                 más angostas los 4 no entran completos de una vez. -->
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:scrollbars="none"
+                android:clipToPadding="false">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_favorites"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_chip_active"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:text="🔥  Favoritos"
+                        android:textColor="@color/text_primary"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/focus_scale_button" />
+
+                    <TextView
+                        android:id="@+id/chip_live"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_pill_outline_accent"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:text="📡  TV en vivo"
+                        android:textColor="@color/accent"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/focus_scale_button" />
+
+                    <TextView
+                        android:id="@+id/chip_movies"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_pill_outline_accent"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:text="🎬  Películas"
+                        android:textColor="@color/accent"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/focus_scale_button" />
+
+                    <TextView
+                        android:id="@+id/chip_series"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_pill_outline_accent"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:text="📺  Series"
+                        android:textColor="@color/accent"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/focus_scale_button" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <ImageView
+                android:id="@+id/btn_search_header"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_chip_inactive"
+                android:padding="9dp"
+                android:src="@drawable/ic_search"
+                android:tint="@color/accent"
+                android:clickable="true"
+                android:focusable="true"
+                android:stateListAnimator="@animator/focus_scale_button" />
+
+            <ImageView
+                android:id="@+id/btn_settings"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_chip_inactive"
+                android:padding="8dp"
+                android:src="@drawable/ic_settings"
+                android:tint="@color/accent"
+                android:clickable="true"
+                android:focusable="true"
+                android:stateListAnimator="@animator/focus_scale_button" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/account_status_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="8dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="10sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/search_bar_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="10dp"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/input_search"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_chip_inactive"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="10dp"
+                android:hint="Buscar en vistos recientes o favoritos..."
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/text_primary"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:imeOptions="actionSearch" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_loading"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="86dp"
+                android:layout_height="86dp"
+                android:layout_marginBottom="20dp">
+
+                <ProgressBar
+                    android:id="@+id/loading_spinner"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="86dp"
+                    android:layout_height="86dp"
+                    android:indeterminateTint="@color/accent" />
+
+                <TextView
+                    android:id="@+id/loading_emoji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="📡"
+                    android:textSize="28sp" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/loading_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cargando tu lista..."
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Esto puede tardar unos segundos"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_empty"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Todavía no tienes una lista cargada"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/btn_go_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_chip_active"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:text="Ir a Ajustes"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- ============ CUERPO: reproductor (4/6) + catálogo (2/6) ============ -->
         <LinearLayout
             android:id="@+id/scroll_content"
             android:layout_width="match_parent"
@@ -42,62 +338,20 @@
             android:saveEnabled="false"
             android:orientation="horizontal">
 
-            <!-- ============ PANEL IZQUIERDO: fijo, siempre visible ============ -->
+            <!-- ============ PANEL IZQUIERDO: reproductor enriquecido ============ -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="38"
+                android:layout_weight="66"
                 android:orientation="vertical"
-                android:clipChildren="false"
-                android:clipToPadding="false"
                 android:paddingStart="18dp"
                 android:paddingEnd="10dp"
                 android:paddingBottom="14dp">
 
-                <!-- Banner: mismo glow + carrusel que en vertical, ahora
-                     apilado arriba del mini-reproductor (la columna es
-                     angosta, no alcanza para ponerlos lado a lado y que
-                     ambos se vean bien). -->
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="3"
-                    android:clipChildren="false"
-                    android:clipToPadding="false">
-
-                    <View
-                        android:id="@+id/banner_glow"
-                        android:layout_width="130dp"
-                        android:layout_height="130dp"
-                        android:layout_gravity="center"
-                        android:background="@drawable/bg_banner_glow" />
-
-                    <androidx.viewpager2.widget.ViewPager2
-                        android:id="@+id/hero_pager"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:id="@+id/hero_dots"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="8dp"
-                    android:orientation="horizontal"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:clickable="false"
-                    android:focusable="true"
-                    android:stateListAnimator="@animator/focus_scale_row" />
-
-                <!-- Mini-reproductor de canal en vivo: en horizontal
-                     siempre visible (HomeActivity ya lo muestra en
-                     cualquier orientación que no sea portrait — misma
-                     lógica de siempre, sin tocar el código). -->
+                <!-- Reproductor embebido: 2/3 de la altura del panel.
+                     Mismo concepto visual que PlayerActivity (barra de
+                     canal+EPG arriba, controles reales abajo), pero
+                     dentro de Home en vez de pantalla completa. -->
                 <FrameLayout
                     android:id="@+id/mini_player_container"
                     android:layout_width="match_parent"
@@ -105,7 +359,7 @@
                     android:layout_weight="2"
                     android:background="@drawable/bg_card_rounded"
                     android:clipToOutline="true"
-                    android:clickable="true"
+                    android:clickable="false"
                     android:focusable="false">
 
                     <androidx.media3.ui.PlayerView
@@ -115,76 +369,88 @@
                         app:surface_type="texture_view"
                         app:use_controller="false" />
 
-                    <TextView
-                        android:id="@+id/mini_live_badge"
-                        android:layout_width="wrap_content"
+                    <!-- Barra superior: nombre de canal + EPG (se llena
+                         desde loadMiniPlayerEpg, igual que antes) +
+                         favorito + pantalla completa. -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="top|start"
-                        android:layout_margin="8dp"
-                        android:background="@drawable/bg_badge_live"
-                        android:paddingStart="7dp"
-                        android:paddingEnd="7dp"
-                        android:paddingTop="3dp"
-                        android:paddingBottom="3dp"
-                        android:text="EN VIVO"
-                        android:textColor="@color/text_primary"
-                        android:textSize="9sp"
-                        android:textStyle="bold" />
+                        android:layout_gravity="top"
+                        android:background="@drawable/bg_player_top_fade"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="10dp">
 
-                    <ImageView
-                        android:id="@+id/btn_mini_expand"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:layout_gravity="top|end"
-                        android:layout_margin="8dp"
-                        android:background="#88000000"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_expand"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:stateListAnimator="@animator/focus_scale_button" />
+                        <TextView
+                            android:id="@+id/mini_live_badge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_badge_live"
+                            android:paddingStart="7dp"
+                            android:paddingEnd="7dp"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp"
+                            android:text="EN VIVO"
+                            android:textColor="@color/text_primary"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
 
-                    <ImageView
-                        android:id="@+id/btn_mini_mute"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_gravity="bottom|end"
-                        android:layout_margin="8dp"
-                        android:background="#88000000"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_mute"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:stateListAnimator="@animator/focus_scale_button" />
+                        <TextView
+                            android:id="@+id/mini_channel_name"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
 
+                        <ImageView
+                            android:id="@+id/btn_mini_fav"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/bg_chip_inactive"
+                            android:padding="6dp"
+                            android:src="@drawable/ic_star_outline"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:stateListAnimator="@animator/focus_scale_button" />
+
+                        <ImageView
+                            android:id="@+id/btn_mini_expand"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/bg_chip_inactive"
+                            android:padding="6dp"
+                            android:src="@drawable/ic_expand"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:stateListAnimator="@animator/focus_scale_button" />
+                    </LinearLayout>
+
+                    <!-- Barra inferior: EPG "ahora" + progreso, y los
+                         controles reales del canal en vivo. -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="bottom"
-                        android:background="#CC000000"
+                        android:background="@drawable/bg_player_bottom_fade"
                         android:orientation="vertical"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        android:paddingTop="20dp"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:paddingTop="24dp"
                         android:paddingBottom="8dp">
-
-                        <TextView
-                            android:id="@+id/mini_channel_name"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/text_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:maxLines="1"
-                            android:ellipsize="end" />
 
                         <TextView
                             android:id="@+id/mini_epg_now"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
                             android:textColor="@color/accent_warm"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             android:maxLines="1"
                             android:ellipsize="end"
                             android:visibility="gone" />
@@ -194,6 +460,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="3dp"
                             android:layout_marginTop="4dp"
+                            android:layout_marginBottom="8dp"
                             android:background="#40000000"
                             android:orientation="horizontal"
                             android:visibility="gone">
@@ -211,22 +478,153 @@
                                 android:layout_weight="100"
                                 android:background="@android:color/transparent" />
                         </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:id="@+id/btn_mini_prev"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_margin="3dp"
+                                android:background="@drawable/bg_circle_subtle"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_skip_previous"
+                                android:scaleType="centerInside"
+                                android:tint="#D8FFFFFF"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:stateListAnimator="@animator/focus_scale_button" />
+
+                            <ImageView
+                                android:id="@+id/btn_mini_mute"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_margin="3dp"
+                                android:background="@drawable/bg_circle_subtle"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_mute"
+                                android:scaleType="centerInside"
+                                android:tint="#D8FFFFFF"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:stateListAnimator="@animator/focus_scale_button" />
+
+                            <ImageView
+                                android:id="@+id/btn_mini_play_pause"
+                                android:layout_width="46dp"
+                                android:layout_height="46dp"
+                                android:layout_margin="4dp"
+                                android:background="@drawable/bg_circle_accent"
+                                android:padding="11dp"
+                                android:src="@drawable/ic_pause"
+                                android:scaleType="centerInside"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:stateListAnimator="@animator/focus_scale_button" />
+
+                            <ImageView
+                                android:id="@+id/btn_mini_next"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_margin="3dp"
+                                android:background="@drawable/bg_circle_subtle"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_skip_next"
+                                android:scaleType="centerInside"
+                                android:tint="#D8FFFFFF"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:stateListAnimator="@animator/focus_scale_button" />
+
+                            <ImageView
+                                android:id="@+id/btn_mini_channel_list"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_margin="3dp"
+                                android:background="@drawable/bg_circle_subtle"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_channel_list"
+                                android:scaleType="centerInside"
+                                android:tint="#D8FFFFFF"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:stateListAnimator="@animator/focus_scale_button" />
+
+                            <ImageView
+                                android:id="@+id/btn_mini_refresh"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_margin="3dp"
+                                android:background="@drawable/bg_circle_subtle"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_refresh"
+                                android:scaleType="centerInside"
+                                android:tint="#D8FFFFFF"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:stateListAnimator="@animator/focus_scale_button" />
+                        </LinearLayout>
                     </LinearLayout>
                 </FrameLayout>
 
+                <!-- Panel bajo el reproductor: 1/3 de la altura. Guía
+                     "qué sigue" + selector rápido de canales (Opción C
+                     elegida por JOX3). -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_section_panel"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:id="@+id/mini_epg_next"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="6dp"
+                        android:text="CAMBIAR DE CANAL"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/mini_channel_strip"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false" />
+                </LinearLayout>
             </LinearLayout>
 
-            <!-- Separador sutil entre el panel fijo y el catálogo. -->
+            <!-- Separador sutil entre el reproductor y el catálogo. -->
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:background="#22222E" />
 
-            <!-- ============ PANEL DERECHO: catálogo, con su propio scroll ============ -->
+            <!-- ============ PANEL DERECHO: banner + catálogo, con su propio scroll ============ -->
             <ScrollView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="62">
+                android:layout_weight="34">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -238,110 +636,53 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:paddingTop="16dp"
+                        android:paddingTop="4dp"
                         android:paddingBottom="24dp">
 
-                        <!-- Chips de acceso rápido: en horizontal viven
-                             aquí arriba del catálogo (son navegación, no
-                             parte del banner) en vez de apretados dentro
-                             del panel angosto de la izquierda. Mismo
-                             estilo y colores de siempre. -->
-                        <HorizontalScrollView
+                        <!-- Banner: mismo glow + carrusel que en vertical,
+                             ahora en la columna derecha arriba del
+                             catálogo (antes vivía en la izquierda; ese
+                             espacio ahora es del reproductor). -->
+                        <FrameLayout
                             android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:layout_marginStart="18dp"
+                            android:layout_marginEnd="10dp"
+                            android:layout_marginBottom="6dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
+
+                            <View
+                                android:id="@+id/banner_glow"
+                                android:layout_width="110dp"
+                                android:layout_height="110dp"
+                                android:layout_gravity="center"
+                                android:background="@drawable/bg_banner_glow" />
+
+                            <androidx.viewpager2.widget.ViewPager2
+                                android:id="@+id/hero_pager"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:id="@+id/hero_dots"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:scrollbars="none"
-                            android:clipToPadding="false"
-                            android:paddingStart="18dp"
-                            android:paddingEnd="8dp"
-                            android:layout_marginBottom="18dp">
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/chip_favorites"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginEnd="10dp"
-                                    android:background="@drawable/bg_chip_active"
-                                    android:paddingStart="16dp"
-                                    android:paddingEnd="16dp"
-                                    android:paddingTop="9dp"
-                                    android:paddingBottom="9dp"
-                                    android:text="🔥  Favoritos"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:clickable="true"
-                                    android:focusable="true"
-                                    android:stateListAnimator="@animator/focus_scale_button" />
-
-                                <TextView
-                                    android:id="@+id/chip_live"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginEnd="10dp"
-                                    android:background="@drawable/bg_pill_outline_accent"
-                                    android:paddingStart="16dp"
-                                    android:paddingEnd="16dp"
-                                    android:paddingTop="9dp"
-                                    android:paddingBottom="9dp"
-                                    android:text="📡  TV en vivo"
-                                    android:textColor="@color/accent"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:clickable="true"
-                                    android:focusable="true"
-                                    android:stateListAnimator="@animator/focus_scale_button" />
-
-                                <TextView
-                                    android:id="@+id/chip_movies"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginEnd="10dp"
-                                    android:background="@drawable/bg_pill_outline_accent"
-                                    android:paddingStart="16dp"
-                                    android:paddingEnd="16dp"
-                                    android:paddingTop="9dp"
-                                    android:paddingBottom="9dp"
-                                    android:text="🎬  Películas"
-                                    android:textColor="@color/accent"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:clickable="true"
-                                    android:focusable="true"
-                                    android:stateListAnimator="@animator/focus_scale_button" />
-
-                                <TextView
-                                    android:id="@+id/chip_series"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:background="@drawable/bg_pill_outline_accent"
-                                    android:paddingStart="16dp"
-                                    android:paddingEnd="16dp"
-                                    android:paddingTop="9dp"
-                                    android:paddingBottom="9dp"
-                                    android:text="📺  Series"
-                                    android:textColor="@color/accent"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:clickable="true"
-                                    android:focusable="true"
-                                    android:stateListAnimator="@animator/focus_scale_button" />
-                            </LinearLayout>
-                        </HorizontalScrollView>
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="14dp"
+                            android:orientation="horizontal"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"
+                            android:clickable="false"
+                            android:focusable="true"
+                            android:stateListAnimator="@animator/focus_scale_row" />
 
                         <include layout="@layout/home_content_rows" />
                     </LinearLayout>
 
-                    <!-- Resultados de búsqueda global: reemplaza al
-                         catálogo en esta misma columna derecha. El panel
-                         izquierdo (banner + canal en vivo) se queda
-                         visible incluso buscando — mejora respecto a
-                         vertical, donde todo se oculta durante la
-                         búsqueda. -->
                     <LinearLayout
                         android:id="@+id/global_search_results"
                         android:layout_width="match_parent"
