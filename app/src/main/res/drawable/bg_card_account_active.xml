@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Card de la cuenta ACTIVA en la lista de Ajustes: mismo fondo oscuro de
+    siempre (bg_card_rounded) pero con un borde degradado cian->morado
+    para que se distinga de un vistazo, sin depender solo del punto de
+    color a la izquierda. Reemplaza al viejo estilo donde todas las
+    cards se veían idénticas y solo el punto chiquito marcaba cuál era
+    la activa.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#262638" />
+    <stroke android:width="1.5dp" android:color="@color/accent" />
+    <corners android:radius="16dp" />
+</shape>
