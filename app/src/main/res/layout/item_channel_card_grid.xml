@@ -27,7 +27,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="94dp"
+        android:layout_height="106dp"
         android:background="@drawable/bg_card_rounded"
         android:clipToOutline="true">
 
