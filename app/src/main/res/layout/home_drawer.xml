@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Panel lateral (drawer) + su scrim oscuro. Igual en vertical y
+    horizontal (280dp de ancho fijo, desliza desde la izquierda encima
+    de todo lo demás) — compartido vía <include> para no duplicarlo.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ======================= PANEL LATERAL (DRAWER) ======================= -->
+    <!-- Implementado a mano con un FrameLayout + traslación (sin agregar
+         dependencias nuevas al proyecto). HomeActivity controla abrir/
+         cerrar animando translationX del panel y la opacidad del scrim. -->
+    <View
+        android:id="@+id/drawer_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#AA000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <LinearLayout
+        android:id="@+id/drawer_panel"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:orientation="vertical"
+        android:background="@color/bg_secondary"
+        android:fitsSystemWindows="true"
+        android:visibility="gone"
+        android:translationX="-280dp"
+        android:paddingTop="22dp"
+        android:paddingBottom="22dp"
+        android:elevation="12dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:layout_marginBottom="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="J"
+                android:textColor="@color/accent"
+                android:textSize="19sp"
+                android:textStyle="bold|italic" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OX3"
+                android:textColor="#2979FF"
+                android:textSize="19sp"
+                android:textStyle="bold|italic" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" TV"
+                android:textColor="@color/accent_purple"
+                android:textSize="19sp"
+                android:textStyle="bold|italic" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp"
+            android:text="MENÚ"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1" />
+
+        <TextView
+            android:id="@+id/drawer_item_home"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
+            android:text="⌂   Inicio"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_row" />
+
+        <TextView
+            android:id="@+id/drawer_item_live"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
+            android:text="📡   TV en vivo"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_row" />
+
+        <TextView
+            android:id="@+id/drawer_item_movies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
+            android:text="🎬   Películas"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_row" />
+
+        <TextView
+            android:id="@+id/drawer_item_series"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
+            android:text="📺   Series"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_row" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:background="#22222E" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/drawer_item_favorites"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
+            android:text="♡   Favoritos"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_row" />
+
+        <TextView
+            android:id="@+id/drawer_item_history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
+            android:text="🕐   Historial"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_row" />
+
+        <TextView
+            android:id="@+id/drawer_item_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
+            android:text="🔍   Buscar"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_row" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:background="#22222E" android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/drawer_item_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="13dp"
+            android:text="⚙   Ajustes"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/focus_scale_row" />
+    </LinearLayout>
+
+</merge>
