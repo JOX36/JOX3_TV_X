@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.datasource.okhttp.OkHttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -479,6 +480,12 @@ public class HomeActivity extends AppCompatActivity {
 
         miniPlayerContainer = findViewById(R.id.mini_player_container);
         miniPlayerView = findViewById(R.id.mini_player_view);
+        // Sin esto, PlayerView deja el video centrado con su relación de
+        // aspecto original y franjas negras a los lados (modo "ajustar",
+        // el default). "Llenar" lo estira para ocupar todo el cuadro sin
+        // marco, igual que ya se hace en el reproductor de pantalla
+        // completa para películas/series.
+        miniPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
         btnMiniExpand = findViewById(R.id.btn_mini_expand);
         btnMiniMute = findViewById(R.id.btn_mini_mute);
 
@@ -750,7 +757,6 @@ public class HomeActivity extends AppCompatActivity {
         btnSeeAllFavorites.setOnClickListener(v -> openContentList("favorites"));
 
         btnMiniExpand.setOnClickListener(v -> expandMiniPlayer());
-        miniPlayerContainer.setOnClickListener(v -> expandMiniPlayer());
         btnMiniMute.setOnClickListener(v -> toggleMiniPlayerMute());
 
         // Solo existen en horizontal (layout-land) — ver comentario en bindViews().

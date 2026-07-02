@@ -4,8 +4,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -16,10 +18,8 @@ import java.util.List;
 
 /**
  * Tira compacta de miniaturas para cambiar de canal sin salir de Home
- * (panel horizontal, bajo el reproductor embebido). Deliberadamente
- * mínimo: solo la imagen + un anillo de acento en la miniatura activa,
- * nada de nombre/categoría/badges — para eso ya está el selector de
- * canales completo (botón "lista de canales" abre esa vista).
+ * (panel horizontal, bajo el reproductor embebido). Muestra el logo del
+ * canal + su nombre debajo, y un anillo de acento en la miniatura activa.
  */
 public class MiniChannelStripAdapter extends RecyclerView.Adapter<MiniChannelStripAdapter.ThumbHolder> {
 
@@ -64,8 +64,12 @@ public class MiniChannelStripAdapter extends RecyclerView.Adapter<MiniChannelStr
             holder.img.setImageDrawable(null);
         }
 
+        holder.name.setText(channel.name);
+
         boolean isActive = channel.id.equals(activeChannelId);
         holder.activeRing.setVisibility(isActive ? View.VISIBLE : View.GONE);
+        holder.name.setTextColor(ContextCompat.getColor(holder.itemView.getContext(),
+                isActive ? R.color.accent : R.color.text_secondary));
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onPick(channel);
@@ -79,11 +83,13 @@ public class MiniChannelStripAdapter extends RecyclerView.Adapter<MiniChannelStr
 
     static class ThumbHolder extends RecyclerView.ViewHolder {
         ImageView img;
+        TextView name;
         View activeRing;
 
         ThumbHolder(@NonNull View itemView) {
             super(itemView);
             img = itemView.findViewById(R.id.strip_thumb_img);
+            name = itemView.findViewById(R.id.strip_thumb_name);
             activeRing = itemView.findViewById(R.id.strip_thumb_active_ring);
         }
     }
