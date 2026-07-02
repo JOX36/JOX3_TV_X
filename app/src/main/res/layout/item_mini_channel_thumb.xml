@@ -1,34 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Miniatura compacta para el selector rápido de canales bajo el
-    reproductor en Home (horizontal). A diferencia de item_channel_card.xml
-    (que trae nombre, categoría, badges, etc. y ocupa ~140dp de alto), esta
-    es solo la imagen — el espacio bajo el reproductor es angosto en
-    altura y no alcanza para una card completa. Tocar/seleccionar una
-    miniatura cambia el canal del reproductor embebido al instante.
+    Miniatura del selector rápido de canales bajo el reproductor en Home
+    (horizontal). Ahora incluye el nombre del canal debajo del logo
+    (pedido de JOX3, antes solo era la imagen y se veía muy chico) y es
+    más alta para que el logo se note bien.
 -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="52dp"
-    android:layout_height="32dp"
-    android:layout_marginEnd="6dp"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="64dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:layout_marginEnd="8dp"
     android:clickable="true"
     android:focusable="true"
     android:stateListAnimator="@animator/focus_scale_card"
     android:transformPivotX="0dp">
 
-    <ImageView
-        android:id="@+id/strip_thumb_img"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/bg_card_rounded"
-        android:scaleType="centerCrop" />
+    <FrameLayout
+        android:layout_width="64dp"
+        android:layout_height="42dp">
 
-    <!-- Borde de acento cuando es el canal activo del reproductor. -->
-    <View
-        android:id="@+id/strip_thumb_active_ring"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/bg_ring_accent"
-        android:visibility="gone" />
+        <ImageView
+            android:id="@+id/strip_thumb_img"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_card_rounded"
+            android:scaleType="centerCrop" />
 
-</FrameLayout>
+        <!-- Borde de acento cuando es el canal activo del reproductor. -->
+        <View
+            android:id="@+id/strip_thumb_active_ring"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_ring_accent"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/strip_thumb_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="@color/text_secondary"
+        android:textSize="9sp" />
+
+</LinearLayout>
