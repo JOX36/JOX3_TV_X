@@ -53,6 +53,10 @@ public class DetailActivity extends AppCompatActivity {
     private AppPrefs prefs;
     private MediaItem item;
 
+    /** Zoom lento continuo tipo "Ken Burns" sobre el poster grande, para que
+     *  no se sienta una imagen estática apagada bajo el degradado oscuro. */
+    private android.animation.ObjectAnimator posterZoomAnimator;
+
     /**
      * Resuelve qué cuenta usar para pedir episodios/info extra de "item":
      * si vino de una cuenta ALTERNA (sourceAccountId no nulo, encontrado
@@ -130,8 +134,29 @@ public class DetailActivity extends AppCompatActivity {
         if (item.logoUrl != null && !item.logoUrl.isEmpty()) {
             Glide.with(this).load(item.logoUrl).centerCrop().into(detailPoster);
         }
+        startPosterZoom();
 
         updateFavButton();
+    }
+
+    /**
+     * Zoom lento y continuo (1.0x -> 1.12x y de vuelta, en loop) sobre el
+     * poster grande. El FrameLayout que lo contiene recorta el sobrante
+     * (clipChildren="true"), así que el efecto se ve como un acercamiento
+     * suave dentro del marco, sin desbordar hacia el resto de la pantalla.
+     */
+    private void startPosterZoom() {
+        if (posterZoomAnimator != null) posterZoomAnimator.cancel();
+
+        posterZoomAnimator = android.animation.ObjectAnimator.ofPropertyValuesHolder(
+                detailPoster,
+                android.animation.PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.12f),
+                android.animation.PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.12f));
+        posterZoomAnimator.setDuration(9000);
+        posterZoomAnimator.setRepeatMode(android.animation.ValueAnimator.REVERSE);
+        posterZoomAnimator.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+        posterZoomAnimator.setInterpolator(new android.view.animation.LinearInterpolator());
+        posterZoomAnimator.start();
     }
 
     private void updateFavButton() {
@@ -174,7 +199,29 @@ public class DetailActivity extends AppCompatActivity {
 
     private void setupSeriesMode() {
         seriesSection.setVisibility(View.VISIBLE);
+
+        // Antes "Reproducir", "Favorito" y "Descargar" quedaban VISIBLES
+        // para series (el layout no los ocultaba) pero solo se conectaban
+        // en setupMovieMode(), así que en una serie los 3 no hacían nada
+        // al tocarlos. "Descargar" no aplica a nivel serie (no hay un
+        // solo archivo — cada episodio ya tiene su propio ícono de
+        // descarga en la fila), así que se oculta. Favorito sí aplica
+        // igual que en películas.
+        detailActions.setVisibility(View.VISIBLE);
+        btnDownload.setVisibility(View.GONE);
+        btnFav.setOnClickListener(v -> {
+            prefs.toggleFav(item.favKey());
+            updateFavButton();
+        });
+
+        setPlayButtonLoading();
         loadEpisodesInBackground();
+    }
+
+    private void setPlayButtonLoading() {
+        btnPlay.setText("Cargando...");
+        btnPlay.setEnabled(false);
+        btnPlay.setAlpha(0.6f);
     }
 
     private void loadEpisodesInBackground() {
@@ -202,18 +249,111 @@ public class DetailActivity extends AppCompatActivity {
 
                     if (episodesBySeason.isEmpty()) {
                         episodesStatus.setText("No se encontraron episodios.");
+                        btnPlay.setText("Sin episodios");
+                        btnPlay.setEnabled(false);
+                        btnPlay.setAlpha(0.6f);
                         return;
                     }
 
                     episodesStatus.setVisibility(View.GONE);
                     buildSeasonChips();
                     selectSeason(episodesBySeason.keySet().iterator().next());
+                    setupPlayButtonForSeries();
                 });
             } catch (Exception e) {
-                mainHandler.post(() ->
-                        episodesStatus.setText("Error al cargar episodios: " + e.getMessage()));
+                mainHandler.post(() -> {
+                    episodesStatus.setText("Error al cargar episodios: " + e.getMessage());
+                    btnPlay.setText("Reintentar");
+                    btnPlay.setEnabled(true);
+                    btnPlay.setAlpha(1f);
+                    btnPlay.setOnClickListener(v -> {
+                        setPlayButtonLoading();
+                        loadEpisodesInBackground();
+                    });
+                });
             }
         });
+    }
+
+    /**
+     * Decide qué hace el botón "Reproducir" de la serie:
+     *   - Si hay un episodio a medias (ni sin empezar, ni ya terminado)
+     *     en "Continuar viendo" -> el botón dice "Continuar TxEy" y abre
+     *     ESE episodio (PlayerActivity ya pregunta si seguir desde donde
+     *     quedó o desde el inicio, gracias al fix de askResume()).
+     *   - Si no hay nada a medias (serie nueva o ya vista completa) ->
+     *     "Reproducir TxEy" con el primer episodio de la primera
+     *     temporada (ignorando "Especiales" si hay temporadas normales).
+     */
+    private void setupPlayButtonForSeries() {
+        MediaItem resumeEpisode = findResumeEpisode();
+        MediaItem target = resumeEpisode != null ? resumeEpisode : firstEpisodeOverall();
+
+        if (target == null) {
+            btnPlay.setText("Reproducir");
+            btnPlay.setEnabled(false);
+            btnPlay.setAlpha(0.6f);
+            return;
+        }
+
+        String label = (resumeEpisode != null ? "Continuar T" : "Reproducir T")
+                + target.season + " E" + target.episode;
+        btnPlay.setText(label);
+        btnPlay.setEnabled(true);
+        btnPlay.setAlpha(1f);
+        btnPlay.setOnClickListener(v -> {
+            List<MediaItem> seasonEpisodes = episodesBySeason.get(target.season);
+            if (seasonEpisodes != null) {
+                AppState.get().episodeQueue = seasonEpisodes;
+                AppState.get().episodeIdx = seasonEpisodes.indexOf(target);
+            }
+            openPlayer(target);
+        });
+    }
+
+    /**
+     * Busca en "Continuar viendo" el episodio de ESTA serie que quedó a
+     * medias, el más reciente si hay varios (la lista ya viene ordenada
+     * del más reciente al más viejo). Null si nunca se ha visto nada de
+     * esta serie o si lo último visto ya se terminó.
+     */
+    private MediaItem findResumeEpisode() {
+        for (MediaItem candidate : prefs.getRecentlyWatched()) {
+            if (!MediaItem.SERIES.equals(candidate.type)) continue;
+            String candidateSeriesId = candidate.seriesId != null ? candidate.seriesId : candidate.id;
+            if (!candidateSeriesId.equals(item.id)) continue;
+
+            long pos = prefs.getPos(candidate.id);
+            long dur = prefs.getDur(candidate.id);
+            if (pos > 10000 && dur > 0 && (int) (pos * 100 / dur) < 95) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /** Primer episodio en orden real: menor temporada, menor número de episodio dentro de ella. */
+    private MediaItem firstEpisodeOverall() {
+        List<Integer> seasons = new ArrayList<>(episodesBySeason.keySet());
+        java.util.Collections.sort(seasons);
+        for (Integer season : seasons) {
+            // "-1" son los especiales: si hay temporadas normales además,
+            // se saltan para que "Reproducir" arranque en el episodio 1
+            // de verdad y no en un especial suelto.
+            if (season < 0 && seasons.size() > 1) continue;
+
+            List<MediaItem> episodes = episodesBySeason.get(season);
+            if (episodes == null || episodes.isEmpty()) continue;
+
+            MediaItem first = episodes.get(0);
+            for (MediaItem episode : episodes) {
+                if (episode.episode >= 0 && (first.episode < 0 || episode.episode < first.episode)) {
+                    first = episode;
+                }
+            }
+            return first;
+        }
+        return null;
     }
 
     private void buildSeasonChips() {
@@ -421,6 +561,7 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (posterZoomAnimator != null) posterZoomAnimator.cancel();
         executor.shutdownNow();
     }
 }

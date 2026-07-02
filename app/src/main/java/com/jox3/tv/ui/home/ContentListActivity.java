@@ -244,6 +244,7 @@ public class ContentListActivity extends AppCompatActivity {
             View sectionView = inflater.inflate(R.layout.section_category, sectionsContainer, false);
 
             TextView title = sectionView.findViewById(R.id.section_title);
+            View bullet = sectionView.findViewById(R.id.section_bullet);
             RecyclerView recycler = sectionView.findViewById(R.id.section_recycler);
 
             title.setText(entry.getKey() + " (" + entry.getValue().size() + ")  ›");
@@ -252,7 +253,9 @@ public class ContentListActivity extends AppCompatActivity {
             // si no (países, nombres propios), reparte entre los 3
             // colores de marca de forma determinística — así ningún
             // título de sección queda sin color intencional.
-            title.setTextColor(MediaCardAdapter.getCategoryColor(entry.getKey()));
+            int categoryColor = MediaCardAdapter.getCategoryColor(entry.getKey());
+            title.setTextColor(categoryColor);
+            bullet.setBackgroundTintList(android.content.res.ColorStateList.valueOf(categoryColor));
             recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
             recycler.setAdapter(new MediaCardAdapter(entry.getValue(), prefs, this::openItem));
 
