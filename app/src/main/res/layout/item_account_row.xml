@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Rediseño del row de cuenta en Ajustes (pedido de JOX3): antes solo un
+    puntito indicaba la cuenta activa y no había ninguna señal de si una
+    cuenta alterna ya estaba lista en caché o todavía cargando en segundo
+    plano. Ahora:
+      - Card con borde degradado (bg_card_account_active) cuando es la
+        cuenta activa, card plana para el resto.
+      - Punto de estado con color semántico: activa (glow de marca),
+        verde = lista en caché (cambio instantáneo al tocar), naranja =
+        cargando en segundo plano todavía, gris = M3U (no se cachea),
+        rojo = falló la última carga en segundo plano.
+      - Chip de texto debajo del nombre que explica ese mismo estado en
+        palabras, para que no dependa solo del color.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -12,12 +26,12 @@
     android:transformPivotX="0dp"
     android:stateListAnimator="@animator/focus_scale_row">
 
-    <View
-        android:id="@+id/account_active_dot"
-        android:layout_width="10dp"
-        android:layout_height="10dp"
-        android:background="@drawable/bg_chip_active"
-        android:layout_marginEnd="12dp" />
+    <ImageView
+        android:id="@+id/account_status_dot"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
+        android:layout_marginEnd="12dp"
+        android:src="@drawable/dot_white_solid" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -30,7 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/text_primary"
-            android:textSize="14sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -42,6 +56,16 @@
             android:layout_marginTop="2dp"
             android:textColor="@color/text_secondary"
             android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/account_status_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="10sp"
+            android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end" />
     </LinearLayout>
