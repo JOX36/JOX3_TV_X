@@ -798,16 +798,17 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void askResume(long savedPos) {
-        new AlertDialog.Builder(this)
-                .setTitle("Continuar viendo")
-                .setMessage("¿Deseas continuar desde donde lo dejaste?")
-                .setPositiveButton("Continuar", (d, w) -> {
-                    if (player != null) player.seekTo(savedPos);
-                })
-                .setNegativeButton("Desde el inicio", (d, w) ->
-                        prefs.saveProgress(item.id, 0, 0))
-                .setCancelable(false)
-                .show();
+        com.jox3.tv.util.AppDialogs.showConfirm(this,
+                "▶️", "Continuar viendo", "¿Deseas continuar desde donde lo dejaste?",
+                "Continuar", "Desde el inicio", false,
+                new com.jox3.tv.util.AppDialogs.OnConfirmAction() {
+                    @Override public void onPrimary() {
+                        if (player != null) player.seekTo(savedPos);
+                    }
+                    @Override public void onSecondary() {
+                        prefs.saveProgress(item.id, 0, 0);
+                    }
+                });
     }
 
     private Player.Listener makeListener() {
